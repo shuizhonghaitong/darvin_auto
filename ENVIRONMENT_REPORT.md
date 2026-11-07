@@ -4,7 +4,8 @@
 
 ## 运行位置与凭证边界
 
-- 本次运行目录：`/mnt/disk3/liuyutong_home/workspace/darvin_auto`；本报告保存于该目录的 `ENVIRONMENT_REPORT.md`。其他阶段的产物目录尚未确定，不预设其结构。
+- 本次运行目录：`/mnt/disk3/liuyutong_home/workspace/darvin_auto`；环境报告保存在该目录的 `ENVIRONMENT_REPORT.md`。
+- 后续每次比赛运行的产物约定保存在本目录下 `runs/<run-id>/`：`01-competition/` 保存 CompetitionSpec，`02-candidates/` 保存 CandidateSolutions，`03-reproduction/` 保存 ReproductionReport 和可运行解法，`04-service/` 保存 ServiceArtifact 和 ServiceContract，`05-image/` 保存 ImageManifest，`06-submission/` 保存 SubmissionReceipt，`07-end-to-end/` 保存端到端报告。`<run-id>` 用于区分不同运行；这些是保存位置约定，不表示目录或产物已经创建或验证。
 - Darwin、飞书、GitHub、Hugging Face 和模型服务的认证应使用宿主管理的既有凭证，仅供宿主相应工具使用，不写入报告、代码或最终镜像。
 - 镜像仓库凭证仅供镜像仓库认证、拉取或推送使用；不得因此将宿主其他平台凭证打包进镜像。本次未向镜像仓库推送镜像，也未提交 Darwin 比赛。
 
