@@ -39,7 +39,7 @@ Darwin CLI 此前的 `auth inspect --json` 经不计费代理返回 `AUTH_REQUIR
 
 随后通过 `curl --proxy http://172.28.4.16:18999 https://example.com` 的小型检查确认不计费代理返回 HTTP 200；明确设置大小写 HTTP(S) 代理变量为该地址后，再次运行上述 `darvin auth inspect`，返回 `success`，身份为 `authenticated`，`solution.submit`、`subnet.create` 和 `task.create` 均显示 `eligible`。身份标识不记录在报告中。CLI 说明各操作仍由后端逐次授权，因此这不是实际提交成功的证明。
 
-本次用 `command -v` 检查，`codex` 和 `docker` 可在 PATH 中找到，`qwen`、`gh`、`hf`、`huggingface-cli`、`lark` 和 `darvin` 不在 PATH 中。旧工程有 Hugging Face wheel，但尚未确认 CLI 可运行。GitHub 连接器确认已登录账号 `shuizhonghaitong`，不代表本机 Git 命令已登录；计费代理对 `api.github.com` 的请求返回 HTTP 403，已到达服务端但原因尚未确认。计费代理对 `huggingface.co` 的请求返回 HTTP 200；未发现本地 Hugging Face token 文件或相关令牌环境变量，因此本机认证尚未确认。Qwen 通过以下本地服务接口验证，无需 Qwen CLI。
+本次用 `command -v` 检查，`codex` 和 `docker` 可在 PATH 中找到，`qwen`、`hf`、`huggingface-cli`、`lark` 和 `darvin` 不在 PATH 中。经用户授权，已通过免费代理获取系统软件源的 GitHub CLI 安装包，SHA-256 与本机软件源元数据一致，并安装至 `/mnt/disk3/liuyutong_home/.local/bin/gh`；`gh --version` 返回 2.4.0，`gh auth status` 显示尚未登录。GitHub 连接器确认已登录账号 `shuizhonghaitong`，不代表本机 Git 命令已登录；计费代理对 `api.github.com` 的请求曾返回 HTTP 403，已到达服务端但原因尚未确认，后续读取公开发行版元数据成功。旧工程有 Hugging Face wheel，但尚未确认 CLI 可运行；计费代理对 `huggingface.co` 的请求返回 HTTP 200，未发现本地 Hugging Face token 文件或相关令牌环境变量，因此本机认证尚未确认。Qwen 通过以下本地服务接口验证，无需 Qwen CLI。
 
 另发现现有 Codex 配置指定模型 `qwen3.8-27b`，服务地址为内网 `172.28.4.81:8020`。直接检查其 `/v1/models` 端点，在获授权的环境中返回连接被拒绝（HTTP `000`）；未经过代理，未调用模型。该结果只说明当时目标端口不可连接，不能判断模型或认证是否有效。
 
@@ -52,7 +52,7 @@ Darwin CLI 此前的 `auth inspect --json` 经不计费代理返回 `AUTH_REQUIR
 
 1. 确认并复用上述平台的实际工具入口和版本查询、认证检查方式；逐项核验访问比赛、飞书资料、候选来源和模型服务所需权限，不输出凭证。
 2. Qwen 的四个本地实例均已完成真实调用；后续按需复用上述端口，不需要认证。
-3. Harbor 的访问和现有凭证认证已验证；具体镜像路径及推送权限尚未验证。GitHub 命令行及 Hugging Face 认证仍待确认。
+3. Harbor 的访问和现有凭证认证已验证；具体镜像路径及推送权限尚未验证。GitHub CLI 已安装但尚未登录，Hugging Face 认证仍待确认。
 4. 重新检查所需 Skills 的实际位置和可用性；补全各项证据后再复核 T0 验收。
 
 本报告反映当前检查结果，不代表环境准备完成。
