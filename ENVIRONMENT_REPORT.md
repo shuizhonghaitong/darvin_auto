@@ -39,7 +39,7 @@ Darwin CLI 此前的 `auth inspect --json` 经不计费代理返回 `AUTH_REQUIR
 
 随后通过 `curl --proxy http://172.28.4.16:18999 https://example.com` 的小型检查确认不计费代理返回 HTTP 200；明确设置大小写 HTTP(S) 代理变量为该地址后，再次运行上述 `darvin auth inspect`，返回 `success`，身份为 `authenticated`，`solution.submit`、`subnet.create` 和 `task.create` 均显示 `eligible`。身份标识不记录在报告中。CLI 说明各操作仍由后端逐次授权，因此这不是实际提交成功的证明。
 
-本次用 `command -v` 检查，`codex` 和 `docker` 可在 PATH 中找到，`qwen`、`hf`、`huggingface-cli`、`lark` 和 `darvin` 不在 PATH 中。经用户授权，从免费代理获取系统软件源的 GitHub CLI 安装包，SHA-256 与本机软件源元数据一致，安装至 `/mnt/disk3/liuyutong_home/.local/bin/gh`，版本为 2.4.0。用户完成登录后，通过计费代理执行 `gh api user --jq .login`，确认账号为 `shuizhonghaitong`；已按授权创建公开仓库 https://github.com/shuizhonghaitong/darvin_auto，并使用 GitHub CLI 凭证辅助程序成功推送 `master`。旧工程有 Hugging Face wheel，但尚未确认 CLI 可运行；计费代理对 `huggingface.co` 的请求返回 HTTP 200，未发现本地 Hugging Face token 文件或相关令牌环境变量，因此本机认证尚未确认。Qwen 通过以下本地服务接口验证，无需 Qwen CLI。
+本次用 `command -v` 检查，`codex` 和 `docker` 可在 PATH 中找到，`qwen`、`hf`、`huggingface-cli`、`lark` 和 `darvin` 不在 PATH 中。经用户授权，从免费代理获取系统软件源的 GitHub CLI 安装包，SHA-256 与本机软件源元数据一致，安装至 `/mnt/disk3/liuyutong_home/.local/bin/gh`，版本为 2.4.0。用户完成登录后，通过计费代理执行 `gh api user --jq .login`，确认账号为 `shuizhonghaitong`；已按授权创建公开仓库 https://github.com/shuizhonghaitong/darvin_auto，并使用 GitHub CLI 凭证辅助程序成功推送 `master`。计费代理对 `huggingface.co` 的请求返回 HTTP 200。经用户授权，使用旧工程缓存的安装包离线安装 `huggingface-hub==0.36.2` 至独立环境 `/mnt/disk3/liuyutong_home/.local/share/darvin-auto/hf-cli-py311`；执行其中的 `bin/huggingface-cli whoami` 返回 `Not logged in`，尚需用户登录后验证。Qwen 通过以下本地服务接口验证，无需 Qwen CLI。
 
 另发现现有 Codex 配置指定模型 `qwen3.8-27b`，服务地址为内网 `172.28.4.81:8020`。直接检查其 `/v1/models` 端点，在获授权的环境中返回连接被拒绝（HTTP `000`）；未经过代理，未调用模型。该结果只说明当时目标端口不可连接，不能判断模型或认证是否有效。
 
