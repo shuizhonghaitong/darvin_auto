@@ -10,7 +10,7 @@
 
 ## 工具与 Skill
 
-当前终端通过 `command -v` 分别检查命令位置。`darwin`、`feishu`、`lark`、`gh`、`hf`、`huggingface-cli`、`qwen` 均未在当前 PATH 中找到；这不等于宿主或旧工程没有对应工具。旧工程中找到飞书和名为 `darvin` 的 Darwin CLI 入口，见下表；其余工具尚未找到可运行入口。
+初次检查时 `darwin`、`feishu`、`lark`、`gh`、`hf`、`huggingface-cli`、`qwen` 均未在当前 PATH 中找到；后续已找到或安装下述独立入口，PATH 未必包含这些路径。
 
 | 检查命令 | 实际输出或结果 |
 |---|---|
@@ -18,9 +18,13 @@
 | `codex --version` | `codex-cli 0.162.1`；另提示 PATH aliases 无法创建，文件系统只读。 |
 | `/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/lark-cli-1.0.98/lark-cli --version` | `lark-cli version 1.0.98`。 |
 | `/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/venv/bin/darvin --version` | `0.5.2`。 |
+| `/mnt/disk3/liuyutong_home/.local/bin/gh --version` | `gh version 2.4.0`。 |
+| Hugging Face 独立环境的安装包版本 | `huggingface-hub 0.36.2`；CLI 位于 `/mnt/disk3/liuyutong_home/.local/share/darvin-auto/hf-cli-py311/bin/hf`。 |
 | 检查 `/mnt/disk3/liuyutong_home/.codex/skills` | 未发现名称包含 Darwin、飞书或 Qwen 的已安装 Skill；仅按名称检查，不等于对其他位置或功能完成审计。 |
 
 在旧工程 `/mnt/disk3/liuyutong_home/workspace/darwin_auto/skills/` 找到 `darvin`、`darvin-image`、`darvin-auto-benchmark`、`lark-shared`、`lark-doc` 和 `lark-wiki` 等 Skill 文件；找到文件不代表已安装或已验证可用。本工程及旧工程的文件名搜索未发现 Qwen Skill。
+
+再次检查上述六个 Skill 及 `open-source-baseline` 的 `SKILL.md` 均可读取，名称和用途声明分别覆盖平台操作、镜像、流程编排、飞书认证与文档、知识库和开源基线。它们不在本会话提供的可用 Skill 列表中，未验证会话加载或完整工作流；相关 CLI 的独立验证不等于 Skill 已安装或端到端可用。
 
 ## Docker 与镜像仓库
 
@@ -39,7 +43,7 @@ Darwin CLI 此前的 `auth inspect --json` 经不计费代理返回 `AUTH_REQUIR
 
 随后通过 `curl --proxy http://172.28.4.16:18999 https://example.com` 的小型检查确认不计费代理返回 HTTP 200；明确设置大小写 HTTP(S) 代理变量为该地址后，再次运行上述 `darvin auth inspect`，返回 `success`，身份为 `authenticated`，`solution.submit`、`subnet.create` 和 `task.create` 均显示 `eligible`。身份标识不记录在报告中。CLI 说明各操作仍由后端逐次授权，因此这不是实际提交成功的证明。
 
-本次用 `command -v` 检查，`codex` 和 `docker` 可在 PATH 中找到，`qwen`、`hf`、`huggingface-cli`、`lark` 和 `darvin` 不在 PATH 中。经用户授权，从免费代理获取系统软件源的 GitHub CLI 安装包，SHA-256 与本机软件源元数据一致，安装至 `/mnt/disk3/liuyutong_home/.local/bin/gh`，版本为 2.4.0。用户完成登录后，通过计费代理执行 `gh api user --jq .login`，确认账号为 `shuizhonghaitong`；已按授权创建公开仓库 https://github.com/shuizhonghaitong/darvin_auto，并使用 GitHub CLI 凭证辅助程序成功推送 `master`。计费代理对 `huggingface.co` 的请求返回 HTTP 200。经用户授权，使用旧工程缓存的安装包离线安装 `huggingface-hub==0.36.2` 至独立环境 `/mnt/disk3/liuyutong_home/.local/share/darvin-auto/hf-cli-py311`；执行其中的 `bin/huggingface-cli whoami` 返回 `Not logged in`，尚需用户登录后验证。Qwen 通过以下本地服务接口验证，无需 Qwen CLI。
+本次用 `command -v` 检查，`codex` 和 `docker` 可在 PATH 中找到，`qwen`、`hf`、`huggingface-cli`、`lark` 和 `darvin` 不在 PATH 中。经用户授权，从免费代理获取系统软件源的 GitHub CLI 安装包，SHA-256 与本机软件源元数据一致，安装至 `/mnt/disk3/liuyutong_home/.local/bin/gh`，版本为 2.4.0。用户完成登录后，通过计费代理执行 `gh api user --jq .login`，确认账号为 `shuizhonghaitong`；已按授权创建公开仓库 https://github.com/shuizhonghaitong/darvin_auto，并使用 GitHub CLI 凭证辅助程序成功推送 `master`。计费代理对 `huggingface.co` 的请求返回 HTTP 200。经用户授权，使用旧工程缓存的安装包离线安装 `huggingface-hub==0.36.2` 至独立环境 `/mnt/disk3/liuyutong_home/.local/share/darvin-auto/hf-cli-py311`；用户登录后，通过计费代理执行该环境的 `bin/hf auth whoami`，返回 `user: lilac`，确认 Hub 认证有效。未验证特定模型、数据集或 Git 推送权限；用户登录输出指出未配置 Git 凭证助手。Qwen 通过以下本地服务接口验证，无需 Qwen CLI。
 
 另发现现有 Codex 配置指定模型 `qwen3.8-27b`，服务地址为内网 `172.28.4.81:8020`。直接检查其 `/v1/models` 端点，在获授权的环境中返回连接被拒绝（HTTP `000`）；未经过代理，未调用模型。该结果只说明当时目标端口不可连接，不能判断模型或认证是否有效。
 
@@ -52,7 +56,7 @@ Darwin CLI 此前的 `auth inspect --json` 经不计费代理返回 `AUTH_REQUIR
 
 1. 确认并复用上述平台的实际工具入口和版本查询、认证检查方式；逐项核验访问比赛、飞书资料、候选来源和模型服务所需权限，不输出凭证。
 2. Qwen 的四个本地实例均已完成真实调用；后续按需复用上述端口，不需要认证。
-3. Harbor 的访问和现有凭证认证已验证；具体镜像路径及推送权限尚未验证。GitHub CLI 登录与代码推送已验证；Hugging Face 认证仍待确认。
-4. 重新检查所需 Skills 的实际位置和可用性；补全各项证据后再复核 T0 验收。
+3. Harbor 的访问和现有凭证认证已验证；具体镜像路径及推送权限尚未验证。GitHub CLI 登录与代码推送、Hugging Face Hub 认证已验证；特定资源权限尚未确认。
+4. 旧工程相关 Skill 文件可读，但未验证在本会话中加载或实际执行；补全证据后再复核 T0 验收。
 
 本报告反映当前检查结果，不代表环境准备完成。
