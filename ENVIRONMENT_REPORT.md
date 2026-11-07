@@ -34,6 +34,7 @@
 - 使用已确认不计费的代理 `http://172.28.4.16:18999` 检查 `https://example.com`，获授权后返回 HTTP 200。相同代理访问 `https://registry-1.docker.io/v2/` 在 15 秒内超时。因此 Docker Hub 的可达性、认证有效性和推送权限均未确认，超时不等于认证失败。
 - 同一不计费代理对 `https://auth.docker.io/token` 和 `https://index.docker.io/v1/` 的小型只读请求均返回超时、HTTP `000`（连接超时限制 5 秒）。用户授权后，确认本机计费代理 `127.0.0.1:7589` 的 mihomo 进程在监听；经该代理请求 Docker Hub 的 `/v2/` 返回 HTTP 401，说明网络到达且需要认证，并不证明本机已登录 Docker Hub。
 - 通过不计费代理请求 Harbor `/v2/` 返回 HTTP 401；使用现有 Docker 凭证只读请求 Harbor `/api/v2.0/users/current` 返回 HTTP 200，确认该凭证的认证有效。未执行推送，推送权限尚未验证。
+- 旧工程 `darwin_auto/exam_baseline/README.md` 记录曾上传 `harbor-contest.4pd.io/liuyutong/darvin-exam-baseline:startup-qwen-20261103-v1`，摘要为 `sha256:4efc8d5aca6cc0dcbf8b4be8b8222827cde0b53bba667228839209f7903e2627`；`darwin_auto/resume_baseline/README.md` 记录曾上传 `harbor-contest.4pd.io/liuyutong/darvin-resume-baseline:startup-qwen-20261103-v1`，摘要为 `sha256:79aff98a1d18c7c1064a7f6bb1ccf67f7730ffd174d75307b7c68a7c31a4f2df`。这是历史推送记录，并非本次对当前写权限或比赛平台拉取权限的验证；标签也可能变化。
 
 ## 平台认证与模型调用
 
@@ -56,7 +57,7 @@ Darwin CLI 此前的 `auth inspect --json` 经不计费代理返回 `AUTH_REQUIR
 
 1. 确认并复用上述平台的实际工具入口和版本查询、认证检查方式；逐项核验访问比赛、飞书资料、候选来源和模型服务所需权限，不输出凭证。
 2. Qwen 的四个本地实例均已完成真实调用；后续按需复用上述端口，不需要认证。
-3. Harbor 的访问和现有凭证认证已验证；具体镜像路径及推送权限尚未验证。GitHub CLI 登录与代码推送、Hugging Face Hub 认证已验证；特定资源权限尚未确认。
+3. Harbor 的访问和现有凭证认证已验证，并找到旧工程的历史镜像路径及推送记录；当前推送权限和比赛平台拉取权限尚未验证。GitHub CLI 登录与代码推送、Hugging Face Hub 认证已验证；特定资源权限尚未确认。
 4. 旧工程相关 Skill 文件可读，但未验证在本会话中加载或实际执行；补全证据后再复核 T0 验收。
 
 本报告反映当前检查结果，不代表环境准备完成。
