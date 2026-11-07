@@ -1,6 +1,6 @@
 # T0 环境检查报告
 
-检查时间：2026-11-07（Asia/Shanghai）。状态：**阻塞，未通过验收**。
+检查时间：2026-11-07（Asia/Shanghai）。状态：**T0 环境盘点与报告已完成**；不表示后续比赛流程所需的全部资源权限均已验证。
 
 ## 运行位置与凭证边界
 
@@ -19,7 +19,7 @@
 | `/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/lark-cli-1.0.98/lark-cli --version` | `lark-cli version 1.0.98`。 |
 | `/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/venv/bin/darvin --version` | `0.5.2`。 |
 | `/mnt/disk3/liuyutong_home/.local/bin/gh --version` | `gh version 2.4.0`。 |
-| Hugging Face 独立环境的安装包版本 | `huggingface-hub 0.36.2`；CLI 位于 `/mnt/disk3/liuyutong_home/.local/share/darvin-auto/hf-cli-py311/bin/hf`。 |
+| Hugging Face 独立环境的 `hf --version` | 不支持此参数；使用该环境的 `python -c 'import importlib.metadata; print(importlib.metadata.version("huggingface-hub"))'` 查询安装包，输出 `0.36.2`。CLI 位于 `/mnt/disk3/liuyutong_home/.local/share/darvin-auto/hf-cli-py311/bin/hf`。 |
 | 检查 `/mnt/disk3/liuyutong_home/.codex/skills` | 未发现名称包含 Darwin、飞书或 Qwen 的已安装 Skill；仅按名称检查，不等于对其他位置或功能完成审计。 |
 
 在旧工程 `/mnt/disk3/liuyutong_home/workspace/darwin_auto/skills/` 找到 `darvin`、`darvin-image`、`darvin-auto-benchmark`、`lark-shared`、`lark-doc` 和 `lark-wiki` 等 Skill 文件；找到文件不代表已安装或已验证可用。本工程及旧工程的文件名搜索未发现 Qwen Skill。
@@ -53,11 +53,11 @@ Darwin CLI 此前的 `auth inspect --json` 经不计费代理返回 `AUTH_REQUIR
 - 对四个端口分别执行 `curl --noproxy '*' -sS --max-time 5 http://127.0.0.1:端口/v1/models`，均返回模型 ID `qwen3.8-27b-fp8`。
 - 对四个端口分别执行 `curl --noproxy '*' -sS --max-time 45 -H 'Content-Type: application/json' -d '{"model":"qwen3.8-27b-fp8","messages":[{"role":"user","content":"Reply OK only."}],"max_tokens":32,"temperature":0,"chat_template_kwargs":{"enable_thinking":false}}' http://127.0.0.1:端口/v1/chat/completions`，均成功返回内容 `OK`、结束原因 `stop`。这验证了四个实例的实际推理调用，但不代表其他任务的质量或并发性能已验证。
 
-## 待解决事项
+## 后续风险与处理方式
 
-1. 确认并复用上述平台的实际工具入口和版本查询、认证检查方式；逐项核验访问比赛、飞书资料、候选来源和模型服务所需权限，不输出凭证。
-2. Qwen 的四个本地实例均已完成真实调用；后续按需复用上述端口，不需要认证。
-3. Harbor 的访问和现有凭证认证已验证，并找到旧工程的历史镜像路径及推送记录；当前推送权限和比赛平台拉取权限尚未验证。GitHub CLI 登录与代码推送、Hugging Face Hub 认证已验证；特定资源权限尚未确认。
-4. 旧工程相关 Skill 文件可读，但未验证在本会话中加载或实际执行；补全证据后再复核 T0 验收。
+1. 比赛和飞书资料的具体权限尚未确认；确定目标资源及所需 scope 后，使用对应 CLI 检查，例如飞书的 `auth check <scope>`，并在需要时申请授权。
+2. GitHub 和 Hugging Face 的特定资源权限尚未确认；确定候选仓库、模型或数据集后分别验证访问权限。Hugging Face 的 Git 凭证助手未配置，如需 Git 推送再选择安全的认证方式。
+3. Harbor 当前推送权限和比赛平台拉取权限尚未验证；历史推送记录不能替代当前验证。实际推送前应确认目标及授权，并验证比赛平台能否拉取。
+4. 旧工程相关 Skill 文件可读，但尚未验证在本会话中加载或实际执行；后续需要时再验证其加载和对应工作流。
 
-本报告反映当前检查结果，不代表环境准备完成。
+本报告完成 T0 所要求的盘点和证据记录，不代表后续阶段已完成，也不保证未验证的权限可用。
