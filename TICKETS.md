@@ -10,6 +10,10 @@ T0 → T1 → T2 → T3 → T4 → T5 → T6 → T7。当前可启动 T0；后�
 
 ## T0：环境报告展示工具、认证与模型调用结果
 
+**Status:** Done
+
+**updated_at:** 2026-11-08
+
 **阻塞：** None
 
 **验收命令或可观测输出：** 必要 CLI 的 `--version` 输出、各平台实际支持的认证检查输出、一次 Qwen 实际调用的结果、`docker info` 的成功输出，以及汇总上述证据和权限情况的环境检查报告。
@@ -28,6 +32,14 @@ T0 → T1 → T2 → T3 → T4 → T5 → T6 → T7。当前可启动 T0；后�
 - [x] 报告包含一次实际 Qwen 调用的命令或调用方式及成功返回结果。
 - [x] 报告包含 `docker info` 成功输出和镜像仓库访问、认证检查结果。
 - [x] 报告列明运行目录、产物保存位置，以及宿主凭证和镜像仓库凭证各自的用途；不含明文凭证。
+
+## Notes
+
+- 2026-11-08 验收关闭：验收命令包括 `darvin auth inspect`、`lark-cli auth status --verify`、`gh api user --jq .login`、`hf auth whoami`、`docker info --format '{{.ServerVersion}} {{.OperatingSystem}}'`，以及对本机 12804–12807 端口的 Qwen `/v1/chat/completions` 请求。认证检查成功，Docker 返回 `29.5.3 Ubuntu 22.04.5 LTS`，四个 Qwen 实例均返回 `OK`；Harbor 认证检查返回 HTTP 200，当前推送权限仍未验证。完整命令与结果见 `ENVIRONMENT_REPORT.md`。
+
+### Change Log
+
+- 2026-11-08：TICKET-0 验收通过，状态更新为 Done。
 
 ## T1：比赛 URL 生成可追溯的 CompetitionSpec
 
