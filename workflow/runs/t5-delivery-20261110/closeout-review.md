@@ -1,6 +1,8 @@
 # T5 closeout review — 2026-11-10
 
-Target: `harbor-contest.4pd.io/liuyutong/darvin-t5:20261110`; local image ID `sha256:57004ba692901e804d8861ec18be2b7d045f114a8123175d09b0a885c3fa050e`. The image ID is not the registry manifest digest.
+**Historical checkpoint:** Subsequent Debian source verification, remote manifest inspection, and the user's decision to defer the independent clean pull are recorded in [closeout-minimal-20261110.md](closeout-minimal-20261110.md). The Qwen attempt recorded below remains not passed.
+
+Target: `harbor-contest.4pd.io/liuyutong/darvin-t5:20261110`; local image ID `sha256:57004ba692901e804d8861ec18be2b7d045f114a8123175d09b0a885c3fa050e`. The local image ID and registry manifest digest are distinct identifier types; see the updated evidence for their independently observed values.
 
 ## Image security review: incomplete
 

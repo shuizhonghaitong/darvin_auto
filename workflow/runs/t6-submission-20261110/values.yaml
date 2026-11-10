@@ -1,0 +1,3 @@
+inferenceImage:
+  repository: harbor-contest.4pd.io/liuyutong/darvin-t5
+  tag: "20261110"

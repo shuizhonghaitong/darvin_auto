@@ -1,0 +1,141 @@
+{
+  "command": "solution list",
+  "started_at": "2026-11-10T14:27:46.675508Z",
+  "schema_version": "1",
+  "environment": {
+    "profile": "prod",
+    "production": true
+  },
+  "data": {},
+  "error_code": null,
+  "finished_at": "2026-11-10T14:27:50.459514Z",
+  "duration_ms": 3784,
+  "status": "success",
+  "steps": [
+    {
+      "name": "list owned solutions",
+      "status": "success",
+      "detail": "Listed 8 solution(s), total 8."
+    }
+  ],
+  "sections": [],
+  "tables": [
+    {
+      "title": "My solutions",
+      "columns": [
+        "Model ID",
+        "Submission ID",
+        "Name",
+        "Subnet",
+        "Status",
+        "Evaluation",
+        "Score",
+        "Raw score",
+        "Task ID",
+        "Local receipt"
+      ],
+      "rows": [
+        [
+          "14397",
+          "364",
+          "liuyutong-image-auth-t5-20261110",
+          "图像真伪鉴定榜",
+          "PROCESSING",
+          "-",
+          "-",
+          "-",
+          "88c59e71a9f0f235352116c6409e0ee5",
+          "yes"
+        ],
+        [
+          "14398",
+          "365",
+          "liuyutong-image-auth-t5-20261110",
+          "图像真伪鉴定榜",
+          "READY_TO_DEPLOY",
+          "PENDING",
+          "-",
+          "-",
+          "-",
+          "no"
+        ],
+        [
+          "14053",
+          "357",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "READY_TO_DEPLOY",
+          "COMPLETED",
+          "42.08",
+          "4208",
+          "-",
+          "no"
+        ],
+        [
+          "14052",
+          "356",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "PROCESSING",
+          "-",
+          "42.08",
+          "4208",
+          "a39d1f7f4dc4b1db35fa1ec5ed8b12d8",
+          "no"
+        ],
+        [
+          "14049",
+          "353",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "PROCESSING",
+          "-",
+          "42.08",
+          "4208",
+          "6760842aefe02a80557fdfd5af299ecf",
+          "no"
+        ],
+        [
+          "14050",
+          "354",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "READY_TO_DEPLOY",
+          "COMPLETED",
+          "42.08",
+          "4208",
+          "-",
+          "no"
+        ],
+        [
+          "14035",
+          "351",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "READY_TO_DEPLOY",
+          "COMPLETED",
+          "42.08",
+          "4208",
+          "-",
+          "no"
+        ],
+        [
+          "14034",
+          "350",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "PROCESSING",
+          "-",
+          "42.08",
+          "4208",
+          "6379b50d14d298f584809ec1cb43b581",
+          "no"
+        ]
+      ]
+    }
+  ],
+  "artifacts": [],
+  "warnings": [],
+  "errors": [],
+  "raw_output": null
+}

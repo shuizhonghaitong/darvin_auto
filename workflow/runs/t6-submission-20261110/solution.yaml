@@ -1,0 +1,7 @@
+schema_version: 1
+name: liuyutong-image-auth-t5-20261110
+subnet_address: "0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb"
+submission_type: DockerImage
+values_file: ./values.yaml
+training_image: "harbor-contest.4pd.io/liuyutong/sut/image_authenticity_verification_leaderboard@sha256:36fccd37bfdddb1add3d30a0d5f541f57e9ce90483a92b4370344fbe0343f7ac"
+auto_create_task: true

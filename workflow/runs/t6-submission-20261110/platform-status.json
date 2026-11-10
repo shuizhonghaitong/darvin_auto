@@ -1,0 +1,108 @@
+{
+  "command": "solution status",
+  "started_at": "2026-11-10T14:27:36.870762Z",
+  "schema_version": "1",
+  "environment": {
+    "profile": "prod",
+    "production": true
+  },
+  "data": {},
+  "error_code": null,
+  "finished_at": "2026-11-10T14:27:45.812573Z",
+  "duration_ms": 8941,
+  "status": "success",
+  "steps": [
+    {
+      "name": "query backend task status",
+      "status": "success",
+      "detail": "Fetched task '88c59e71a9f0f235352116c6409e0ee5' and 1 job(s)."
+    },
+    {
+      "name": "map task status",
+      "status": "success",
+      "detail": "Mapped 'running' to 'running'."
+    },
+    {
+      "name": "render task summary",
+      "status": "success",
+      "detail": "Rendered task and job status."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Task",
+      "fields": [
+        {
+          "name": "task_id",
+          "value": "88c59e71a9f0f235352116c6409e0ee5"
+        },
+        {
+          "name": "task_name",
+          "value": "liuyutong-image-auth-t5-20261110"
+        },
+        {
+          "name": "subnet_id",
+          "value": "0x35fc3c317f81d4a35fd764128fdf8023c96fc2eb"
+        },
+        {
+          "name": "status",
+          "value": "running"
+        },
+        {
+          "name": "raw_status",
+          "value": "running"
+        },
+        {
+          "name": "can_cancel",
+          "value": "true"
+        },
+        {
+          "name": "model_app_id",
+          "value": "14397"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "title": "Jobs",
+      "columns": [
+        "Job ID",
+        "Stage",
+        "Status",
+        "Score (raw)",
+        "Logs",
+        "Error",
+        "Dataset Group"
+      ],
+      "rows": [
+        [
+          "015243b1b18dbee8c7d2121864124ec1",
+          "inference",
+          "RUNNING",
+          "尚无结果",
+          "available",
+          "-",
+          "dc77e87ab93f44ec82e9512492f3a383"
+        ]
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "profile",
+      "value": "prod",
+      "path": null
+    },
+    {
+      "name": "base_url",
+      "value": "https://darvin-api.originlabs.cc",
+      "path": null
+    }
+  ],
+  "warnings": [
+    "Active Jobs occupy the subnet running-submission quota."
+  ],
+  "errors": [],
+  "raw_output": null
+}

@@ -435,8 +435,8 @@ Codex 调用轨迹、Darwin 实际提交命令及返回内容、SubmissionReceip
 | P2 | 自主方案设计 | Solution Planning Skill | SolutionPlan | Done |
 | P3 | Baseline 实现 | 按计划实现 | Runnable Solution | Done（MVP） |
 | P4 | 服务化适配 | Service Adaptation Skill | ServiceArtifact、ServiceContract | 待审计 |
-| P5 | Docker 交付 | Docker Skill / Tools | ImageManifest | 待审计 |
-| P6 | 榜单提交 | Darwin Submission 能力 | SubmissionReceipt | 待审计 |
+| P5 | Docker 交付 | Docker Skill / Tools | ImageManifest | Done（已批准的 MVP 标准；见 `workflow/runs/t5-delivery-20261110/ImageManifest.md`、`workflow/runs/t5-delivery-20261110/closeout-minimal-20261110.md` 和 `workflow/runs/t5-delivery-20261110/closeout-credential-adjudication.md`；历史失败及安全核验局限保留，独立干净环境和平台拉取验证转入 P6） |
+| P6 | 榜单提交 | Darwin Submission 能力 | SubmissionReceipt | Done（提交 364、评测任务已创建；平台实际拉取/启动及独立干净环境拉取尚待验证；见 `workflow/runs/t6-submission-20261110/SubmissionReceipt.md`） |
 | P7 | 完整串联 | 总控 Skill 与集成能力 | End-to-End Report | 待审计 |
 
 每个阶段都应分别检查：
