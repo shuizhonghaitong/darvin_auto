@@ -1,0 +1,8 @@
+*
+!Dockerfile
+!main.py
+!serve_model.py
+!start.sh
+!requirements.txt
+!model_weights.npz
+!weights.sha256
