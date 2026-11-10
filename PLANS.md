@@ -183,6 +183,8 @@ CompetitionSpec 至少覆盖任务目标、数据要求、输入输出格式、�
 
 根据 SolutionPlan 实现最简单的可运行算法，优先复用本地资源；用真实数据或可信样例验证入口，保存环境、命令、输入输出与日志，交付供 P4 使用的 Runnable Solution。不要求外部项目复现或多轮调优。
 
+**状态：Done（MVP）。** 运行证据在 `workflow/runs/t3-baseline-20261110/`，独立复跑见 `independent-review.md` 和 `results/independent-predictions.json`。训练样例不证明泛化，原交付仍依赖外部绝对路径；服务、容器及提交未验证。
+
 以下为路线调整前的历史约定，保留以供追溯，不再作为新 P2/P3 的验收条件。
 
 #### 历史 P2 — 候选解法发现能力
@@ -431,7 +433,7 @@ Codex 调用轨迹、Darwin 实际提交命令及返回内容、SubmissionReceip
 | P0 | 工程审计与目标环境 | Codex+Qwen、CLI、认证、Skill 加载 | EnvironmentReport | 待审计 |
 | P1 | 比赛需求理解 | Darwin/飞书能力、需求理解 Skill | CompetitionSpec | 待审计 |
 | P2 | 自主方案设计 | Solution Planning Skill | SolutionPlan | Done |
-| P3 | Baseline 实现 | 按计划实现 | Runnable Solution | 待审计 |
+| P3 | Baseline 实现 | 按计划实现 | Runnable Solution | Done（MVP） |
 | P4 | 服务化适配 | Service Adaptation Skill | ServiceArtifact、ServiceContract | 待审计 |
 | P5 | Docker 交付 | Docker Skill / Tools | ImageManifest | 待审计 |
 | P6 | 榜单提交 | Darwin Submission 能力 | SubmissionReceipt | 待审计 |

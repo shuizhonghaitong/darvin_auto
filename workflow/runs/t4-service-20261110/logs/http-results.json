@@ -1,0 +1,130 @@
+{
+  "base": "http://127.0.0.1:19387",
+  "n_cases": 13,
+  "n_pass": 13,
+  "t3_expect_source": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t3-baseline-20261110/results/predictions.json",
+  "cases": [
+    {
+      "name": "GET /ready",
+      "http_status": 200,
+      "body": "True",
+      "ms": 2.6,
+      "expected": "200 且 body == 'True'",
+      "pass": true
+    },
+    {
+      "name": "image 1 (00a81fa0095f459f983c90bb0774b10d.jpg, jpg)",
+      "path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/1/人物/00a81fa0095f459f983c90bb0774b10d.jpg",
+      "http_status": 200,
+      "body": "{\n  \"success\": true,\n  \"result\": \"0_1\",\n  \"message\": \"鉴定完成\"\n}",
+      "ms": 40.1,
+      "t3_local_prediction": "0_1",
+      "service_result": "0_1",
+      "expected": "200 success=true result==T3 本地预测(0_1)",
+      "pass": true
+    },
+    {
+      "name": "image 2 (0025d7f16dca46749dd4e5eff21439b7.jpg, jpg)",
+      "path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/1/风景/0025d7f16dca46749dd4e5eff21439b7.jpg",
+      "http_status": 200,
+      "body": "{\n  \"success\": true,\n  \"result\": \"1\",\n  \"message\": \"鉴定完成\"\n}",
+      "ms": 41.2,
+      "t3_local_prediction": "1",
+      "service_result": "1",
+      "expected": "200 success=true result==T3 本地预测(1)",
+      "pass": true
+    },
+    {
+      "name": "image 3 (00e6b1e3a4af4c29bcb884002d0d0b34.png, png)",
+      "path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/0_1/人物/00e6b1e3a4af4c29bcb884002d0d0b34.png",
+      "http_status": 200,
+      "body": "{\n  \"success\": true,\n  \"result\": \"0_1\",\n  \"message\": \"鉴定完成\"\n}",
+      "ms": 38.4,
+      "t3_local_prediction": "0_1",
+      "service_result": "0_1",
+      "expected": "200 success=true result==T3 本地预测(0_1)",
+      "pass": true
+    },
+    {
+      "name": "image 4 (002edfff50e84f6fa9b0f634bedcacef.jpg, jpg)",
+      "path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/0_1/文字/002edfff50e84f6fa9b0f634bedcacef.jpg",
+      "http_status": 200,
+      "body": "{\n  \"success\": true,\n  \"result\": \"1\",\n  \"message\": \"鉴定完成\"\n}",
+      "ms": 62.0,
+      "t3_local_prediction": "1",
+      "service_result": "1",
+      "expected": "200 success=true result==T3 本地预测(1)",
+      "pass": true
+    },
+    {
+      "name": "image 5 (002b3da4bcf14e67b9067dc22d24e10e.jpg, jpg)",
+      "path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_0_2/训练集 0_2/0_2/人物/002b3da4bcf14e67b9067dc22d24e10e.jpg",
+      "http_status": 200,
+      "body": "{\n  \"success\": true,\n  \"result\": \"0_2\",\n  \"message\": \"鉴定完成\"\n}",
+      "ms": 63.8,
+      "t3_local_prediction": "0_2",
+      "service_result": "0_2",
+      "expected": "200 success=true result==T3 本地预测(0_2)",
+      "pass": true
+    },
+    {
+      "name": "image 6 (00b5cdd2cd694ac6bddd240ebf7b534b.jpg, jpg)",
+      "path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_0_2/训练集 0_2/0_2/风景/00b5cdd2cd694ac6bddd240ebf7b534b.jpg",
+      "http_status": 200,
+      "body": "{\n  \"success\": true,\n  \"result\": \"0_2\",\n  \"message\": \"鉴定完成\"\n}",
+      "ms": 71.2,
+      "t3_local_prediction": "0_2",
+      "service_result": "0_2",
+      "expected": "200 success=true result==T3 本地预测(0_2)",
+      "pass": true
+    },
+    {
+      "name": "缺字段: 无 image_base64",
+      "http_status": 400,
+      "body": "{\n  \"success\": false,\n  \"result\": null,\n  \"message\": \"缺少必要参数: image_base64\"\n}",
+      "ms": 1.9,
+      "expected": "HTTP 400 success=false 且 message 含「缺少必要参数: image_base64」",
+      "pass": true
+    },
+    {
+      "name": "缺字段: 空对象 {}",
+      "http_status": 400,
+      "body": "{\n  \"success\": false,\n  \"result\": null,\n  \"message\": \"缺少必要参数: image_base64\"\n}",
+      "ms": 1.3,
+      "expected": "HTTP 400 success=false 且 message 含「缺少必要参数: image_base64」",
+      "pass": true
+    },
+    {
+      "name": "损坏 Base64",
+      "http_status": 400,
+      "body": "{\n  \"success\": false,\n  \"result\": null,\n  \"message\": \"图片 Base64 编码无效\"\n}",
+      "ms": 0.9,
+      "expected": "HTTP 400 success=false 且 message 含「图片 Base64 编码无效」",
+      "pass": true
+    },
+    {
+      "name": "非图片输入(合法Base64纯文本)",
+      "http_status": 400,
+      "body": "{\n  \"success\": false,\n  \"result\": null,\n  \"message\": \"图片解码失败: 无法识别的图片内容\"\n}",
+      "ms": 0.9,
+      "expected": "HTTP 400 success=false 且 message 含「图片解码失败」",
+      "pass": true
+    },
+    {
+      "name": "非法 JSON",
+      "http_status": 400,
+      "body": "{\n  \"success\": false,\n  \"result\": null,\n  \"message\": \"请求体不是有效的 JSON\"\n}",
+      "ms": 0.7,
+      "expected": "HTTP 400 success=false 且 message 含「请求体不是有效的 JSON」",
+      "pass": true
+    },
+    {
+      "name": "404: GET /nope",
+      "http_status": 404,
+      "body": "{\n  \"success\": false,\n  \"result\": null,\n  \"message\": \"not found\"\n}",
+      "ms": 0.6,
+      "expected": "HTTP 404",
+      "pass": true
+    }
+  ]
+}

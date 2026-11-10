@@ -1,0 +1,14 @@
+PASS GET /ready                         http=200  True
+PASS image 1 (00a81fa0095f459f983c90bb0774b10d.jpg, jpg) http=200  {   "success": true,   "result": "0_1",   "message": "鉴定完成" }
+PASS image 2 (0025d7f16dca46749dd4e5eff21439b7.jpg, jpg) http=200  {   "success": true,   "result": "1",   "message": "鉴定完成" }
+PASS image 3 (00e6b1e3a4af4c29bcb884002d0d0b34.png, png) http=200  {   "success": true,   "result": "0_1",   "message": "鉴定完成" }
+PASS image 4 (002edfff50e84f6fa9b0f634bedcacef.jpg, jpg) http=200  {   "success": true,   "result": "1",   "message": "鉴定完成" }
+PASS image 5 (002b3da4bcf14e67b9067dc22d24e10e.jpg, jpg) http=200  {   "success": true,   "result": "0_2",   "message": "鉴定完成" }
+PASS image 6 (00b5cdd2cd694ac6bddd240ebf7b534b.jpg, jpg) http=200  {   "success": true,   "result": "0_2",   "message": "鉴定完成" }
+PASS 缺字段: 无 image_base64                http=400  {   "success": false,   "result": null,   "message": "缺少必要参数: image_base64" }
+PASS 缺字段: 空对象 {}                        http=400  {   "success": false,   "result": null,   "message": "缺少必要参数: image_base64" }
+PASS 损坏 Base64                          http=400  {   "success": false,   "result": null,   "message": "图片 Base64 编码无效" }
+PASS 非图片输入(合法Base64纯文本)                 http=400  {   "success": false,   "result": null,   "message": "图片解码失败: 无法识别的图片内容" }
+PASS 非法 JSON                            http=400  {   "success": false,   "result": null,   "message": "请求体不是有效的 JSON" }
+PASS 404: GET /nope                     http=404  {   "success": false,   "result": null,   "message": "not found" }
+total=13 pass=13 fail=0

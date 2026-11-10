@@ -105,6 +105,8 @@
 
 根据 SolutionPlan 自动实现最简单的算法，优先使用现有实现、依赖及本地资源，以真实数据或可信样例验证入口；保存命令、环境、输入输出和日志，交付可供 T4 服务化的 Runnable Solution。不要求完整复现外部方案或优化分数；数据或资源缺失时如实报告阻塞。
 
+**状态：Done（MVP，外部验收通过）。** 实际运行及产物见 `workflow/runs/t3-baseline-20261110/`，独立复跑与六个样例输出见其 `independent-review.md` 和 `results/independent-predictions.json`。训练样例不能证明泛化；原交付依赖旧工程模型和环境的绝对路径，服务、容器和提交未验证。保留这些风险及历史记录。
+
 以下旧 T2/T3 记录保留历史，路线已调整，其要求和验收结果不适用于新 T2/T3。
 
 ### 历史 T2 — CompetitionSpec 产生可追溯的候选方案

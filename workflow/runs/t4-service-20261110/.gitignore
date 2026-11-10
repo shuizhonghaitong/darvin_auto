@@ -1,0 +1,5 @@
+model_weights.npz
+*.npz
+logs/
+__pycache__/
+*.pyc

@@ -1,0 +1,79 @@
+[2026-11-10 12:12:29] [INFO] 校验权重 sha256 ...
+model_weights.npz: OK
+[2026-11-10 12:12:29] [INFO] 权重校验通过，启动 /mnt/disk3/liuyutong_home/miniconda3/envs/evo/bin/python main.py --host 127.0.0.1 --port 19387
+[10/Nov/2026 12:12:38] "GET /ready HTTP/1.1" 200 -
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=0_1 probs=[0.1256, 0.5511, 0.3233] cost_ms=55.9
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=1 probs=[0.8543, 0.049, 0.0967] cost_ms=37.2
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=png label=0_1 probs=[0.2469, 0.6746, 0.0785] cost_ms=36.5
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=1 probs=[0.5745, 0.358, 0.0675] cost_ms=52.9
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=0_2 probs=[0.2113, 0.0991, 0.6897] cost_ms=59.0
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=0_2 probs=[0.2168, 0.163, 0.6202] cost_ms=52.4
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+Traceback (most recent call last):
+  File "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/main.py", line 143, in do_POST
+    result, probs = MODEL.predict(image_bytes)
+  File "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/serve_model.py", line 89, in predict
+    x = self.preprocess(image_bytes)
+  File "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/serve_model.py", line 70, in preprocess
+    img = Image.open(io.BytesIO(image_bytes))
+  File "/mnt/disk3/liuyutong_home/miniconda3/envs/evo/lib/python3.10/site-packages/PIL/Image.py", line 3711, in open
+    raise UnidentifiedImageError(msg)
+PIL.UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x7f58b53aef70>
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+[10/Nov/2026 12:12:38] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+[10/Nov/2026 12:12:38] "GET /nope HTTP/1.1" 404 -
+[10/Nov/2026 12:15:13] "GET /ready HTTP/1.1" 200 -
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=0_1 probs=[0.1256, 0.5511, 0.3233] cost_ms=38.7
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=1 probs=[0.8543, 0.049, 0.0967] cost_ms=36.1
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=png label=0_1 probs=[0.2469, 0.6746, 0.0785] cost_ms=35.7
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=1 probs=[0.5745, 0.358, 0.0675] cost_ms=53.5
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=0_2 probs=[0.2113, 0.0991, 0.6897] cost_ms=53.4
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 200 -
+[inference] declared_format=jpg label=0_2 probs=[0.2168, 0.163, 0.6202] cost_ms=53.0
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+Traceback (most recent call last):
+  File "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/main.py", line 143, in do_POST
+    result, probs = MODEL.predict(image_bytes)
+  File "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/serve_model.py", line 89, in predict
+    x = self.preprocess(image_bytes)
+  File "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/serve_model.py", line 70, in preprocess
+    img = Image.open(io.BytesIO(image_bytes))
+  File "/mnt/disk3/liuyutong_home/miniconda3/envs/evo/lib/python3.10/site-packages/PIL/Image.py", line 3711, in open
+    raise UnidentifiedImageError(msg)
+PIL.UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x7f58b53aee80>
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+[10/Nov/2026 12:15:13] "POST /api/v1/image-authenticity HTTP/1.1" 400 -
+[10/Nov/2026 12:15:13] "GET /nope HTTP/1.1" 404 -
+============================================================
+T4 图像真伪鉴定服务启动
+============================================================
+[model] loaded /mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/model_weights.npz sha256=132efbd9a7397bbb497df48349114adce6da370d0440db4b897ba470ee2933bd
+接口列表:
+  POST /api/v1/image-authenticity  - 图像真伪鉴定接口
+  GET  /ready                      - 健康检查
+listening on 127.0.0.1:19387
+Traceback (most recent call last):
+  File "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/main.py", line 199, in <module>
+    main()
+  File "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t4-service-20261110/main.py", line 195, in main
+    httpd.serve_forever()
+  File "/mnt/disk3/liuyutong_home/miniconda3/envs/evo/lib/python3.10/socketserver.py", line 232, in serve_forever
+    ready = selector.select(poll_interval)
+  File "/mnt/disk3/liuyutong_home/miniconda3/envs/evo/lib/python3.10/selectors.py", line 416, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt
