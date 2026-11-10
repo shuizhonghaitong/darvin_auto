@@ -1,0 +1,40 @@
+
+
+TICKET-2 已按限定范围完成：读完 `solution-discovery` SKILL.md 与 `RUN_RECORD.md`，另读取三个直接相关文件（`handoff.json`、`train/train.py`、`README.md`），并用 `sha256sum` 核对权重。未下载、未训练、未搜索其他目录、未写文件。
+
+**最终候选定位**
+- `RUN_RECORD.md` 阶段 2 判定：最终候选为在研基线 `image_auth_baseline/`（ResNet-18，torchvision IMAGENET1K_V1 初始化，官方训练集 CPU 微调），f1_0=0.8197（177 张本地 val）；同日 OSS 候选 dima806 ViT（0.7254，同 1182 图）被排除，本轮未新搜索、未训练。
+- `reports/frontend_continuous_20261105/handoff.json`：code_path=`image_auth_baseline/main.py`，weights_path=`image_auth_baseline/model/resnet18_cls.pth`，sha256 `6a85e449…d02`。
+- 实测核对：`sha256sum` 得 `6a85e44953423f7e1a93d9e5011db2ab992784b58b9631bd1514117782001d02`，与记录一致；同目录 `resnet18_ela_cls.pth`（`99bc0cec…`）是未采用的 ELA 变体（README：val 0.8075 < 0.8197）。
+- 直接引用的训练说明：README「文件」节 → `train/build_dataset.py`、`train/train.py`（数据清单与训练脚本）；清单 `train/manifests/train.json`（212,767 B）/`val.json`（37,121 B）存在（ls 核实）。
+
+**可复现入口**
+- 训练：cwd `image_auth_baseline/`，`train/train.py` 默认值与最终产物一致——out=`model/resnet18_cls.pth`、12 epochs、batch 32、224×224、AdamW（backbone 1e-4 / head 1e-3，wd 1e-4）、label smoothing 0.05、cosine、仅 CPU、seed 20261103、无 ELA（与 checkpoint meta `ela=false` 吻合）；按 val f1_0 取 best，存 state_dict + {labels, ela, in_channels}。
+- 骨干初始化：默认 torchvision IMAGENET1K_V1（需联网下载）；`--pretrained-file` 可指定本地 pth/safetensors 替代。README 称其来自 `timm/resnet18.a1_in1k` safetensors「与 IMAGENET1K_V1 相同权重」——属文档声明，未核实。
+- 推理服务（handoff startup）：`OMP_NUM_THREADS=2 MOCK_SERVER_PORT=<port> runtime/venv-train/bin/python image_auth_baseline/main.py`。
+- 本轮未实际重训/重跑（票据禁止）；本环境重训的条件（清单、本地数据 `datasets/image_auth`）齐备，但属未验证的条件性结论。
+
+**三类映射**
+- 类别↔索引：`train.py` `LABELS=["1","0_1","0_2"]`、`L2I` → `1`→0、`0_1`→1、`0_2`→2；checkpoint meta 按同序保存 labels（handoff evidence 字段）。
+- 类别↔语义：`1`=原生无修实拍图、`0_1`=已修图（含人工与 AI 局部处理）、`0_2`=AI 全图生成（handoff `interface.labels`，README 一致）；排序指标 `f1_0=(f1_0_1+f1_0_2)/2`（README 与 `train.py` evaluate 实现一致）。
+- 数据↔类别：manifest 行格式 `{path, label}`（`train.py` 加载代码直接佐证）；README 声明由 `build_dataset.py` 从官方 zip 生成：400×`1` + 382×`0_1`（18 张不可读按灰帧兜底）+ 400×`0_2` = 1182 张有效，15% 分层 val → 1005 训 / 177 验。`build_dataset.py` 与 manifest 内容未读，此为文档声明。
+
+**权重来源**
+- 初始化：torchvision resnet18 IMAGENET1K_V1（RUN_RECORD、handoff、README 三处一致）。
+- 微调：2026-11-03，CPU（torch 2.14.1+cpu），官方榜单训练集（已本地于 `datasets/image_auth`，zip 139,334,730 B / 437,962,033 B，handoff license_status）。
+- 最终产物：`resnet18_cls.pth`，44,791,051 B，sha256 已实测匹配；val f1_0=0.8197（README 注明「经 HTTP 服务实测」，2026-11-03 时点）。
+
+**许可**
+- 服务代码：in-house（handoff 声明，未复制第三方代码）。
+- 初始化权重：Apache-2.0——仅 handoff 依据 torchvision 许可的声明；按技能规则未核对原始授权条款，不计为已核实。
+- 训练数据：飞书文档未声明任何许可 → **UNKNOWN**（RUN_RECORD 未完成项 4 与 handoff 一致）。
+- 最终派生权重许可取决于「初始化权重 + 训练数据」两者，数据侧 UNKNOWN → 整体许可不能声明干净；不得由框架许可推断权重许可。
+
+**比赛资源：已知 / 未知**
+- 已知（有证据）：容器规格 2c4g / 1/2 A100-40G（handoff startup）；`OMP_NUM_THREADS=2` 匹配 2c（README）；镜像 linux/amd64、vendored wheels、构建不依赖外网（README 声明）；CPU 单请求延迟 44.8–48.3ms（2026-11-05，venv-train，127.0.0.1:8768，handoff/http_test），README 另有 56/110ms @4 线程（2026-11-03）。
+- 未知 / 未验证：评测 120 条、单请求 60s 超时——来源为 2026-11-04 平台侧证据，本轮抓取文档无此字段，属未验证假设；榜单身份（leaderboard 196 / subnet 85 / contract 地址）未实时复核，沿用旧记录；提交机制（主文档「提交结果文件」vs 接口文档 SUT 逐图推理）未披露，移交后半段。历史实测均带时间与环境，不能直接证明当前比赛环境满足资源限制。
+
+**任务状态**
+- TICKET-2 范围（定位旧工程最终候选及其直接引用的训练说明、基于证据总结）：**完成**——候选、权重哈希（实测匹配）、训练入口、三类映射、权重来源均已落到 `handoff.json`/`README.md`/`train.py` 的直接证据。
+- 不得宣称「候选满足全部已知比赛约束」：数据许可 UNKNOWN、120 条/60s 与提交机制未验证、backbone 等价性未核实，均为明确未知项。
+- 因票据明确「不修改文件」，未生成技能默认的 `candidate_solutions.json`/`evidence.md`；本总结即为证据陈述。

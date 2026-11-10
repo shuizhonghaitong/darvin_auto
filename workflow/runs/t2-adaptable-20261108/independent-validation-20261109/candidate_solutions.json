@@ -1,0 +1,136 @@
+{
+  "schema_version": "1",
+  "ticket": "TICKET-2 (T2) independent target-environment validation, run independent-validation-20261109",
+  "generated_at": "2026-11-09T14:10:00+08:00",
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "从用户视角判断图片是否为原图、是否被处理过、或是否完全由 AI 生成（三分类：1 原生无修实拍图 / 0_1 已修图 / 0_2 AI 全图生成）",
+    "label_space": ["1", "0_1", "0_2"],
+    "ranking_metric": "f1_0 = (f1_0_1 + f1_0_2) / 2（1 类不进排名分，但需输出合法三分类结果）",
+    "service_contract": "Docker 镜像 linux/amd64，监听 0.0.0.0:80，GET /ready + POST /api/v1/image-authenticity（Base64 图片入参，success/message/result 出参）",
+    "evaluation_note": "评测请求随机打乱、不含真实标签；S1 口径为任意样本最终失败则整次评测无成绩（与 S2 的 5% 失败率口径冲突，未裁定）"
+  },
+  "known_constraints": [
+    {"constraint": "推理环境资源 '2c4g'（S2 原文；单位解读为 2 核/4GB 是用户指定的验证假设，spec 将其标记为 unknown 级解读）", "sources": ["S2", "user ticket"]},
+    {"constraint": "GPU 1/2 A100-40g（S2，服务可获得的显存额度，单位/独占性未核验）", "sources": ["S2"]},
+    {"constraint": "镜像 linux/amd64，0.0.0.0:80，/ready 探活", "sources": ["S1", "S4"]},
+    {"constraint": "在规定资源范围内完成模型加载和推理", "sources": ["S1", "S2"]},
+    {"constraint": "提交形式 S1/DockerImage 与 S2/提交结果文件 冲突，未裁定（C2）", "sources": ["S1", "S2"]}
+  ],
+  "unknowns_from_spec": [
+    "1 类（原生无修实拍图）训练数据：S3 仅列出 0_1、0_2 两个 zip，未见 1 类附件（本运行亦无法下载核验，见 blocking_conditions）",
+    "平台 dataset(1) 内容、测试集规模/分布、截止时间、提交次数限制",
+    "starting-kit 仓库（gitlab.4pd.io）可用性未核验",
+    "'训练集 1 0_1.zip' 文件名中 '1' 的含义"
+  ],
+  "environment_of_validation": {
+    "host": "128 CPU / 2TB RAM 宿主机；本次按用户要求以 taskset -c 0,1 + torch.set_num_threads(2) 模拟 2 核",
+    "python_env": "/mnt/disk3/liuyutong_home/miniconda3/envs/evo (python 3.10.21, torch 2.8.0+cu128 CPU-only 运行, transformers 4.57.0, safetensors 0.7.0)",
+    "gpu": "本沙箱不可见/不可用（torch.cuda.is_available()=False），全部测试为纯 CPU，符合 2c4g 假设场景",
+    "network": "本沙箱网络阻塞：DNS 解析被禁（curl 直连 hf-mirror.com/open.feishu.cn 失败）、免流代理 172.28.4.16:18999 连接被拒、本机 mihomo 127.0.0.1:7589 连接被拒；未切换代理、未产生付费流量"
+  },
+  "candidates": [
+    {
+      "id": "T2-C1",
+      "title": "DINOv2 ViT-B/14 编码器 + 三分类线性头（冻结或仅训头）",
+      "origin": "self_devised（本次基于 spec 独立构思，非历史候选）",
+      "task_coverage": "完整覆盖三分类鉴定任务的技术形态：图像 -> 特征 -> {1, 0_1, 0_2}；排名分依赖的 0_1/0_2 区分能力取决于训练数据覆盖（1 类数据缺口见 blocking）",
+      "model": {
+        "architecture": "ViT-B/14：hidden 768, 12 layers, 12 heads, MLP 3072, patch 14, 原生位置编码 518px(37x37+1=1370 tokens)",
+        "params": 86580480,
+        "weight_asset": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-adaptable-20261108/independent-isolated-20261109/dinov2-base-f9e44-model.safetensors",
+        "weight_asset_sha256": "d73036b56966966d07975d696bde331762f37297e2f095de8cea0040c3aa0841",
+        "claimed_provenance": "facebook/dinov2-base revision f9e44c814b77203eaa57a6bdbbd535f21ede1415（用户提供的资产声明；本运行未能联网与 HF 远端 sha256 比对，pin 未独立确认）",
+        "provenance_evidence_offline": "223 张量/86,580,480 参数与 DINOv2 ViT-B/14 完全一致；key 命名为官方 facebookresearch/dinov2 原始布局（embeddings.*、encoder.layer.N.attention.attention.{query,key,value}、layer_scale*.lambda1、layernorm）；权重非平凡（patch_proj mean|w|=0.005664, cls_token norm=0.3997）",
+        "load_result": "transformers 4.57 Dinov2Model + Dinov2Config(image_size=518) 下 load_state_dict(strict=False)：missing=0, unexpected=0，223/223 全部载入；注意 image_size=224 默认配置会因 position_embeddings 形状 [1,1370,768] vs [1,257,768] 加载失败（已复现该失败并记录）",
+        "adaptation": "在 last_hidden_state[:,0]（模型 layernorm 后的 CLS token，(B,768)）上接 nn.Linear(768,3)；标签索引映射 1->0, 0_1->1, 0_2->2（按 spec label_space 顺序）；pooler 未使用（官方 checkpoint 不含 pooler 权重）"
+      },
+      "repro_entry": {
+        "status": "implemented_and_tested（本次授权的最小验证范围：加载/适配/单步训练）",
+        "script": "work/validate_t2.py",
+        "runner": "work/run_validate.sh（/usr/bin/time -v -o validate_t2.time taskset -c 0,1 <evo python> validate_t2.py > validate_t2.log 2> validate_t2.err）",
+        "result_summary": "work/validation_summary.json（独立解析验证通过）"
+      },
+      "verified_in_target_env": [
+        "权重真实加载：223/223 张量，missing=0/unexpected=0（含 1:1 形状匹配证据）",
+        "三分类输出：logits (B,3)，softmax 和=1.0，argmax 可映射回 {1,0_1,0_2}",
+        "一次反向传播+单步 SGD：loss=2.835，head 梯度有限(norm 43.43)，encoder 亦收到梯度(0.526)；head 权重 max|Δ|=0.6407、bias max|Δ|=0.0644，参数确实更新",
+        "分辨率适配：224 与 518 输入均前向成功（位置编码自动插值）",
+        "资源（2 核 CPU 模拟）：整进程峰值 RSS 3,075,004 KB ≈ 2.93 GiB < 4GB 假设；权重载入(fast, page-cache)后模型初始化+加载 1.67s；224px 单图推理 10 次平均 224.2 ms",
+        "训练入口：同一入口支持冻结编码器只训头或全量微调（本测试编码器梯度可用）"
+      ],
+      "not_verified": [
+        "分类效果/精度（仅合成随机像素输入，只证明形状与梯度通路）",
+        "真实比赛数据上的表现（数据未下载，见 blocking）",
+        "远端权重 pin（HF sha256 比对）与许可条款（网络阻塞）",
+        "完整训练成本、GPU(1/2 A100) 路径、Docker 服务化（属 T3+ 范围）"
+      ],
+      "dependencies": ["python 3.10/3.11", "torch>=2.x CPU", "transformers 4.57.x", "safetensors", "无新增安装"],
+      "weight_acquisition": "本地资产已就位（346,345,912 字节，sha256 已记录）；如本地资产不可用，需从 HF facebook/dinov2-base@f9e44c8 重新下载（约 346MB，需先恢复网络）",
+      "code_license": "transformers(Apache-2.0)/torch(BSD-3) 均为已安装开源组件；本适配脚本为本运行原创（数行）",
+      "weight_license": "unknown —— 无法从本沙箱访问 HF model card 或 facebookresearch/dinov2 LICENSE 原文核验；不得由框架代码许可推断。facebook/dinov2-base 通常声明 Apache-2.0，此处仅作为待核实声明",
+      "data_requirement": "0_1/0_2 训练 zip（飞书附件，token 见 spec data.training_materials）+ 1 类数据（spec 中 unknown）",
+      "selection_reason": "唯一在目标资源假设下完成端到端技术验证的候选：2 核 CPU 可加载可推理可训头；86.6M 参数 fp32 权重 346MB，峰值内存 2.93GiB 满足 4GB 假设并留约 1GB 余量",
+      "blocking_for_selection": ["1 类训练数据存在性未验证（网络阻塞无法下载附件）", "权重许可未核验", "权重远端 pin 未确认"]
+    },
+    {
+      "id": "T2-C2",
+      "title": "DINOv2 ViT-B/14 全量微调（同入口，编码器+头一起训）",
+      "origin": "self_devised",
+      "task_coverage": "同 T2-C1，预期对 0_1/0_2 细粒度区分更强，但训练成本更高",
+      "repro_entry": {"status": "partially_tested（单步反向已证明编码器梯度通路；完整训练未授权未执行）"},
+      "resource_requirement": "未知：全量微调显存/内存/时长未测（fp32 86.6M 参数 + Adam 状态 CPU 侧将显著超过本次 2.93GiB 峰值）",
+      "exclusion_reason": "超出本次授权范围（单步训练测试），资源未测，不作为独立候选",
+      "weight_license": "unknown（同 T2-C1）"
+    },
+    {
+      "id": "T2-C3",
+      "title": "更小编码器（如 DINOv2 ViT-S/14 22.4M）降 CPU 推理延迟",
+      "origin": "self_devised",
+      "task_coverage": "技术形态同 T2-C1，CPU 延迟/内存更优，精度未知",
+      "repro_entry": {"status": "not_tested（权重不可得：本沙箱网络阻塞，无法下载/核验）"},
+      "weight_license": "unknown",
+      "exclusion_reason": "权重获取条件未满足且不可验证，保留为条件性替代",
+      "conditional_path": "网络恢复后下载 facebook/dinov2-small 同 revision 线权重，复用 work/validate_t2.py（脚本对权重形状自适应推导架构）复测"
+    },
+    {
+      "id": "T2-C4",
+      "title": "比赛 starting-kit（gitlab.4pd.io gaoziming/image_authenticity_verification_leaderboard）",
+      "origin": "external",
+      "url": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit",
+      "task_coverage": "unknown（仓库不可访问）",
+      "repro_entry": {"status": "not_tested（*.4pd.io 在 NO_PROXY 直连范围，但本沙箱 DNS 被禁，直连不可达）"},
+      "exclusion_reason": "网络阻塞，可用性/内容/许可均 unknown；不据此做判断",
+      "weight_license": "unknown"
+    }
+  ],
+  "selected_candidate_id": null,
+  "recommended_candidate_id": "T2-C1（条件性推荐：技术路径已验证，待 blocking 解除后可进入 T3 复现）",
+  "status": "blocked",
+  "blocking_conditions": [
+    {
+      "id": "B1",
+      "condition": "比赛训练数据三类覆盖未验证：S3 仅列出 0_1、0_2 两个附件（139,334,730 B / 437,962,033 B，token Ofj7bQtFMoe66fxcCGMc9pBSnug / Hab7b2O8lo6LCaxXjaNc1jV5nQh），1 类数据在来源文档中不存在；本运行无法下载/解压核验任何 zip 内部内容",
+      "attempts": ["全盘搜索本地无 zip 缓存（find 训练集/0_1/0_2/token 均无数据文件命中）", "lark-cli 挂载目录 darwin_auto/runtime 间歇消失，连续 3 次探测 absent", "沙箱网络：DNS 被禁、免流代理 18999 连接被拒、mihomo 7589 连接被拒"],
+      "next_step": "恢复网络（免流代理 172.28.4.16:18999 或经用户确认的路线）+ 确认 lark-cli 可用后，下载两个 zip 清点内部类别/文件数，并追查 1 类数据来源"
+    },
+    {
+      "id": "B2",
+      "condition": "权重许可 unknown：无法访问 HF model card（facebook/dinov2-base）或 facebookresearch/dinov2 LICENSE 原文核验权重使用条款（DINOv2 预训练数据含网络图片，使用限制需按原始条款确认）",
+      "next_step": "网络恢复后拉取 https://huggingface.co/api/models/facebook/dinov2-base（license 字段）与仓库 LICENSE，并与本地 sha256 d73036b56966966d07975d696bde331762f37297e2f095de8cea0040c3aa0841 比对 revision f9e44c814b77203eaa57a6bdbbd535f21ede1415 的远端 blob sha256"
+    },
+    {
+      "id": "B3",
+      "condition": "权重远端 pin 未独立确认：资产由用户提供并声明来源，本地结构证据强烈支持为 DINOv2 ViT-B/14 官方权重，但 sha256 与 HF 远端比对被网络阻塞",
+      "next_step": "同 B2 的 sha256 比对"
+    }
+  ],
+  "artifacts": {
+    "validation_script": "work/validate_t2.py",
+    "runner": "work/run_validate.sh",
+    "summary_json": "work/validation_summary.json",
+    "stdout_log": "work/validate_t2.log",
+    "stderr_log": "work/validate_t2.err",
+    "resource_log": "work/validate_t2.time"
+  }
+}

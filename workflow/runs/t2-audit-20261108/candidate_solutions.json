@@ -1,0 +1,775 @@
+{
+  "schema_version": "1",
+  "artifact_type": "candidate_solutions_audit",
+  "generated_at": "2026-11-08T09:23:01Z",
+  "generated_by": "TICKET-2 审计：darwin-workflow -> solution-discovery 严格重审。基于 runs/t2-real-retry-20261108 的已有检索证据（candidate_solutions.json + evidence.md + raw/）逐项复核；本审计未做任何新检索/下载/复现；原始记录未修改",
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "audited_record": {
+    "candidate_solutions": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/candidate_solutions.json",
+    "evidence": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/evidence.md",
+    "raw_evidence_dir": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw"
+  },
+  "audit_rules_applied": [
+    "只有当至少一个候选具备可核验的复现入口和资源获取条件，并有证据表明满足所有已知比赛约束时才选择；否则 status=blocked 并列出具体缺失条件（solution-discovery SKILL）",
+    "没有发现超出限制不等于证明符合限制；显存、任务覆盖、必要权重的获取或使用许可等关键条件未知时，不得将该条件标为满足",
+    "不能把未经验证的组件组合、改造或微调设想当作已证明覆盖比赛任务",
+    "如果任何已知约束缺少满足证据，或者复现所需资源获取条件未核实，该候选不能被选中",
+    "最终检查所选 ID、状态、候选未知项及阻塞条件之间不得互相矛盾",
+    "不得仅凭文件名、代码存在或过往描述判断某项能力已经可用（AGENTS.md 3.2；本审计据此复核 raw 证据与记录声明的一致性）"
+  ],
+  "task_summary": {
+    "objective": "三分类图像真伪鉴定：1=原生无修实拍图，0_1=已修图（人工PS/滤镜/拼接/AI局部重绘等），0_2=AI全图生成",
+    "input": "POST /api/v1/image-authenticity，JSON 含 image_base64（无 data: 前缀）与 image_format；评测请求无文件名/ID/标签，顺序随机",
+    "output": "同步 JSON 响应 {success, message, result∈{1,0_1,0_2}}；服务监听 0.0.0.0:80，GET /ready 探活",
+    "ranking_metric": "f1_0 = (f1_0_1 + f1_0_2)/2（只考核两个'假'类）",
+    "data_domain": "文档类（发票/转账记录等）、风景类、人物动物类",
+    "training_data_note": "比赛仅提供 0_1 与 0_2 训练 zip（飞书附件），无 1 类训练数据（spec unknowns）",
+    "failure_rule": "conflict C1 未裁定：S1 零容忍（任意样本重试后失败则无成绩）vs S2 失败率>5%"
+  },
+  "known_constraints": [
+    {
+      "id": "K1",
+      "constraint": "GPU 显存 ≤ 1/2 A100-40G（≈20GB），规定资源内完成模型加载与推理",
+      "source": "spec S2/S1"
+    },
+    {
+      "id": "K2",
+      "constraint": "CPU/内存 2c4g（spec 注明单位解读属 unknown 级）",
+      "source": "spec S2"
+    },
+    {
+      "id": "K3",
+      "constraint": "镜像 linux/amd64，服务监听 0.0.0.0:80，GET /ready + 业务接口",
+      "source": "spec S1/S4",
+      "note": "共同维度：所有候选均为研究代码库，服务化封装属复现阶段工作，不用于候选排除判定"
+    },
+    {
+      "id": "K4",
+      "constraint": "提交形式 Docker 镜像（S1/S4 一致；与 S2 '提交结果文件' 冲突 C2 未裁定）",
+      "source": "spec S1/S4"
+    },
+    {
+      "id": "K5",
+      "constraint": "模型可经 Ceph inferenceVolumeMounts 挂载或内置于镜像",
+      "source": "spec S1"
+    },
+    {
+      "id": "K6",
+      "constraint": "评测请求仅含 image_base64（无 data: 前缀）+ image_format，同步 JSON 返回 result∈{1,0_1,0_2}",
+      "source": "spec S4/S5"
+    },
+    {
+      "id": "K7",
+      "constraint": "失败判定口径冲突 C1 未裁定（S1 零容忍 vs S2 失败率>5%），实现须按严口径兜底",
+      "source": "spec conflicts C1"
+    },
+    {
+      "id": "K8",
+      "constraint": "任务覆盖：三分类 1/0_1/0_2；排行指标 f1_0 仅考核 0_1 与 0_2 两个'假'类",
+      "source": "spec task"
+    },
+    {
+      "id": "W1",
+      "constraint": "必要权重/资源获取条件已核实（公开发布且可达性验证）",
+      "source": "skill 选择规则"
+    },
+    {
+      "id": "L1",
+      "constraint": "代码许可已核实且不妨碍比赛交付（宽松许可或风险已知可控）",
+      "source": "skill 选择规则"
+    },
+    {
+      "id": "L2",
+      "constraint": "权重许可已核实",
+      "source": "skill 选择规则"
+    },
+    {
+      "id": "E1",
+      "constraint": "可核验的复现入口（文件/命令已在固定版本下实际获取核实）",
+      "source": "skill 选择规则"
+    }
+  ],
+  "unknowns_carried_from_spec": [
+    "截止时间 / 提交次数限制",
+    "1 类（原生无修实拍）训练数据是否存在于其他位置",
+    "平台 dataset(数量1) 内容",
+    "starting-kit 仓库（gitlab.4pd.io）可用性与内容 —— 原检索实测不可达（direct 与 proxy 均超时），本审计沿用该结论",
+    "测试集规模/分布",
+    "2c4g 的确切单位（K2 判定的基础不确定项）",
+    "评测失败判定口径（冲突 C1 未裁定）"
+  ],
+  "candidates": [
+    {
+      "id": "C5-forensichub",
+      "name": "ForensicHub (NeurIPS 2025, SCU + Ant Group)",
+      "source_url": "https://github.com/scu-zjz/ForensicHub",
+      "pinned_version": "92653068ccb22744a5e58df6e47cc813e0441202",
+      "paper": "https://arxiv.org/abs/2505.11003",
+      "task_coverage": {
+        "value": "域级覆盖已证实：README 实测覆盖 Deepfake/IMDL/AIGC/Doc 四域 + FIDL 跨域统一排行榜（Effort/Segformer-b3/Clip-ViT-L14 等）；0_2 由 AIGC 域模型覆盖，0_1 由 IMDL/Deepfake/Doc 域模型覆盖",
+        "full_task_verdict": "unproven",
+        "note": "完整三分类（1/0_1/0_2，含'均未触发→1'）依赖未经验证的集成/微调映射，按 skill 规则不得视为已证明覆盖比赛任务"
+      },
+      "reproduction_entry": {
+        "verified": true,
+        "path": "ForensicHub/training_scripts/inference.py",
+        "evidence": "已拉取（固定 SHA 92653068…，HTTP 200）：registry 构建模型 + torch.load(checkpoint) + 单图 forward → pred_label；示例 ConvNeXTSmall/256px",
+        "evidence_files": [
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/forensichub_inference.py",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_ForensicHub.txt",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_ForensicHub.md"
+        ]
+      },
+      "dependencies": "Python/PyTorch + 各模型按需包（README: 2025.7.11 起 lazy-load 依赖）；PyPI ForensicHub 0.0.1 实测存在但版本陈旧，建议 git 安装",
+      "weight_access": {
+        "documented": "README Resources 段（raw 实测）：IFF-Protocol 统一模型 checkpoint = Baidu NetDisk(pan.baidu.com/s/1gER6MYt30ghrKQT0Nu182g?pwd=brir) 或 OneDrive(1drv.ms/f/c/090693aab65eb63b/…e=vayq2E)；Doc benchmark = Baidu 或 GDrive(1RZZxwYIX5e-…)；AIGC benchmark = Baidu 或 GDrive(1M-qe5xOblVZgKiBQ9j1Q-…)；Doc 预训练 backbone = Baidu 或 GDrive(1NiHeRAcG2VkoN-…)",
+        "reachability_verified": false,
+        "note": "原始检索未实测任何一条直链可达性（未下载，ticket 约定）；Baidu NetDisk 常需客户端"
+      },
+      "code_license": {
+        "value": "unknown",
+        "verified": false,
+        "note": "原 t2 记录声称 'CC-BY-4.0（LICENSE 文件已拉取核实）'，但对应 raw 证据 raw/lic_ForensicHub.txt 内容为 '404: Not Found'（14 字节占位），README 仅有 shields.io license badge（未核对其解析结果）。本 ticket 禁止重新检索，故代码许可降为 unknown，列为跟进核实项 B2"
+      },
+      "weight_license": {
+        "value": "unknown",
+        "verified": false,
+        "note": "README 未显式声明权重许可（raw 实测无相关段落）"
+      },
+      "resource_requirements": {
+        "gpu_vram": "无官方数值：backbone 为 ConvNeXT-Small/ViT-L 级、256px 输入，权重 <1GB 量级（原记录估计）",
+        "cpu_ram": "无官方数值",
+        "official_figures": "unknown"
+      },
+      "constraint_matrix": {
+        "E1": {
+          "verdict": "satisfied",
+          "evidence": "inference.py 已在固定 SHA 下实际拉取核实（raw/forensichub_inference.py）"
+        },
+        "K1": {
+          "verdict": "unknown",
+          "evidence": "官方未给单模型显存数值；小 backbone 仅为估计，按 skill 规则不得将未知资源需求视作满足约束"
+        },
+        "K2": {
+          "verdict": "unknown",
+          "evidence": "官方未给内存数值；spec 对 2c4g 单位解读本身属 unknown 级"
+        },
+        "K8": {
+          "verdict": "partial_unproven",
+          "evidence": "0_1/0_2 域级模型覆盖已证实（README 四域 + FIDL 排行榜）；完整三分类映射（含→1）为未验证组合设想"
+        },
+        "W1": {
+          "verdict": "unsatisfied_unverified",
+          "evidence": "权重公开发布链接已证实存在于 README（raw 实测），但所有直链（Baidu/OneDrive/GDrive）可达性未验证"
+        },
+        "L1": {
+          "verdict": "unknown",
+          "evidence": "原记录 'CC-BY-4.0 已核实' 与 raw 证据（404 占位文件）矛盾，本审计降为 unknown"
+        },
+        "L2": {
+          "verdict": "unknown",
+          "evidence": "README 未显式声明权重许可"
+        }
+      },
+      "selection_or_exclusion_reason": "不可被选中（skill 严格规则）：W1 未核实（权重直链可达性）、K1/K2 unknown、L1 unknown（raw 证据 404）、L2 unknown、完整 K8 覆盖未证明。但它是七候选中唯一同时具备已核实复现入口(E1)与已证实公开发布权重的候选，且任务域覆盖最广 → 列为首选跟进核实候选（原 t2 记录将其直接 selected 属提前判定，见 audit_findings F1）",
+      "unknowns": [
+        "代码许可（raw LICENSE 拉取为 404，需核实固定 SHA 下实际许可文件）",
+        "权重许可未显式声明",
+        "权重直链从本环境/比赛构建环境的可达性未验证",
+        "各 checkpoint 与模型/输入分辨率的对应需按 docs 核对",
+        "单模型显存与时延无官方数值",
+        "三分类映射（AIGC→0_2、IMDL/Deepfake/Doc→0_1、均未触发→1）的可行性未验证"
+      ],
+      "evidence_sources": [
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_ForensicHub.md",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/forensichub_inference.py",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_ForensicHub.txt",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/pypi_forensichub.json",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/lic_ForensicHub.txt"
+      ]
+    },
+    {
+      "id": "C1-fakeshield",
+      "name": "FakeShield (ICLR 2025, PKU)",
+      "source_url": "https://github.com/zhipeixu/FakeShield",
+      "pinned_version": "b22717d7d524cbf617b8841d488d1edf56ceb7f3",
+      "paper": "https://arxiv.org/abs/2410.02761",
+      "task_coverage": {
+        "value": "任务面最接近：PS 修图/DeepFake/AIGC(SD inpaint) 三域统一 e-IFDL；输出为检测+定位+解释，类别映射仍需集成",
+        "full_task_verdict": "unproven（映射需集成，未验证）"
+      },
+      "reproduction_entry": {
+        "verified": true,
+        "path": "scripts/cli_demo.sh（WEIGHT_PATH/IMAGE_PATH 环境变量）；测试 scripts/test.sh；官方建议用其 Docker 镜像（zhipeixu/dte-fdm、zhipeixu/mflm）",
+        "evidence": "README（raw 实测）+ HF 权重库文件清单实测",
+        "evidence_files": [
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_FakeShield.md",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/hf_fakeshield_meta.json",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/hf_fakeshield_tree.json",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_FakeShield.txt"
+        ]
+      },
+      "dependencies": "python 3.9 + torch 1.13 + CUDA 11.6 + mmcv 1.4.7 源码编译 + flash-attn 编译",
+      "weight_access": {
+        "documented": "HF zhipeixu/fakeshield-v1-22b 公开发布；另需 SAM ViT-H（sam_vit_h_4b8939.pth ~2.5GB）",
+        "reachability_verified": true,
+        "note": "HF 文件清单已实测（存在性核实）：总 44.16GB = DTE-FDM 27.31GB(safetensors×6) + MFLM 16.75GB(bin×2) + DTG 90MB；但实际下载未执行"
+      },
+      "code_license": {
+        "value": "Apache-2.0",
+        "verified": true,
+        "note": "LICENSE 文件 raw 拉取核实（11357 字节，Apache-2.0 全文）"
+      },
+      "weight_license": {
+        "value": "apache-2.0",
+        "verified": true,
+        "note": "HF meta 页面 license tag 实测"
+      },
+      "resource_requirements": {
+        "gpu_vram": "不满足：DTE-FDM 为 22B 级 MLLM，文档化 FP16 路径需 >40GB 显存（原记录依据 HF 实测权重规模）",
+        "cpu_ram": "2c4g 下加载 44.16GB 权重链无文档化低内存路径（unknown 级风险，按权重实测规模推断不可行）",
+        "official_figures": "无官方显存文档；权重 44.16GB 为 HF API 实测"
+      },
+      "constraint_matrix": {
+        "E1": {
+          "verdict": "satisfied",
+          "evidence": "cli_demo.sh/test.sh 入口经 README + HF 清单核实"
+        },
+        "K1": {
+          "verdict": "unsatisfied",
+          "evidence": "实测证据：HF 权重 44.16GB（raw/hf_fakeshield_tree.json），文档化 FP16 加载路径 >40GB 显存，超出 K1 的 ≈20GB 上限；量化路径未文档化"
+        },
+        "K2": {
+          "verdict": "unknown",
+          "evidence": "无官方内存数值；44.16GB 权重实测使 4GB（若解读成立）下文档化路径推断不可行，但 2c4g 单位本身 unknown"
+        },
+        "K8": {
+          "verdict": "partial_unproven",
+          "evidence": "三域 e-IFDL 覆盖已证实；1/0_1/0_2 类别映射需未验证集成"
+        },
+        "W1": {
+          "verdict": "satisfied_existence",
+          "evidence": "HF 公开且文件清单已实测；实际下载未执行（ticket 约定）"
+        },
+        "L1": {
+          "verdict": "satisfied",
+          "evidence": "Apache-2.0 文件核实"
+        },
+        "L2": {
+          "verdict": "satisfied",
+          "evidence": "HF license tag 实测 apache-2.0"
+        }
+      },
+      "selection_or_exclusion_reason": "排除：K1 有实测证据表明违反（20GB 上限 vs 44.16GB 权重/文档化路径 >40GB）。'资源不满足即不满足，不以未知资源需求视作满足约束'（skill 规则）",
+      "unknowns": [
+        "量化后 20GB 内可行性未评估（复现阶段）"
+      ],
+      "evidence_sources": [
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_FakeShield.md",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/lic_FakeShield.txt",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/hf_fakeshield_meta.json",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/hf_fakeshield_tree.json",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_FakeShield.txt"
+      ]
+    },
+    {
+      "id": "C2-trufor",
+      "name": "TruFor (CVPR 2023, GRIP-UNINA)",
+      "source_url": "https://github.com/grip-unina/TruFor",
+      "pinned_version": "ae54475df6f41a491d7615100feb19263dec13f7",
+      "paper": "https://doi.org/10.48550/arXiv.2212.10957",
+      "task_coverage": {
+        "value": "1 vs 非1 二分类：覆盖 cheapfake（拼接/修补等 0_1 类）与 deepfake（GAN/扩散含 CocoGlide SD 训练的 0_2 类）；输出整图 integrity score∈[0,1] + 定位/可靠性图",
+        "full_task_verdict": "proven_partial（不区分 0_1 与 0_2，而 f1_0 恰考核这两类 → 需叠加第二个分类器，未验证组合）"
+      },
+      "reproduction_entry": {
+        "verified": true,
+        "path": "test_docker/（Dockerfile + docker_build.sh + docker_run.sh，入口 trufor_test.py；支持 -gpu -1 纯 CPU 模式）",
+        "evidence": "Dockerfile 与脚本已 raw 拉取：pytorch/pytorch:1.11.0-cuda11.3 基础镜像，构建期 wget grip.unina.it 权重 zip（MD5 7bee48f3476c75616c3c5721ab256ff8），输出 .npz(map/conf/score)",
+        "evidence_files": [
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/trufor_Dockerfile",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/trufor_docker_build.sh",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/trufor_docker_run.sh",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/trufor_test_docker.md",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_TruFor.txt"
+        ]
+      },
+      "dependencies": "PyTorch 1.11 + timm + yacs + numpy 1.21（Dockerfile 已固化）",
+      "weight_access": {
+        "documented": "https://www.grip.unina.it/download/prog/TruFor/TruFor_weights.zip（raw Dockerfile 实测，MD5 已给）",
+        "reachability_verified": false,
+        "note": "直链可达性未实测"
+      },
+      "code_license": {
+        "value": "专有：仅 informational and nonprofit purposes",
+        "verified": true,
+        "note": "README License 段原文 raw 实测；无独立 LICENSE 文件"
+      },
+      "weight_license": {
+        "value": "同代码（非营利研究用途）",
+        "verified": true,
+        "note": "README License 段原文"
+      },
+      "resource_requirements": {
+        "gpu_vram": "无官方数值：HRNet + Noiseprint++ 双分支，参数量中等（原记录估计数 GB 内）",
+        "cpu_ram": "无官方数值",
+        "official_figures": "unknown"
+      },
+      "constraint_matrix": {
+        "E1": {
+          "verdict": "satisfied",
+          "evidence": "test_docker 全套脚本 raw 核实，七候选中最现成的 Docker 推理链路"
+        },
+        "K1": {
+          "verdict": "unknown",
+          "evidence": "无官方显存数值，仅估计"
+        },
+        "K2": {
+          "verdict": "unknown",
+          "evidence": "无官方数值"
+        },
+        "K8": {
+          "verdict": "proven_partial",
+          "evidence": "二分类 1 vs 非1；0_1/0_2 区分不存在（f1_0 考核的两类无法直接产出）"
+        },
+        "W1": {
+          "verdict": "unsatisfied_unverified",
+          "evidence": "grip.unina.it 直链存在性经 Dockerfile 证实，可达性未测"
+        },
+        "L1": {
+          "verdict": "unsatisfied_compliance_risk",
+          "evidence": "非营利专有许可（已核实）；比赛交付是否允许未明（spec 无商用性质说明）→ 不能满足'许可不妨碍交付'的举证"
+        },
+        "L2": {
+          "verdict": "unsatisfied_compliance_risk",
+          "evidence": "同 L1"
+        }
+      },
+      "selection_or_exclusion_reason": "排除：L1/L2 非营利许可合规风险（无法证实比赛交付允许）+ K8 不能区分 0_1/0_2（需未验证组合）+ W1 未核实。保留为备选：若许可可谈，其 Docker 链路最现成",
+      "unknowns": [
+        "权重 zip 可达性未测",
+        "单图推理时延未测（avg_response_time_ms 为监测指标）",
+        "比赛是否属于其许可允许的用途"
+      ],
+      "evidence_sources": [
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_TruFor.md",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/trufor_Dockerfile",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/trufor_docker_build.sh",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/trufor_docker_run.sh",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/trufor_test_docker.md",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_TruFor.txt"
+      ]
+    },
+    {
+      "id": "C3-catnet",
+      "name": "CAT-Net v2 (WACV 2021 / IJCV 2022)",
+      "source_url": "https://github.com/mjkwon2021/CAT-Net",
+      "pinned_version": "5eb85900b0e72423c95a8d41bc835b86c8671f8a",
+      "paper": "https://link.springer.com/article/10.1007/s11263-022-01617-5",
+      "task_coverage": {
+        "value": "仅 0_1 家族：JPEG 压缩痕迹追溯，v2 覆盖通用图像操纵（拼接/复制移动/修补等）；训练协议（CASIA v2、IMD2020、tampCOCO、compRAISE、FantasticReality）不含扩散生成全图",
+        "full_task_verdict": "proven_partial（0_2 无保证）"
+      },
+      "reproduction_entry": {
+        "verified": true,
+        "path": "tools/infer.py（需手改 65-66/75-76 行选择 v1/v2 权重；输入 input/ 目录，输出 output_pred/ 热图）",
+        "evidence": "infer.py 与 requirements.txt 已 raw 拉取",
+        "evidence_files": [
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/catnet_infer.py",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/catnet_requirements.txt",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_CAT-Net.txt"
+        ]
+      },
+      "dependencies": "python 3.6 + torch 1.1.0 + cudatoolkit 10.0 + torch_dct + 自编译 jpegio —— 环境古老，现代化改造工作量大",
+      "weight_access": {
+        "documented": "README raw 实测：Google Drive 文件夹 1hBEfnFtGG6q_srBHVEmbF3fTq0IhP8jq + Baidu pan.baidu.com/s/1hecZC0IZXdgh5WRbRoAytQ（码 ycft）；含 hrnetv2_w48 预训练与 CAT_full_v2.pth.tar 等",
+        "reachability_verified": false,
+        "note": "从本环境可达性 unknown"
+      },
+      "code_license": {
+        "value": "unknown（README 声明 Apache-2.0）",
+        "verified": false,
+        "note": "仓库根目录无 LICENSE 文件：LICENSE/LICENSE.md/license.txt/LICENSE.txt 均 404（raw 占位文件实测），GitHub tree 页面 504；许可仅凭 README 2026-08-05 声明，证据不完整"
+      },
+      "weight_license": {
+        "value": "unknown（README 声明 CC-BY 4.0）",
+        "verified": false,
+        "note": "同上，无独立声明文件"
+      },
+      "resource_requirements": {
+        "gpu_vram": "无官方数值：HRNet-W48 双流（原记录估计数 GB 内）",
+        "cpu_ram": "无官方数值",
+        "official_figures": "unknown"
+      },
+      "constraint_matrix": {
+        "E1": {
+          "verdict": "satisfied",
+          "evidence": "infer.py/requirements.txt raw 核实（需手工改两行）"
+        },
+        "K1": {
+          "verdict": "unknown",
+          "evidence": "无官方显存数值"
+        },
+        "K2": {
+          "verdict": "unknown",
+          "evidence": "无官方数值"
+        },
+        "K8": {
+          "verdict": "proven_partial",
+          "evidence": "仅 0_1 家族；0_2 无保证（训练集无扩散全图，raw README 实测）"
+        },
+        "W1": {
+          "verdict": "unsatisfied_unverified",
+          "evidence": "GDrive/Baidu 链接 raw 证实存在，可达性未测"
+        },
+        "L1": {
+          "verdict": "unknown",
+          "evidence": "无 LICENSE 文件（404 实测），仅 README 声明"
+        },
+        "L2": {
+          "verdict": "unknown",
+          "evidence": "同上"
+        }
+      },
+      "selection_or_exclusion_reason": "排除：K8 单域覆盖（0_2 无保证）+ L1/L2 许可文件缺失 + W1 未核实 + 环境古老。保留为 0_1 类备选检测器",
+      "unknowns": [
+        "许可以 README 声明为准（文件缺失）",
+        "权重 Drive 直链可达性未测"
+      ],
+      "evidence_sources": [
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_CAT-Net.md",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/catnet_infer.py",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/catnet_requirements.txt",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_CAT-Net.txt",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/catnet_root.html",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/catnet_tree.html",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/lic_CAT-Net.md"
+      ]
+    },
+    {
+      "id": "C4-imdlbenco",
+      "name": "IMDL-BenCo (NeurIPS 2024 Spotlight, SCU)",
+      "source_url": "https://github.com/scu-zjz/IMDLBenCo",
+      "pinned_version": "1026ba9b4451c22675d40c4e3f7c5ec9f37bdf63",
+      "paper": "https://arxiv.org/abs/2406.10580",
+      "task_coverage": {
+        "value": "IMDL 单域（0_1 家族）基准 codebase + 模型动物园（Traceloop/IML-ViT 等），统一训练评测接口",
+        "full_task_verdict": "proven_partial（不含 AIGC 全图生成域；同组后继 ForensicHub 才补齐）"
+      },
+      "reproduction_entry": {
+        "verified": true,
+        "path": "pip 包 imdlbenco（PyPI 实测最新 0.1.45；官方推荐 >=0.1.29）+ docs quickstart",
+        "evidence": "README（raw）+ pypi.org/pypi/IMDLBenCo/json 实测",
+        "evidence_files": [
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_IMDLBenCo.md",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/pypi_imdlbenco.json",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_IMDLBenCo.txt"
+        ]
+      },
+      "dependencies": "PyTorch 系，具体版本以 docs 为准",
+      "weight_access": {
+        "documented": "模型 zoo checkpoint 发布于 Baidu NetDisk（README 2025.3.11 条目 + docs 链接，raw 实测）",
+        "reachability_verified": false,
+        "note": "仅 Baidu 分发；直链可达性 unknown"
+      },
+      "code_license": {
+        "value": "CC-BY-4.0",
+        "verified": true,
+        "note": "LICENSE 文件 raw 拉取核实（37312 字节 CC-BY-4.0 全文）"
+      },
+      "weight_license": {
+        "value": "unknown",
+        "verified": false,
+        "note": "未显式声明"
+      },
+      "resource_requirements": {
+        "gpu_vram": "IML 系小模型（ViT/CNN 级），显存占用低（estimated，官方无数值）",
+        "cpu_ram": "无官方数值",
+        "official_figures": "unknown"
+      },
+      "constraint_matrix": {
+        "E1": {
+          "verdict": "satisfied",
+          "evidence": "PyPI 包 + docs quickstart 实测"
+        },
+        "K1": {
+          "verdict": "unknown",
+          "evidence": "官方无数值，仅估计"
+        },
+        "K2": {
+          "verdict": "unknown",
+          "evidence": "无官方数值"
+        },
+        "K8": {
+          "verdict": "proven_partial",
+          "evidence": "IMDL 单域（0_1 家族）；无 0_2 域"
+        },
+        "W1": {
+          "verdict": "unsatisfied_unverified",
+          "evidence": "Baidu checkpoint 存在性经 README 证实，可达性未测且仅 Baidu 单渠道"
+        },
+        "L1": {
+          "verdict": "satisfied",
+          "evidence": "CC-BY-4.0 文件核实"
+        },
+        "L2": {
+          "verdict": "unknown",
+          "evidence": "权重许可未声明"
+        }
+      },
+      "selection_or_exclusion_reason": "排除：K8 单域覆盖 + W1 未核实（仅 Baidu 渠道）+ L2 unknown。被同组 ForensicHub（C5）超集覆盖，保留为 0_1 域备选与 C5 交叉验证组件",
+      "unknowns": [
+        "checkpoint Baidu 直链可达性未测",
+        "权重许可未声明"
+      ],
+      "evidence_sources": [
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_IMDLBenCo.md",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/lic_IMDLBenCo.txt",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/pypi_imdlbenco.json",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_IMDLBenCo.txt"
+      ]
+    },
+    {
+      "id": "C6-opensdi-maskclip",
+      "name": "OpenSDI MaskCLIP (CVPR 2025, Nebula/字节)",
+      "source_url": "https://github.com/iamwangyabin/OpenSDI",
+      "pinned_version": "02c93d4891303637cb5d6852d3de63a099d69843",
+      "paper": "https://arxiv.org/abs/2503.19653",
+      "task_coverage": {
+        "value": "0_2 + 部分扩散类 0_1：开放世界扩散生成图检测（SD1.5/SD2.1/SDXL/SD3/Flux.1），benchmark 覆盖'全图合成→局部编辑/物体插入/背景更换'全谱系",
+        "full_task_verdict": "proven_partial（不覆盖 PS/滤镜类传统修图 —— 0_1 主体）"
+      },
+      "reproduction_entry": {
+        "verified": true,
+        "path": "test.sh + --checkpoint_path（需 MAE-ViT-B 预训练权重 dl.fbaipublicfiles.com 官方直链 + MaskCLIP checkpoint HF nebula/MaskCLIP-weights）",
+        "evidence": "README（raw 实测含 wget 命令与 HF 链接）",
+        "evidence_files": [
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_OpenSDI.md",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_OpenSDI.txt"
+        ]
+      },
+      "dependencies": "PyTorch + MAE 预训练权重（ViT-B 级，小）",
+      "weight_access": {
+        "documented": "HF nebula/MaskCLIP-weights（raw README 实测）+ MAE 官方直链（dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_base.pth）；训练数据集 CC BY-SA 4.0（HF）",
+        "reachability_verified": false,
+        "note": "HF 路由可达性已验证（whoami-v2 401=路由正常），但具体仓库/文件存在性与下载未核实"
+      },
+      "code_license": {
+        "value": "unknown",
+        "verified": false,
+        "note": "未拉取 LICENSE 文件核实（原记录已标 unknown）"
+      },
+      "weight_license": {
+        "value": "unknown",
+        "verified": false,
+        "note": "HF 页面未核查"
+      },
+      "resource_requirements": {
+        "gpu_vram": "ViT-B 级模型，显存占用小（estimated，官方无数值）",
+        "cpu_ram": "无官方数值",
+        "official_figures": "unknown"
+      },
+      "constraint_matrix": {
+        "E1": {
+          "verdict": "satisfied",
+          "evidence": "test.sh 入口与权重获取命令 raw 核实"
+        },
+        "K1": {
+          "verdict": "unknown",
+          "evidence": "官方无数值"
+        },
+        "K2": {
+          "verdict": "unknown",
+          "evidence": "无官方数值"
+        },
+        "K8": {
+          "verdict": "proven_partial",
+          "evidence": "0_2 谱系 + 扩散类 0_1 局部编辑；传统 PS/滤镜 0_1 主体不覆盖"
+        },
+        "W1": {
+          "verdict": "unsatisfied_unverified",
+          "evidence": "HF 仓库与 MAE 直链存在性未核实（仅路由级可达）"
+        },
+        "L1": {
+          "verdict": "unknown",
+          "evidence": "未核实"
+        },
+        "L2": {
+          "verdict": "unknown",
+          "evidence": "未核实"
+        }
+      },
+      "selection_or_exclusion_reason": "排除为主候选：K8 不覆盖 0_1 主体 + L1/L2 unknown + W1 未核实。保留为 0_2 交叉验证组件（C5 的 AIGC 模型不达预期时的备选 0_2 检测器）",
+      "unknowns": [
+        "代码/权重许可未核实",
+        "对非扩散生成（GAN 老模型、本地重绘工具产物）的泛化未验证"
+      ],
+      "evidence_sources": [
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_OpenSDI.md",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_OpenSDI.txt"
+      ]
+    },
+    {
+      "id": "C7-aicheck",
+      "name": "AICheck (MatrixA, Rust CLI)",
+      "source_url": "https://github.com/MatrixA/aicheck",
+      "pinned_version": "03cfb0b2c259261bd4720243f08d4dce9a3a5be9",
+      "paper": null,
+      "task_coverage": {
+        "value": "仅 0_2 边缘信号：C2PA/XMP/EXIF/PNG 文本块元数据 + 隐形/可见水印（DWT-DCT/FFT 频域），62 种 AI 工具",
+        "full_task_verdict": "proven_partial（narrow；对无元数据 AI 生成图与传统修图 0_1 无效）"
+      },
+      "reproduction_entry": {
+        "verified": true,
+        "path": "cargo install aicheck; aic check <file>（Rust 1.86+，完全离线）",
+        "evidence": "README（raw 实测）",
+        "evidence_files": [
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_aicheck.md",
+          "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_aicheck.txt"
+        ]
+      },
+      "dependencies": "Rust 工具链（构建镜像内编译）",
+      "weight_access": {
+        "documented": "无模型权重（规则 + 信号分析）",
+        "reachability_verified": true,
+        "note": "not_applicable —— 无权重需获取"
+      },
+      "code_license": {
+        "value": "AGPL-3.0",
+        "verified": true,
+        "note": "LICENSE 文件 raw 拉取核实（AGPL-3 头部声明，Copyright 2025 MatrixA）"
+      },
+      "weight_license": {
+        "value": "not_applicable",
+        "verified": true,
+        "note": "无权重"
+      },
+      "resource_requirements": {
+        "gpu_vram": "无需 GPU（CPU 信号分析，README 完全离线）",
+        "cpu_ram": "内存占用小（原记录估计，无官方数值）",
+        "official_figures": "unknown（CPU 内存）"
+      },
+      "constraint_matrix": {
+        "E1": {
+          "verdict": "satisfied",
+          "evidence": "cargo install 入口 raw 核实"
+        },
+        "K1": {
+          "verdict": "satisfied",
+          "evidence": "无 GPU 权重/显存需求（CPU-only 工具）"
+        },
+        "K2": {
+          "verdict": "unknown",
+          "evidence": "CPU 内存无官方数值"
+        },
+        "K8": {
+          "verdict": "proven_partial_narrow",
+          "evidence": "仅 0_2 边缘信号；0_1 不覆盖；且依赖元数据留存（评测图 base64 传输后留存率 unknown）"
+        },
+        "W1": {
+          "verdict": "not_applicable",
+          "evidence": "无权重"
+        },
+        "L1": {
+          "verdict": "unsatisfied_compliance_risk",
+          "evidence": "AGPL-3.0（已核实）为网络服务传染型许可；比赛交付是否触发合规义务/是否允许未明"
+        },
+        "L2": {
+          "verdict": "not_applicable",
+          "evidence": "无权重"
+        }
+      },
+      "selection_or_exclusion_reason": "排除为主候选：K8 覆盖窄（仅 0_2 边缘信号且依赖元数据留存）+ L1 AGPL 合规风险。保留为可选低成本 0_2 先验信号组件",
+      "unknowns": [
+        "评测图元数据留存率未知（取决于平台导出方式）"
+      ],
+      "evidence_sources": [
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/readme_aicheck.md",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/lic_aicheck.txt",
+        "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/sha_aicheck.txt"
+      ]
+    }
+  ],
+  "selection_check": {
+    "rule": "E1(复现入口已核实) 且 W1(资源获取条件已核实) 且 全部已知约束有满足证据 → 才可选",
+    "C5-forensichub": "E1✓ 但 W1✗(直链未测) + K1/K2 unknown + L1 unknown(raw 404) + L2 unknown + K8 完整覆盖 unproven → 不可选中",
+    "C1-fakeshield": "E1✓ W1✓(存在性) L1✓ L2✓ 但 K1✗(实测违反) → 不可选中",
+    "C2-trufor": "E1✓ 但 L1/L2✗(非营利合规风险) + K8 0_1/0_2 不区分 + W1✗ + K1 unknown → 不可选中",
+    "C3-catnet": "E1✓ 但 K8 单域 + L1/L2 unknown(无 LICENSE 文件) + W1✗ → 不可选中",
+    "C4-imdlbenco": "E1✓ L1✓ 但 K8 单域 + W1✗(仅 Baidu) + L2 unknown → 不可选中",
+    "C6-opensdi-maskclip": "E1✓ 但 K8 部分(无 0_1 主体) + L1/L2 unknown + W1✗ → 不可选中",
+    "C7-aicheck": "E1✓ K1✓(无需 GPU) 但 K8 覆盖窄(元数据依赖) + L1 AGPL 风险 → 不可选中"
+  },
+  "selected_candidate_id": null,
+  "status": "blocked",
+  "blocking_conditions": [
+    {
+      "id": "B1",
+      "condition": "无任何候选的'必要权重获取条件已核实'：C5 的 Baidu/OneDrive/GDrive 直链、C2 的 grip.unina.it zip、C3 的 GDrive/Baidu、C4 的 Baidu（单渠道）、C6 的 HF nebula/MaskCLIP-weights 与 MAE 直链，全部仅证实链接存在、未验证可达性/下载",
+      "priority": 1,
+      "follow_up": "在获得检索授权后的下一 ticket 中，从比赛构建环境（或本环境经既定代理）逐条实测 HEAD/分块下载可达性，优先 C5 的 OneDrive/GDrive 直链"
+    },
+    {
+      "id": "B2",
+      "condition": "C5（首选候选）代码许可 unverified：原记录声称 'CC-BY-4.0 已拉取核实'，但 raw/lic_ForensicHub.txt 为 404 占位；README 仅有 license badge",
+      "priority": 1,
+      "follow_up": "在固定 SHA 92653068… 下核实实际许可文件（LICENSE/LICENSE.md/LICENCE 等任意命名）及其条款"
+    },
+    {
+      "id": "B3",
+      "condition": "K1 显存 ≤20GB：C2/C3/C4/C5/C6 均无官方或实测数值（仅估计），按 skill 规则 unknown 不得标为满足",
+      "priority": 2,
+      "follow_up": "复现阶段以单模型最小 checkpoint 实测显存与单图时延（avg_response_time_ms 为监测指标）"
+    },
+    {
+      "id": "B4",
+      "condition": "K8 完整三分类覆盖：无任何候选已证明可直接产出 result∈{1,0_1,0_2}；C5 的'域模型组合→三分类'映射与'均未触发→1'为未验证设想",
+      "priority": 2,
+      "follow_up": "复现阶段用 C5 域模型 + 比赛 0_1/0_2 训练 zip 构建映射基线并实测 f1_0；不足时微调 FIDL 统一模型"
+    },
+    {
+      "id": "B5",
+      "condition": "L2 权重许可：C4/C5/C6 均未显式声明",
+      "priority": 3,
+      "follow_up": "随 B1/B2 一并核实（README issue/数据集页/HF 模型卡）"
+    },
+    {
+      "id": "B6",
+      "condition": "spec S4 引用的 starting-kit 官方参考仓库（gitlab.4pd.io）从本环境不可达（原检索 direct+proxy 均超时），官方基线无法纳入对比",
+      "priority": 3,
+      "follow_up": "复现阶段重试或向平台方确认获取方式"
+    }
+  ],
+  "audit_findings": [
+    {
+      "id": "F1",
+      "finding": "原 t2-real-retry 记录将 C5-forensichub 置为 selected_candidate_id 且 status=completed/blocking=[]，与 skill 严格选择规则不符：其 W1（权重直链可达性）未核实、K1/K2 无证据、L2 未知、完整 K8 覆盖依赖未验证组合。按规则该候选'不能被选中'，正确状态应为 blocked + selected=null",
+      "evidence": "原记录 selection_rationale 自称依据 (c) 公开发布 checkpoint + (d) 宽松代码许可；本审计复核 raw 证据发现 (d) 不成立（见 F2），(c) 仅证实'链接存在'而非'获取条件已核实'"
+    },
+    {
+      "id": "F2",
+      "finding": "原记录 C5 code_license='CC-BY-4.0（LICENSE 文件已拉取核实）' 与 raw 证据矛盾：raw/lic_ForensicHub.txt 内容为 '404: Not Found'。对比同批 lic_FakeShield.txt(11357B Apache-2.0 全文)/lic_IMDLBenCo.txt(37312B CC-BY-4.0 全文)/lic_aicheck.txt(AGPL-3 头部) 均为真实许可文件，唯 C5 为 404 占位。本审计将其降为 unknown 并列为 B2",
+      "evidence": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-real-retry-20261108/raw/lic_ForensicHub.txt"
+    },
+    {
+      "id": "F3",
+      "finding": "其余 6 个候选的原始声明经 raw 证据复核基本成立：C1 权重 44.16GB(HF 清单实测)、C2 非营利许可与 grip.unina.it zip(MD5 已给)、C3 无 LICENSE 文件(4 种命名 404 实测)、C4 CC-BY-4.0 与 PyPI 0.1.45、C6 HF/MAE 权重命令、C7 AGPL-3.0 —— 排除理由均维持",
+      "evidence": "见各候选 constraint_matrix 的 evidence 引用"
+    },
+    {
+      "id": "F4",
+      "finding": "所有候选均为研究代码库而非完整比赛方案：K3(0.0.0.0:80 服务 + /ready)、K4(Docker 镜像提交)、K6(base64 同步接口)、K7(零容忍兜底) 对全部候选都是复现阶段待完成工作，本审计将其列为共同维度，不作为候选排除依据，但复现阶段必须完成",
+      "evidence": "spec S1/S4/S5 接口与镜像要求"
+    }
+  ],
+  "recommended_follow_up": [
+    "首选核实对象 C5-forensichub（E1 已核实、四域覆盖已证实、小 backbone）：B2 代码许可 → B1 权重直链可达性 → B3 显存实测 → B4 三分类映射基线",
+    "若 C5 任一前置项失败，备选顺序：C4-imdlbenco（0_1 域，CC-BY-4.0 已核实）+ C6-opensdi（0_2 域）组合，或 C2-trufor（需许可澄清）",
+    "服务化（K3/K4/K6/K7）与 1 类训练数据来源为复现阶段工作，不影响本审计的 blocked 判定"
+  ],
+  "retrieval_notes": {
+    "this_audit": "零新增网络请求；全部判断来自 runs/t2-real-retry-20261108 下的本地记录与 raw/ 证据文件",
+    "original_retrieval": "github.com/raw/huggingface.co/pypi.org 经环境代理 http://127.0.0.1:7589（计流量线路，ticket 当时指定）；gitlab.4pd.io 直连与代理均超时(0 字节)；GitHub API 限流耗尽后降级 raw/ls-remote 完成 SHA 固定",
+    "session_log_note": "runs/t2-audit-20261108 下已有的 events.jsonl/stderr.log 为本次 codex exec 会话日志，非原始记录，未修改"
+  }
+}

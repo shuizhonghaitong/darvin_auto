@@ -1,0 +1,142 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-11-09T03:45:00Z",
+  "generated_by": "TICKET-2 independent solution-discovery agent (fresh run; no prior candidates/run logs read; local mirror of official S4 reference used only at pinned origin/main commit)",
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "从用户视角判断图片：1=原生无修实拍图；0_1=已修图（人工或 AI 局部处理）；0_2=AI 全图生成",
+    "domain_scope": "文档类（发票/转账记录等，zip 内目录名'文字'）、风景类、人物类、动物类",
+    "ranking_metric": "f1_0 = (f1_0_1 + f1_0_2) / 2",
+    "test_set_size": "120 样本（官方仓库 README @ commit d22762e 记载；分布 unknown）",
+    "failure_rule": "零容忍：任意样本重试耗尽后仍失败则本次评测 _score=0（S1 与官方仓库 README 一致；S2 的 5% 口径为冲突记录 C1，按更严格口径设计）",
+    "inference_contract": "POST /api/v1/image-authenticity (JSON: image_base64, image_format) → {success, message, result∈{\"1\",\"0_1\",\"0_2\"}}；GET /ready；监听 0.0.0.0:80；镜像 linux/amd64；评测请求不含 id/文件名，须按图片内容判断",
+    "sources": ["competition_spec.json S1-S5", "official repo README @ d22762ef (S4 参考仓库)"]
+  },
+  "known_constraints": [
+    { "item": "部署 GPU", "value": "1/2 A100-40g 显存", "phase": "deploy", "source": "S2", "note": "文档值；≈20GB VRAM 的解读未单独证实" },
+    { "item": "部署 CPU/内存", "value": "2c4g", "phase": "deploy", "source": "S2", "note": "原文未显式单位；本次按用户暂定 2 核 CPU/4GB 内存检查，非已核实官方限制" },
+    { "item": "镜像架构", "value": "linux/amd64", "phase": "deploy", "source": "S1 + 官方 build.sh --platform linux/amd64（已核验）" },
+    { "item": "训练数据", "value": "两个飞书 docx 附件；已本地核验内容（见 verified_data）", "phase": "train", "source": "S3 + 本次本地核验" },
+    { "item": "训练资源", "value": "unknown（文档未提供）；本地训练环境为 CPU-only（venv-train torch 2.14.1+cpu），ResNet18/1200 图训练成本 estimate=分钟~数十分钟量级（未实测）", "phase": "train", "source": "本次本地环境检查" }
+  ],
+  "verified_data": {
+    "zip_0_1_and_1": {
+      "feishu_name": "训练集 1 0_1.zip", "feishu_size_bytes": 139334730, "feishu_token": "Ofj7bQtFMoe66fxcCGMc9pBSnug",
+      "local_path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1.zip",
+      "local_size_bytes": 139334730, "size_match": true,
+      "sha256": "b540fa9d90e1026dea4223cac23041251f6515c5aa5610025db0c74ea82144a8",
+      "integrity": "unzip -t 通过（No errors detected）",
+      "contents": "顶层含 0_1/ 与 1/ 两个类目录，各含 人物/动物/文字/风景 ×100 张 = 800 张图（jpg 732/png 50/tiff 18，含 2 个 .DS_Store 已排除）",
+      "note": "class 1 数据存在 → 规范 unknown '1 类训练数据' 解除；文件名 '1 0_1' 解释为同时包含类 1 与类 0_1（有内容证据）"
+    },
+    "zip_0_2": {
+      "feishu_name": "训练集 0_2.zip", "feishu_size_bytes": 437962033, "feishu_token": "Hab7b2O8lo6LCaxXjaNc1jV5nQh",
+      "local_path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_0_2.zip",
+      "local_size_bytes": 437962033, "size_match": true,
+      "sha256": "3f10c7a8bb4e7b1d93ba1ea0555cf4231988dd947d17b3170829dc76589d9253",
+      "integrity": "unzip -t 通过",
+      "contents": "顶层 '训练集 0_2/0_2/'，含 人物/动物/文字/风景 ×100 张 = 400 张图（全部为 PNG 实际格式，其中 382 个 .jpg 后缀）"
+    },
+    "class_label_coverage": { "1": 400, "0_1": 400, "0_2": 400, "total": 1200, "verified_by": "unzip -Z1 目录清点 + 排除 __MACOSX/.DS_Store" },
+    "format_findings": "0_2 全部 PNG（含 .jpg 后缀误标）；0_1 含 18 张 TIFF；class 1 全部 JPEG → 推理解码必须按内容解码（PIL/cv2 from bytes），不可信 extension/image_format；测试集格式分布 unknown",
+    "local_extracted_dirs": "datasets/image_auth/train_1_0_1 与 train_0_2 已存在且与 zip 数量一致（800/400，排除 __MACOSX 后）；可直接用于训练（TICKET-3）"
+  },
+  "candidates": [
+    {
+      "id": "C1",
+      "type": "self_proposed_with_verified_external_components",
+      "name": "ResNet18(ImageNet 预训练,本地缓存) 三分类微调 + 官方 starting-kit 服务脚手架",
+      "source_url": {
+        "serving_scaffold": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/d22762ef44c8983a474e5079e1f4e22183b72c5d/starting-kit",
+        "training_script": null
+      },
+      "fixed_version": {
+        "serving_scaffold_commit": "d22762ef44c8983a474e5079e1f4e22183b72c5d (origin/main, 2026-09-18 最后一次 fetch；live GitLab 本会话不可达，未验证是否更新)",
+        "resnet18_weights_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec (本地 resnet18-f37072fd.pth, 46830571 B, torchvision ResNet18_Weights.IMAGENET1K_V1, 已离线加载验证)",
+        "training_zip_sha256": ["b540fa9d90e1026dea4223cac23041251f6515c5aa5610025db0c74ea82144a8", "3f10c7a8bb4e7b1d93ba1ea0555cf4231988dd947d17b3170829dc76589d9253"]
+      },
+      "task_coverage": "完整三分类：训练集三类齐全（已核验 400/400/400，四域齐全）；输出严格 {\"1\",\"0_1\",\"0_2\"}",
+      "repro_entry": {
+        "serving": "已核验：starting-kit/main.py（Flask，契约完全对齐，含 /ready 与 400/500 处理）；将 mock 哈希标签替换为真实模型前向",
+        "training": "待实现（自拟单一训练脚本）：DataLoader 按目录→类标签（0_1/1/0_2），ResNet18 替换 3 类头，PIL 内容解码，标准 augment；venv-train(CPU torch) 可跑，成本 estimate 分钟~数十分钟（未实测）",
+        "docker": "starting-kit Dockerfile+build.sh（已核验；base=harbor.4pd.io/lab-platform/inf/python:3.9 内部镜像，pypi=内部 nexus；live 可用性未验证）"
+      },
+      "dependencies": ["venv-train: torch 2.14.1+cpu / torchvision 0.29.2+cpu / Pillow 12.3.0 / Flask 3.1.3（已核验安装）", "本地训练 zip/解压目录（已核验）", "本地 resnet18 权重（已核验）", "构建期：内部 harbor/nexus 注册表（未验证）"],
+      "weights_required": "ResNet18 ImageNet 预训练权重为性能加速条件；已本地缓存可用。入口本身支持无预训练随机初始化（可复现性不依赖外部下载）",
+      "license": {
+        "training_data": "用户已授权用于训练（本 ticket 输入）；其他条款 unknown",
+        "resnet18_weights": "unknown（本会话离线，未能核验 torchvision/ImageNet 原始条款；torchvision 项目公开为 Apache-2.0 属背景知识，未在本会话验证）",
+        "starting_kit_code": "unknown（仓库无 LICENSE 文件，已核验 ls-tree；主办方提供参考，参赛使用场景隐含允许，但条款未明示）"
+      },
+      "resource_estimate": {
+        "deploy_vram": "45MB 权重 / 11.7M 参数；1/2 A100(≈20GB,口径暂定) 内余量极大（文档估计）",
+        "deploy_cpu_ram": "4GB(暂定) 内：torch+Flask+模型 RSS 估计 ~1-2GB（未实测）",
+        "latency": "CPU 单图前向 ~10ms（224px, 未优化, 本会话实测于 venv-train CPU；GPU 未测）",
+        "train": "CPU-only；1200 图 × 少量 epoch，ResNet18 规模 estimate 分钟~数十分钟（未实测）"
+      },
+      "selection_reason": "唯一同时具备：已核验的完整三分类训练数据（含 class 1）、已核验可用的预训练权重（本地，无需下载）、已核验的官方服务脚手架（契约对齐+pinned commit）、已核验的训练环境；部署资源 estimate 在 1/2 A100 与暂定 2c4g 内均有大余量；零容忍失败规则可通过'内容解码+异常兜底必返回合法 result'设计满足",
+      "exclusion_reason": null,
+      "unknowns": ["2c4g 官方单位与实测占用（TICKET-3 部署时测量）", "live GitLab/内部注册表可用性（本会话网络被沙箱阻断）", "resnet18/ImageNet 权重许可条款（离线未核验）", "测试集 120 样本的类别/域分布", "ResNet18 对 0_1(细微修图) vs 1 的区分质量（性能风险，非可行性；可在 TICKET-3 用数据增强/更强骨干迭代）"],
+      "status": "selected"
+    },
+    {
+      "id": "C2",
+      "type": "self_proposed",
+      "name": "两阶段级联：0_2 判定器 + 0_1/1 判定器",
+      "source_url": null,
+      "fixed_version": null,
+      "task_coverage": "完整三分类（决策组合 2×2 输出三标签）",
+      "repro_entry": "待实现（自拟）；与 C1 相同的本地数据/权重/环境基础（已核验）",
+      "dependencies": "同 C1",
+      "weights_required": "同 C1（本地 resnet18 可作两骨干）",
+      "license": "同 C1",
+      "resource_estimate": "deploy：2×ResNet18 串行，CPU ~20ms/img（estimate 基于 C1 实测 10ms×2）；VRAM/RAM 约 2×C1（estimate）；train：2 个二分类（estimate）",
+      "selection_reason": "与 f1_0=(f1_0_1+f1_0_2)/2 结构对齐，可分别优化两个 0 类",
+      "exclusion_reason": "在 class 1 数据已证实存在的条件下无额外已核验优势；级联误差传递 + 双模型部署复杂度 + 120 样本零容忍下失败面更大；保留为 C1 质量不足时（尤其 0_2 与 0_1 混淆）的备选路径",
+      "unknowns": ["两阶段决策阈值在测试集的泛化"],
+      "status": "conditional_alternative"
+    },
+    {
+      "id": "C3",
+      "type": "external_verified_component",
+      "name": "官方 starting-kit（S4 参考仓库）服务脚手架",
+      "source_url": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit",
+      "fixed_version": "d22762ef44c8983a474e5079e1f4e22183b72c5d（origin/main 本地 pinned；live 未验证）",
+      "task_coverage": "仅服务/契约层（mock 标签，非完整方案）：main.py(Flask 契约实现)、requirements(Flask>=2.3)、Dockerfile(内部 base+nexus)、build.sh(amd64 build+push)、start.sh、.dockerignore；无训练代码",
+      "repro_entry": "已核验（本地 mirror 的 committed 版本；注意工作树存在未提交本地修改与未跟踪文件，属旧工程产物，本次未读取，仅使用 origin/main committed 内容）",
+      "dependencies": ["构建期：harbor.4pd.io base 镜像、nexus.4pd.io pypi、harbor-contest.4pd.io push 目标（均未验证 live 可用性）"],
+      "weights_required": "无",
+      "license": "unknown（无 LICENSE 文件）",
+      "resource_estimate": "mock 服务本身轻量；承载真实模型后见 C1",
+      "selection_reason": "作为 C1 的服务层被采用（契约对齐、/ready、端口 80、amd64 构建流程均核验一致）",
+      "exclusion_reason": "单独不构成完整方案（mock 数据）",
+      "unknowns": ["live 仓库是否更新（2026-09-18 之后）"],
+      "status": "verified_component_used_in_C1"
+    },
+    {
+      "id": "C4",
+      "type": "self_proposed",
+      "name": "公开 AIGC/编辑检测现成模型（零样本或少量微调）",
+      "source_url": null,
+      "fixed_version": null,
+      "task_coverage": "部分：0_2 方向存在公开检测器；0_1(宽定义,含中文修图 App) 与 1 的区分无对口公开任务",
+      "repro_entry": "unknown（本会话网络被阻断，无法检索 HF/GitHub 核验任何具体模型的存在性/版本/许可/大小）",
+      "dependencies": ["网络恢复后逐项核验"],
+      "weights_required": "是（且需下载，流量约束下需评估）",
+      "license": "unknown",
+      "resource_estimate": "unknown",
+      "selection_reason": null,
+      "exclusion_reason": "本会话不可核验（网络阻断）+ 任务覆盖与 0_1 定义域差距大；保留为微调质量不足时的对照/兜底方向",
+      "unknowns": ["具体可用模型清单、版本、许可、大小"],
+      "status": "blocked_online_verification"
+    }
+  ],
+  "selected_candidate_id": "C1",
+  "status": "selected",
+  "blocking_conditions": [
+    "（TICKET-3 阶段，非发现阻塞）2c4g 官方单位未证实（暂定解读），部署 RAM/VRAM 实测待做（当前为文档估计）",
+    "（TICKET-3 阶段）训练脚本待实现（自拟，单一文件，输入布局与标签映射已完全确定）；模型未训练，C1 端到端尚未复现",
+    "（环境限制）本会话沙箱阻断全部出站网络：免流代理 172.28.4.16:18999 不可达、127.0.0.1:7589 未监听、直连被拒（详见 evidence.md 网络日志）→ live GitLab 更新状态、内部 harbor/nexus 注册表、权重许可条款、Feishu 文档现行版本均无法在线核验",
+    "（性能风险，非阻塞）ResNet18+1200 图对 0_1 vs 1 细微编辑的区分能力未知；TICKET-3 若精度不足可启用 C2 或更强骨干（需网络恢复）"
+  ]
+}

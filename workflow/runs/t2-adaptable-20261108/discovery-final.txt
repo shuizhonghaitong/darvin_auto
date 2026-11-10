@@ -1,0 +1,37 @@
+
+
+TICKET-2 已完成定位与核对。共读取 5 个文件（`SKILL.md`、`RUN_RECORD.md`，之后 3 个直接相关文件：`handoff.json`、`README.md`、`train/train.py`），未下载、未训练、未修改任何文件。
+
+**最终候选**
+- 记录锁定的候选为 `image_auth_baseline/`（ResNet-18 三分类，CPU 微调，本地 val f1_0=0.8197）；今日独立评估的 OSS 候选（dima806 ViT，f1_0=0.7254）被明确不采用，证据见 `reports/frontend_continuous_20261105/handoff.json` 的 selection 字段。
+
+**可复现入口**
+- 训练：`image_auth_baseline/train/train.py`，纯 CPU；默认 12 epochs / batch 32 / 224×224 / AdamW（backbone lr 1e-4、head lr 1e-3）+ cosine / label smoothing 0.05 / seed 20261103，`--ela` 开启 6 通道变体，`--pretrained-file` 可指定本地 ImageNet 初始化文件（避免下载）。
+- 数据清单：`train/build_dataset.py` + `train/manifests/{train.json,val.json}`（目录中确认存在；内容未在本次 3 个文件额度内读取）。
+- 服务：`image_auth_baseline/main.py`，`OMP_NUM_THREADS=2 MOCK_SERVER_PORT=<port> runtime/venv-train/bin/python main.py`（torch 2.14.1+cpu / flask 3.1.3，来自 RUN_RECORD 环境说明）。
+- 验证：`test_service.py --base-url ... --manifest train/manifests/val.json`；镜像构建 `Dockerfile`/`build.sh`（linux/amd64，vendored wheels）。
+
+**三类映射**
+1. 类别↔数据：`1`=原生无修实拍、`0_1`=已修图、`0_2`=AI 全图生成；官方训练集 1 含 400×`1`+382×`0_1`（18 张不可读按灰帧兜底），训练集 2 含 400×`0_2`，共 1182 张有效，15% 分层验证 1005/177（`README.md`）。
+2. 类别↔索引：`train.py` 中 `LABELS=["1","0_1","0_2"]`，`L2I` 按序 0/1/2；与 checkpoint 元信息 `labels=[1,0_1,0_2]`（handoff）一致。
+3. 模型输出↔API：`result` ∈ `{"1","0_1","0_2"}`，`message="鉴定完成"`；真实 HTTP 测试 10/10 通过（RUN_RECORD 阶段 5），9 样例推理 8/9 与本地 val 标签一致。
+
+**权重来源**
+- 最终产物：`image_auth_baseline/model/resnet18_cls.pth`，sha256 `6a85e449…d02`，44,791,051 B，本地 2026-11-03 CPU 微调 state_dict（handoff + RUN_RECORD）。
+- 骨干初始化：ResNet-18 ImageNet 预训练；README 声明来源为 `timm/resnet18.a1_in1k` safetensors（称与 torchvision IMAGENET1K_V1 相同权重）。⚠️ 实际训练时用的是本地 timm 文件还是 torchvision 下载，属文档声明，本次未核实到直接证据。
+
+**许可（已知）**
+- 服务代码：自研，无第三方代码拷贝（handoff license_status）。
+- 骨干初始化：torchvision Apache-2.0（handoff 记录）。
+- 派生 checkpoint：本地微调产物，许可未单独声明——作为 Apache-2.0 初始化 + 未知许可数据的衍生，发布许可实际未定。
+
+**比赛资源（已知）**
+- 容器规格 2c4g / 1/2 A100-40G（handoff）；推理仅 CPU，延迟实测 26.4ms avg / 51.8ms max（进程内）与 44.8–48.3ms（HTTP 重复 3 次）。
+- 训练数据 zip 139,334,730 B / 437,962,033 B，已在本地 `datasets/image_auth`。
+
+**未知 / 未验证**
+- 训练集数据许可：文档未声明 → UNKNOWN，未发布任何内容（RUN_RECORD 未完成项 4）。
+- 评测条数 120、单请求超时 60s：来自 2026-11-04 平台侧证据，非本轮抓取文档，属未验证假设。
+- 提交机制（"提交结果文件" vs SUT 逐图 HTTP）文档未披露，待平台侧确认；Docker 发布/提交本轮禁止未执行。
+- 榜单身份（196 / subnet 85 / 合约地址）沿用旧记录，本轮未做实时复核。
+- 2c4g 容器下的实际峰值内存无实测证据；GPU 实际占用为 0（纯 CPU 运行）但 A100 配额使用未验证。

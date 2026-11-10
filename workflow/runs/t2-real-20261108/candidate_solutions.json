@@ -1,0 +1,703 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-11-08T09:12:00Z",
+  "generated_by": "TICKET-2 darwin-workflow -> solution-discovery (real search + candidate comparison only; no reproduction, no weight downloads, no later stages)",
+  "competition_spec_path": "runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "Judge, from the user's perspective, whether an image is an original unedited photo (1), edited incl. AI local edits (0_1), or fully AI-generated (0_2)",
+    "classes": {
+      "1": "原生无修实拍图",
+      "0_1": "已修图（人工 + AI 局部处理）",
+      "0_2": "AI 全图生成"
+    },
+    "domain_scope": "documents (invoices/transfer records), landscapes, persons/animals",
+    "contract": "HTTP service on 0.0.0.0:80; GET /ready; POST /api/v1/image-authenticity {image_base64, image_format} -> {success, message, result}; synchronous",
+    "ranking_metric": "f1_0 = (f1_0_1 + f1_0_2) / 2 (class 1 excluded from ranking; latency avg_response_time_ms and fail_rate monitored)",
+    "note": "No single found solution covers both 0_1 and 0_2; candidates are therefore components + the local 3-class baseline"
+  },
+  "known_constraints": [
+    "linux/amd64 image",
+    "GPU budget: 1/2 A100-40g VRAM (≈20GB)",
+    "CPU budget: 2c4g (unit interpretation from spec S2, exact meaning flagged unknown in spec)",
+    "model must load and infer within the above resources",
+    "service contract: 0.0.0.0:80, /ready, /api/v1/image-authenticity, synchronous JSON, base64 input without data-URI prefix",
+    "failure tolerance: unresolved conflict between S1 (any failed sample => no score) and S2 (>5% fail rate => fail); design for zero failures",
+    "weights may be mounted via Ceph inferenceVolumeMounts instead of baked into image",
+    "training data provided by competition: '训练集 1 0_1.zip' (139MB) and '训练集 0_2.zip' (438MB) via Feishu attachments; local extractions exist under /mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth (1182 usable images: 1:400, 0_1:382, 0_2:400 per prior run record)"
+  ],
+  "unknowns_inherited_from_spec": [
+    "task_type (S1 returned '-')",
+    "deadline / submission attempt limits",
+    "platform dataset content (datasets=1, no CLI read-only listing)",
+    "starting-kit remote availability (gitlab.4pd.io) — RE-TESTED in this ticket: unreachable both directly and via proxy (timeout); local copy exists (see candidate local-starting-kit-baseline)",
+    "test set size/distribution (prior run record says 120 samples — local evidence only, not a competition source)",
+    "exact unit meaning of 2c4g",
+    "commerciality of leaderboard use (affects NC-licensed candidates Effort/TruFor)"
+  ],
+  "search_method": {
+    "network": "configured environment proxy http://127.0.0.1:7589 (metered mihomo route; usage explicitly authorized by this ticket). github.com reachability pre-verified (HTTP 200). gitlab.4pd.io unreachable via direct (NO_PROXY *.4pd.io) AND via proxy (timeout) — recorded as finding, not silently retried.",
+    "tools": [
+      "GitHub search API (api.github.com/search/repositories) — 8 queries",
+      "GitHub repo API — hit unauthenticated hourly rate limit on proxy egress IPs; fell back to git ls-remote HEAD for commit pinning (19 repos pinned)",
+      "raw.githubusercontent.com — README/LICENSE fetches (16 repos; HEAD refs)",
+      "Hugging Face API (huggingface.co/api/models?search=..., /api/spaces/...) — 8 queries",
+      "local filesystem inspection of existing half-finished products (image_auth_baseline, image_auth_repo, datasets/image_auth, RUN_RECORD_image_auth.md)"
+    ],
+    "discovery_sources": [
+      {
+        "name": "ant-research/Awesome-AIGC-Image-Video-Detection (curated list)",
+        "url": "https://github.com/ant-research/Awesome-AIGC-Image-Video-Detection",
+        "pinned_commit": "f33ae84a4d5c1f9c69b29afcdf604c5786560057",
+        "role": "candidate discovery map (methods + datasets tables)"
+      },
+      {
+        "name": "GitHub search API",
+        "queries": [
+          "AI generated image detection",
+          "image forensics detection",
+          "image splicing detection",
+          "manipulated image detection",
+          "TruFor",
+          "GIMM image",
+          "ImageForensics",
+          "DIRE image generators"
+        ]
+      },
+      {
+        "name": "Hugging Face model search API",
+        "queries": [
+          "TruFor",
+          "ImageForensics",
+          "UniversalFakeDetect",
+          "AIDE",
+          "GIMM",
+          "fake image detection",
+          "DIRE image"
+        ],
+        "finding": "no official model hubs for these candidates; only community ports (e.g. TruFor CoreML/MLX) — open-source candidates live on GitHub"
+      },
+      {
+        "name": "prior local run record",
+        "path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/RUN_RECORD_image_auth.md",
+        "role": "identifies existing half-finished baseline + starting-kit local copy"
+      }
+    ],
+    "traffic_note": "metadata/README/license fetches only (~1-4KB each); no datasets, no model weights downloaded, per ticket scope"
+  },
+  "candidates": [
+    {
+      "id": "local-starting-kit-baseline",
+      "kind": "local-existing-artifact",
+      "name": "Local starting-kit + small-CNN 3-class baseline (existing half-finished product)",
+      "source_url": "file:///mnt/disk3/liuyutong_home/workspace/darwin_auto/image_auth_repo (git commit d22762e, local copy of gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard) and file:///mnt/disk3/liuyutong_home/workspace/darwin_auto/image_auth_baseline",
+      "pinned_version": {
+        "image_auth_repo": "git commit d22762e (local checkout; matches RUN_RECORD citation of leaderboard project @ d22762e)",
+        "image_auth_baseline": "not a git repo; file state dated 2026-11-03..04 per directory mtime",
+        "weights": "image_auth_repo/starting-kit/model_weights.npz (1,571,082 bytes, present locally)"
+      },
+      "task_coverage": {
+        "class_1": "covered (390,147-param CNN trained on 400 local class-1 images)",
+        "class_0_1": "covered (trained on 382 local class-0_1 images)",
+        "class_0_2": "covered (trained on 400 local class-0_2 images)",
+        "domain_scope": "trained on competition-provided training zips only; document/landscape/person-animal coverage as per training data"
+      },
+      "repro_entry": {
+        "serving": "python image_auth_repo/starting-kit/main.py (stdlib ThreadingHTTPServer; GET /ready -> True; POST /api/v1/image-authenticity {image_base64, image_format} -> {success, message, result}); start.sh; port 80",
+        "training": "runtime/venv-ml/bin/python image_auth_repo/model_train/train.py --data-dir datasets/image_auth --out-dir image_auth_repo/model_train/out (per RUN_RECORD_image_auth.md)",
+        "verified_in_prior_run": "torch/numpy parity on 40 images (max logit diff 4.77e-07, 0 argmax mismatches); 14 real-TCP HTTP contract tests passed (per RUN_RECORD_image_auth.md, 2026-11-03..04)"
+      },
+      "dependencies": [
+        "numpy>=1.24",
+        "Pillow>=9.0",
+        "python:3.11-slim-bookworm base image; offline pip via vendored wheels (image_auth_baseline/Dockerfile)"
+      ],
+      "weight_access": "local file, no external download required (model_weights.npz 1.5MB; training data local at datasets/image_auth)",
+      "license": {
+        "code": "internal artifact (leaderboard starting kit + local training code); starting-kit origin is the official competition repo, terms not separately published",
+        "weights": "locally trained, no third-party weights"
+      },
+      "resource_requirements": {
+        "verified": "CPU-only numpy inference; 390K params; 160x160 input; fits 2c4g CPU/4GB RAM and 1/2 A100 budget by construction (no GPU needed)",
+        "unknown": "avg_response_time_ms not benchmarked; Docker image arch not pinned (python:3.11-slim-bookworm is multi-arch; amd64 selection happens at build/pull time, unverified)"
+      },
+      "performance_evidence": "val acc 0.678 / val f1_0 0.7052 on 1984 training images (val split per RUN_RECORD); not a generalization estimate; no held-out competition test score",
+      "selection_reason": "Only candidate with (a) fully locally verifiable repro entry (files, commands, prior test evidence), (b) zero external weight-download dependency, (c) direct evidence of meeting the service contract (/ready + /api/v1/image-authenticity, port 80, 2c4g), (d) coverage of all three classes. Per repo priority #1 (reuse existing half-finished product), select as the baseline; open-source candidates below are documented as upgrade paths for the reproduction phase.",
+      "unknowns": [
+        "remote gitlab.4pd.io unreachable from this environment (direct and proxied both timeout); local copy may not be latest",
+        "Docker build/push still TODO per RUN_RECORD (out of scope for TICKET-2)",
+        "class-1 data exists only via local extraction of '训练集 1 0_1.zip'; platform-side availability unverified"
+      ]
+    },
+    {
+      "id": "univfd",
+      "kind": "open_source",
+      "name": "UniversalFakeDetect (UnivFD) — CLIP ViT-L/14 + linear fake/real head (CVPR 2023)",
+      "source_url": "https://github.com/WisconsinAIVision/UniversalFakeDetect",
+      "pinned_version": {
+        "commit": "030495aea3300a8b54c0ec37ec7fe1dd7e63c619",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "not covered (fake/real binary only)",
+        "class_0_2": "covered (fake detector, cross-generator generalization)",
+        "component": "0_2 detector component; must be fine-tuned/extended for 3-class and 0_1"
+      },
+      "repro_entry": {
+        "verified": "python validate.py --arch=CLIP:ViT-L/14 --ckpt=pretrained_weights/fc_weights.pth --result_folder=clip_vitl14 (README); training: python train.py --name=clip_vitl14 --arch=CLIP:ViT-L/14 --fix_backbone (linear-head-only fine-tune — directly compatible with competition-provided training zips)"
+      },
+      "dependencies": [
+        "torch",
+        "torchvision",
+        "OpenCLIP (CLIP ViT-L/14 backbone)"
+      ],
+      "weight_access": {
+        "pretrained_fc_head": "in-repo file pretrained_weights/fc_weights.pth — existence verified via raw.githubusercontent HEAD (HTTP 200)",
+        "clip_backbone": "fetched at runtime from OpenAI/OpenCLIP cache (not verified)",
+        "training_data_if_retraining_from_scratch": "CNNDetection ~19-72GB datasets (not needed if fine-tuning on competition data)"
+      },
+      "license": {
+        "code": "MIT (LICENSE fetched, verified 2026-11-08)",
+        "weights": "MIT per repo license; CLIP backbone under OpenAI CLIP terms (unverified)"
+      },
+      "resource_requirements": {
+        "verified": "none stated in README",
+        "unknown": "VRAM for CLIP ViT-L/14 inference ~2-4GB (engineering estimate, not verified); CPU-side preprocessing at 336px on 2 cores not benchmarked"
+      },
+      "selection_or_exclusion_reason": "KEPT as primary open-source upgrade path for the 0_2 head: MIT, weights in repo, linear-head fine-tuning entry matches the provided 0_2 training zip, lightweight. Not selected alone because it does not cover 0_1.",
+      "unknowns": [
+        "OpenCLIP backbone download path unverified from this environment"
+      ]
+    },
+    {
+      "id": "aide",
+      "kind": "open_source",
+      "name": "AIDE — hybrid (ResNet50 + ConvNeXt experts) AI-generated image detector (ICLR 2025)",
+      "source_url": "https://github.com/shilinyan99/AIDE",
+      "pinned_version": {
+        "commit": "6725b710d5c437ab2f59792908ce0377dfc907de",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "not covered",
+        "class_0_2": "covered",
+        "component": "0_2 detector; paper reports gains over UnivFD on GenImage/AIGCDetectBenchmark; hybrid features (semantic + frequency/noise)"
+      },
+      "repro_entry": {
+        "verified": "./scripts/train.sh --data_path ... --resnet_path ... --convnext_path ... (training) and ./scripts/eval.sh --resume ... --eval True (inference) — from README, paths verified present in repo docs; script executability not run (no reproduction in this ticket)"
+      },
+      "dependencies": [
+        "PyTorch 2.0.1 (tested env per README)",
+        "torchvision 0.15.2",
+        "pycocotools",
+        "OpenCLIP ConvNeXt pretrained weights",
+        "ResNet50 pretrained weights"
+      ],
+      "weight_access": {
+        "model_zoo": "Google Drive folder linked in README ('Model Zoo', fetched 2026-11-08) — reachability from this environment NOT verified (no download attempted)",
+        "pretrained_backbones": "resnet50 + open_clip_pytorch_model.bin required as inputs, sources not linked in README (unknown)"
+      },
+      "license": {
+        "code": "MIT (LICENSE fetched, verified 2026-11-08)",
+        "dataset": "Chameleon dataset is academic-only/noncommercial, email-gated (README) — not needed if fine-tuning on competition data"
+      },
+      "resource_requirements": {
+        "verified": "none stated",
+        "unknown": "two-expert (ResNet50 + ConvNeXt) inference memory/latency not benchmarked; estimate suggests it exceeds UnivFD's cost (unverified)"
+      },
+      "selection_or_exclusion_reason": "KEPT as strong 0_2 upgrade candidate (MIT code, released checkpoints, train/eval entries). Not selected because weights are Google-Drive-gated (unverified) and it still covers only 0_2.",
+      "unknowns": [
+        "Google Drive checkpoint reachability unverified",
+        "exact checkpoint files/content in Model Zoo unverified"
+      ]
+    },
+    {
+      "id": "spai",
+      "kind": "open_source",
+      "name": "SPAI — spectral any-resolution AI-generated image detector (CVPR 2025)",
+      "source_url": "https://github.com/kartyg23/spai",
+      "pinned_version": {
+        "commit": "b1b1422f2912594ba2620b311dde5d28a230d04c",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "not covered",
+        "class_0_2": "covered (self-supervised spectral OOD detection; any-resolution input)",
+        "component": "0_2 detector"
+      },
+      "repro_entry": {
+        "verified": "inference entry described in README with --pretrained ./weights/mfm_pretrain_vit_base.pth (ViT-B/16 MFM backbone from https://github.com/Jiahao000/MFM); trained checkpoint from Google Drive link in README — links verified present, downloads not attempted"
+      },
+      "dependencies": [
+        "conda env python 3.11 (README)",
+        "PyTorch",
+        "MFM ViT-B/16 pretrained backbone (Jiahao000/MFM, repo existence unverified)"
+      ],
+      "weight_access": {
+        "trained_checkpoint": "Google Drive (README link, unverified reachability)",
+        "mfm_backbone": "public repo Jiahao000/MFM (unverified)"
+      },
+      "license": {
+        "code_and_weights": "Apache-2.0 (README License section, verified 2026-11-08); LICENSE file present at repo root (content not fully read)"
+      },
+      "resource_requirements": {
+        "verified": "README claims inference < 8GB GPU RAM (author claim, not independently verified); training targeted L40S 48GB (irrelevant if using released inference checkpoint)",
+        "unknown": "latency per image unverified"
+      },
+      "selection_or_exclusion_reason": "KEPT as alternative 0_2 candidate: Apache-2.0, self-supervised (not GAN-bias), any-resolution (fits diverse test images incl. documents). Not selected due to unverified weight access and no 0_1 coverage.",
+      "unknowns": [
+        "weight reachability",
+        "MFM backbone repo status"
+      ]
+    },
+    {
+      "id": "effort",
+      "kind": "open_source",
+      "name": "Effort — orthogonal subspace decomposition for generalizable AIGI detection (ICML 2025 Oral)",
+      "source_url": "https://github.com/YZY-stack/Effort-AIGI-Detection",
+      "pinned_version": {
+        "commit": "96f5dea2b534d400cfd7003f053c7e93c8e16461",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "not covered",
+        "class_0_2": "covered",
+        "component": "0_2 detector (CLIP-L14 based)"
+      },
+      "repro_entry": {
+        "verified": "demo inference on one image/folder per README; checkpoints for 'CLIP-L14 + Effort' trained on GenImage and Chameleon on Google Drive (links present, unverified)"
+      },
+      "dependencies": [
+        "PyTorch (README badges: 1.11 / Python 3.7.2 — likely stale, unverified)",
+        "CLIP-L14 backbone"
+      ],
+      "weight_access": {
+        "checkpoints": "Google Drive (2 files linked in README, unverified reachability)"
+      },
+      "license": {
+        "code": "NO LICENSE file at repo root (checked LICENSE/LICENSE.md/LICENCE, all 404, 2026-11-08); README badge claims CC BY-NC 4.0",
+        "weights": "assumed same NC terms (unverified)"
+      },
+      "resource_requirements": {
+        "verified": "none stated",
+        "unknown": "unknown"
+      },
+      "selection_or_exclusion_reason": "EXCLUDED for final shortlist: noncommercial license (CC BY-NC 4.0 per badge) conflicts with potential commercial leaderboard use; competition's commercial nature unknown, so NC is a material unresolved risk. Retained in JSON for comparison record.",
+      "unknowns": [
+        "exact license scope",
+        "whether leaderboard use is commercial"
+      ]
+    },
+    {
+      "id": "npr_dpr",
+      "kind": "open_source",
+      "name": "NPR/DPR — Generalized Structural Artifacts deepfake detection (CVPR 2024)",
+      "source_url": "https://github.com/chuangchuangtan/NPR-DeepfakeDetection",
+      "pinned_version": {
+        "commit": "781ced3f7ca2cdc69ec9dd4ef27e8d0b3c07752a",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "not covered",
+        "class_0_2": "covered",
+        "component": "0_2 detector"
+      },
+      "repro_entry": {
+        "verified": "public HF demo space tancc/Generalizable_Deepfake_Detection-NPR-CVPR2024 (gradio, public, lastModified 2024-05-20 — verified via HF API 2026-11-08); in-repo training/eval scripts per README (TensorFlow 2.1 / PyTorch 1.8 environments)"
+      },
+      "dependencies": [
+        "TensorFlow 2.1 (nvcr.io image) or PyTorch 1.8 (Google Drive env) per README — old toolchains, unverified compatibility with current stack"
+      ],
+      "weight_access": {
+        "demo_weights": "inside HF space (files not enumerated — unverified)",
+        "released_checkpoints": "not clearly linked in README sections fetched (unknown)"
+      },
+      "license": {
+        "code": "NO LICENSE file at root (checked, 404, 2026-11-08)",
+        "weights": "unknown"
+      },
+      "resource_requirements": {
+        "verified": "none stated",
+        "unknown": "unknown (legacy TF model)"
+      },
+      "selection_or_exclusion_reason": "EXCLUDED from shortlist: missing license file, legacy TF/pytorch1.8 toolchain, unclear in-repo weight access. Demo space proves a verifiable public inference exists but not a usable reproduction entry under our constraints.",
+      "unknowns": [
+        "license",
+        "checkpoint file locations"
+      ]
+    },
+    {
+      "id": "freqnet",
+      "kind": "open_source",
+      "name": "FreqNet — frequency-domain deepfake detection (AAAI 2024)",
+      "source_url": "https://github.com/chuangchuangtan/FreqNet-DeepfakeDetection",
+      "pinned_version": {
+        "commit": "2c6bd020cda1c0001e7a7d30ebd2dd5c55b5a8b6",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "not covered",
+        "class_0_2": "covered",
+        "component": "0_2 detector (lightweight per paper keywords)"
+      },
+      "repro_entry": {
+        "verified": "README: code released, pretrained models released (TODO items struck through), dataset via download_dataset.sh; specific inference command not fetched in detail"
+      },
+      "dependencies": [
+        "requirements.txt (not read in detail)",
+        "Nvidia driver 495.x environment per README"
+      ],
+      "weight_access": {
+        "pretrained": "released per README; exact file/link not verified (unknown)"
+      },
+      "license": {
+        "code": "NO LICENSE file at root (checked, 404, 2026-11-08)",
+        "weights": "unknown"
+      },
+      "resource_requirements": {
+        "verified": "none stated",
+        "unknown": "unknown"
+      },
+      "selection_or_exclusion_reason": "EXCLUDED from shortlist: missing license file and unverified weight locations keep it below the verifiability bar; retained for comparison.",
+      "unknowns": [
+        "license",
+        "checkpoint locations",
+        "latency/memory"
+      ]
+    },
+    {
+      "id": "lynote_ai_image_detector",
+      "kind": "open_source",
+      "name": "ai-image-detector (lynote-ai) — installable CLI + FastAPI server wrapping UnivFD/Sentry/Nonescape backends",
+      "source_url": "https://github.com/lynote-ai/ai-image-detector",
+      "pinned_version": {
+        "commit": "d3f4976d36c59974a25f55a0a7850b9866d3223b",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "not covered",
+        "class_0_2": "covered (probabilistic fake/real)",
+        "component": "0_2 service wrapper — closest existing 'service-ready' open-source shape to the competition SUT contract (FastAPI server extra)"
+      },
+      "repro_entry": {
+        "verified": "pip install -e . ; aidetect detect image.jpg (CLI) ; pip install -e '.[api]' ; aidetect api --host 127.0.0.1 --port 8000 (FastAPI) — commands from README; not executed in this ticket"
+      },
+      "dependencies": [
+        "Python 3.10+",
+        "UnivFD backend: CLIP ViT-L/14 features + linear head (depends on OpenCLIP; same backbone as candidate univfd)",
+        "sentry-convnext-small / nonescape-mini backends: external open-source detectors with HF model IDs in repo code (not enumerated here — unknown)",
+        "FastAPI (api extra)"
+      ],
+      "weight_access": {
+        "univfd": "via UFD weights (see candidate univfd)",
+        "sentry_nonescape": "HF-hosted, auto-download (unverified)"
+      },
+      "license": {
+        "code": "MIT (LICENSE fetched, verified 2026-11-08)",
+        "bundled_weights": "upstream licenses apply (unverified per backend)"
+      },
+      "resource_requirements": {
+        "verified": "none stated",
+        "unknown": "CLIP ViT-L/14 backend memory ~2-4GB estimate (unverified); ensemble 'ultra' mode heavier (unverified)"
+      },
+      "selection_or_exclusion_reason": "KEPT as service-skeleton reference: its FastAPI server + report pipeline can be adapted to the /ready + /api/v1/image-authenticity contract. Not selected as the solution itself (0_2 only; benchmark evidence in README is tiny/3-image).",
+      "unknowns": [
+        "HF model IDs of sentry/nonescape backends (inside repo code, not fetched)",
+        "upstream weight licenses",
+        "port/endpoint mapping to competition contract is an adaptation task, not provided"
+      ]
+    },
+    {
+      "id": "trufor",
+      "kind": "open_source",
+      "name": "TruFor — trustworthy image forgery detection & localization (CVPR 2023)",
+      "source_url": "https://github.com/grip-unina/TruFor",
+      "pinned_version": {
+        "commit": "ae54475df6f41a491d7615100feb19263dec13f7",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (untampered)",
+        "class_0_1": "covered (local manipulations: splicing, copy-move, GAN edits; whole-image integrity score + pixel-level localization)",
+        "class_0_2": "partial (deepfake manipulations incl. generative ones tested in paper; full-image AI generation is out of its local-tampering assumption)",
+        "component": "primary 0_1 detector candidate"
+      },
+      "repro_entry": {
+        "verified": "Docker inference setup in test_docker/ folder (README); training code released 2025-03-05 in TruFor_train_test/ (README news); both folder paths verified present in README, contents not enumerated"
+      },
+      "dependencies": [
+        "PyTorch",
+        "Noiseprint++ noise fingerprint branch (self-supervised on real data)",
+        "CocoGlide dataset for training (grip.unina.it download link, unverified)"
+      ],
+      "weight_access": {
+        "pretrained": "release status per README ('Test code is now available' since 2023-06-28); exact weight files/links inside TruFor_train_test/ not verified (unknown)",
+        "onnx_ports": "community TruFor-Vulkan ONNX port exists (grip-unina/TruFor unverified, nivrrex/TruFor-Vulkan found in search)"
+      },
+      "license": {
+        "code": "NONCOMMERCIAL: LICENSE.txt verified present in both TruFor_train_test/ and test_docker/ (HTTP 200); README states 'used, reproduced and modified only for informational and nonprofit purposes'",
+        "weights": "same package terms (unverified file-level)"
+      },
+      "resource_requirements": {
+        "verified": "none stated in fetched sections",
+        "unknown": "transformer fusion + noiseprint inference memory/latency unverified; Docker inference image size unverified"
+      },
+      "selection_or_exclusion_reason": "KEPT as primary open-source upgrade path for the 0_1 head (only found candidate combining manipulation detection + localization with Docker inference path and released training code). License (nonprofit-only) is a material unresolved risk vs unknown leaderboard commerciality — must be resolved before adoption (see blocking_conditions).",
+      "unknowns": [
+        "license compatibility with competition use",
+        "weight file locations",
+        "resource footprint"
+      ]
+    },
+    {
+      "id": "cat_net",
+      "kind": "open_source",
+      "name": "CAT-Net — compression artifact tracing for splicing detection/localization (WACV 2021 / IJCV 2022)",
+      "source_url": "https://github.com/mjkwon2021/CAT-Net",
+      "pinned_version": {
+        "commit": "5eb85900b0e72423c95a8d41bc835b86c8671f8a",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (untampered)",
+        "class_0_1": "covered (splicing in v1; general forgery types in v2)",
+        "class_0_2": "not covered",
+        "component": "0_1 detector component (splicing-centric)"
+      },
+      "repro_entry": {
+        "verified": "README: clone + weight download + directory layout (pretrained_models/, DCT_djpeg.pth.tar etc.); demo/training scripts referenced; specifics not enumerated"
+      },
+      "dependencies": [
+        "PyTorch",
+        "pretrained stream weights (DCT/djpeg branches)"
+      ],
+      "weight_access": {
+        "weights": "Google Drive folder + Baidu Pan (code ycft) linked in README — reachability NOT verified (no download attempted)"
+      },
+      "license": {
+        "code": "NO LICENSE file at root (checked, 404, 2026-11-08)",
+        "weights": "unknown"
+      },
+      "resource_requirements": {
+        "verified": "none stated",
+        "unknown": "unknown"
+      },
+      "selection_or_exclusion_reason": "KEPT as secondary 0_1 component (strong splicing coverage; five custom datasets for ablation). Down-ranked vs TruFor: no license file, weight access unverified, splicing-centric (competition 0_1 also includes AI local edits, filters, text — broader than splicing).",
+      "unknowns": [
+        "license",
+        "weight reachability",
+        "coverage of non-splice edits (AI inpainting, background swap, text) — paper v2 claims general forgery, not verified here"
+      ]
+    },
+    {
+      "id": "mantranet_pytorch",
+      "kind": "open_source",
+      "name": "ManTraNet (PyTorch reimplementation) — manipulation tracing for forgery detection/localization (CVPR 2019)",
+      "source_url": "https://github.com/RonyAbecidan/ManTraNet-pytorch",
+      "pinned_version": {
+        "commit": "1af95cd4cfade7d22251be7abf0bebc0f9c199b0",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (untampered)",
+        "class_0_1": "covered (local manipulation assumption; copy-move/splicing/removal/enhancement)",
+        "class_0_2": "not covered",
+        "component": "0_1 detector component"
+      },
+      "repro_entry": {
+        "verified": "README: pre-trained weights included in repo (authors' weights, PyTorch-compatible); demo via provided ipython notebook; 'faithful replica' of official TF implementation with re-implemented BN/hardsigmoid"
+      },
+      "dependencies": [
+        "PyTorch >= 1.8.1"
+      ],
+      "weight_access": {
+        "pretrained": "in-repo per README (file not individually verified in this ticket — unknown)"
+      },
+      "license": {
+        "code": "NO LICENSE file at root (checked, 404, 2026-11-08); upstream official implementation is TF (ISICV/ManTraNet) — original license unknown",
+        "weights": "unknown"
+      },
+      "resource_requirements": {
+        "verified": "README warning: CPU eval 'may take some minutes' per image (slow); GPU strongly implied",
+        "unknown": "GPU memory unverified"
+      },
+      "selection_or_exclusion_reason": "KEPT as tertiary 0_1 component: weights in-repo (attractive) but no license, 2019-era architecture, slow, and reimplementation risk (author admits architecture discrepancies).",
+      "unknowns": [
+        "license",
+        "in-repo weight file presence (not individually verified)",
+        "accuracy on modern AI-local edits (pre-AI-era model, unverified)"
+      ]
+    },
+    {
+      "id": "imageforensics_osn",
+      "kind": "open_source",
+      "name": "ImageForensics-OSN — forgery detection robust to social-network transmission (TIFS 2022, S-Lab SCUT)",
+      "source_url": "https://github.com/HighwayWu/ImageForensicsOSN",
+      "pinned_version": {
+        "commit": "42c2fe5611f39e0ebb3101c0c189b5b4b31440d3",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (untampered)",
+        "class_0_1": "covered (splicing/manipulation; robust to OSN compression — relevant because test images arrive base64 over HTTP and may be re-compressed)",
+        "class_0_2": "not covered",
+        "component": "0_1 detector component; robustness-to-degradation is the differentiator"
+      },
+      "repro_entry": {
+        "verified": "README: usage section present; Replicate web demo (replicate.com/highwaywu/image-forgery-detection, external, unverified); FOCAL successor noted (2023-08-20)"
+      },
+      "dependencies": [
+        "PyTorch (per repo, details not fetched)"
+      ],
+      "weight_access": {
+        "pretrained": "Google Drive + Baidu Pan (code n2ai) links in README (verified present, reachability NOT tested)",
+        "osn_weights": "additional Facebook-trained weights link in README (unverified)"
+      },
+      "license": {
+        "code": "MIT (LICENSE fetched, verified 2026-11-08)",
+        "weights": "MIT per repo (assumed, unverified file-level)"
+      },
+      "resource_requirements": {
+        "verified": "none stated",
+        "unknown": "unknown"
+      },
+      "selection_or_exclusion_reason": "KEPT as strong secondary 0_1 candidate: MIT license (better than TruFor), degradation robustness matches real pipeline (base64/HTTP transport). Down-ranked vs TruFor only because TruFor has Docker inference path + training code; both remain viable 0_1 heads.",
+      "unknowns": [
+        "weight reachability",
+        "resource footprint",
+        "successor FOCAL (HighwayWu/FOCAL) not evaluated"
+      ]
+    },
+    {
+      "id": "aigi_holmes",
+      "kind": "open_source",
+      "name": "AIGI-Holmes — MLLM-based explainable AIGI detection (ICCV 2025)",
+      "source_url": "https://github.com/wyczzy/AIGI-Holmes",
+      "pinned_version": {
+        "commit": "bae30b9e807230255a9f3fd18c9c64c08805b427",
+        "pinned_at": "2026-11-08T09:12:00Z",
+        "method": "git ls-remote HEAD (fetched 2026-11-08)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "not covered",
+        "class_0_2": "covered (MLLM + visual expert)"
+      },
+      "repro_entry": {
+        "verified": "installation (conda + pip -e .) and training entries in README; inference requires vLLM build"
+      },
+      "dependencies": [
+        "Python 3.10",
+        "deepspeed 0.16.9",
+        "vLLM v0.8.5 (built from source)",
+        "MLLM base (not specified in fetched sections — unknown)"
+      ],
+      "weight_access": {
+        "pretrained": "UNAVAILABLE: README ToDo list explicitly shows 'Pre-trained model weights and download links' UNCHECKED (verified 2026-11-08); dataset zzy0123/AIGI-Holmes-Dataset on HF exists (link present)"
+      },
+      "license": {
+        "code": "Apache-2.0 (LICENSE fetched, verified 2026-11-08)"
+      },
+      "resource_requirements": {
+        "verified": "vLLM serving + deepspeed training toolchain implied multi-GB-to-multi-tens-of-GB memory",
+        "unknown": "exact MLLM size unverified"
+      },
+      "selection_or_exclusion_reason": "EXCLUDED: no released pretrained weights (self-admitted in README ToDo), and MLLM-scale resource needs vs 1/2 A100 + 2c4g budget are a material risk.",
+      "unknowns": [
+        "when/whether weights will be released"
+      ]
+    },
+    {
+      "id": "mllm_group_sida_fakeshield_fakevlm_legion",
+      "kind": "open_source",
+      "name": "MLLM detector group: SIDA (CVPR 2025), FakeShield (ICLR 2025), FakeVLM (NeurIPS 2025), LEGION (ICCV 2025)",
+      "source_url": "https://github.com/hzlsaber/SIDA ; https://github.com/zhipeixu/FakeShield ; https://github.com/opendatalab/FakeVLM (LEGION: https://github.com/opendatalab/LEGION)",
+      "pinned_version": {
+        "SIDA": "6b1c3aa9097a79849ea7aae95601854763014a9d (git ls-remote, 2026-11-08)",
+        "FakeShield": "b22717d7d524cbf617b8841d488d1edf56ceb7f3 (git ls-remote, 2026-11-08)",
+        "FakeVLM": "fdcdcf111ecaff13ded65e32ce34d04cf876bc6f (git ls-remote, 2026-11-08)",
+        "LEGION": "not pinned (not fetched; listed in awesome repo @f33ae84a4d5c)"
+      },
+      "task_coverage": {
+        "class_1": "reference side (real)",
+        "class_0_1": "partial (SIDA/FakeShield do tamper localization; FakeVLM/LEGION target synthetic detection)",
+        "class_0_2": "covered",
+        "component": "detection + localization + explanation via MLLMs"
+      },
+      "repro_entry": {
+        "verified": "SIDA: code released 2025-03-16 per README news; FakeShield: Apache-2.0 LICENSE verified; FakeVLM: no LICENSE file; detailed entries not fetched"
+      },
+      "dependencies": [
+        "large VLMs (group property; per-repo base models unverified)"
+      ],
+      "weight_access": {
+        "pretrained": "per-repo links unverified (unknown for each)"
+      },
+      "license": {
+        "Sida": "NO LICENSE file (checked, 2026-11-08)",
+        "FakeShield": "Apache-2.0 (LICENSE fetched, verified 2026-11-08)",
+        "FakeVLM": "NO LICENSE file (checked, 2026-11-08)"
+      },
+      "resource_requirements": {
+        "verified": "none stated in fetched sections",
+        "unknown": "MLLM inference on 1/2 A100-40g (≈20GB) is feasible only for ≤7B models in fp16; 2c4g CPU RAM for preprocessing/tokenization is a material unverified risk; per-image latency of an MLLM vs the monitored avg_response_time_ms is unverified"
+      },
+      "selection_or_exclusion_reason": "EXCLUDED as solution backbone (resource budget risk + mixed/missing licenses), retained for comparison. SIDA's tamper-localization could later be a 0_1 signal source if a lighter distillation exists (unverified).",
+      "unknowns": [
+        "per-repo base model sizes",
+        "per-repo weight availability",
+        "legion pin"
+      ]
+    }
+  ],
+  "selected_candidate_id": "local-starting-kit-baseline",
+  "selection_rationale": "Skill bar: >=1 candidate with verifiable repro entry + resource access conditions + evidence for all known constraints. Only local-starting-kit-baseline meets it end-to-end: files/commands/tests exist locally (prior-run evidence: parity 4.77e-07, 14 TCP contract tests passed), weights local (no download), 3-class coverage, CPU-only numpy inference within 2c4g/20GB by construction. It is also repo priority #1 (reuse existing half-finished product). Recommended upgrade paths for the reproduction phase (NOT executed here): (a) replace/extend the 0_2 head with univfd (MIT, weights in repo) or aide/spai, (b) add a 0_1 head from imageforensics_osn (MIT) or trufor (nonprofit-license risk), (c) fine-tune on the competition training zips (already extracted locally). Open-source candidates alone were NOT selectable: none covers both 0_1 and 0_2, several lack licenses or weight access, and MLLM options carry unverified resource risk.",
+  "comparison_notes": {
+    "0_2_head_ranking": [
+      "univfd (MIT, in-repo weights, linear fine-tune entry)",
+      "aide (MIT code, GDrive checkpoints unverified, stronger features)",
+      "spai (Apache-2.0, any-resolution, weights unverified)",
+      "effort (excluded: NC license)",
+      "npr_dpr / freqnet (excluded: no license file, unverified weights)",
+      "aigi_holmes (excluded: no pretrained weights)",
+      "mllm group (excluded: resource risk)"
+    ],
+    "0_1_head_ranking": [
+      "imageforensics_osn (MIT, degradation-robust)",
+      "trufor (Docker inference + training code, nonprofit-only license risk)",
+      "cat_net (splicing-centric, no license file, GDrive weights)",
+      "mantranet_pytorch (in-repo weights, no license, 2019-era, slow)"
+    ],
+    "service_skeleton": "lynote_ai_image_detector (MIT, FastAPI extra) and the official starting-kit both show the target shape; starting-kit already matches the exact contract and is local",
+    "key_gap": "no found OSS project does 3-class (original/edited/AI-full) out of the box; the combination of two heads + fusion/fine-tune on the provided zips is the realistic architecture, to be decided and built in the reproduction phase"
+  },
+  "status": "complete",
+  "blocking_conditions": [
+    "gitlab.4pd.io (official starting-kit remote) unreachable from this environment via direct and proxied routes (timeout) — mitigated by local copy at image_auth_repo @ d22762e; liveness of remote still unknown",
+    "TruFor license is nonprofit-only and Effort is CC BY-NC; whether competition/leaderboard use is commercial is unknown — if commercial, both are unusable; ImageForensics-OSN (MIT) is the license-safe 0_1 alternative",
+    "Google Drive / Baidu Pan weight links for aide, spai, trufor, cat_net, imageforensics_osn are unverified from this environment (downloads intentionally not attempted per ticket scope); if unreachable, those candidates' weight-access conditions fail",
+    "class-1 (原生无修) platform training data: spec lists no class-1 zip; local extraction of '训练集 1 0_1.zip' DOES contain a class-1 folder (1:400 images per prior run record), strongly implying the '1 0_1' zip carries both classes — but this interpretation is local evidence only, unconfirmed by a competition source"
+  ],
+  "next_stage_inputs": [
+    "reproduction phase should start from runs/t1-real-20261108/competition_spec.json + this file",
+    "local workspace: /mnt/disk3/liuyutong_home/workspace/darwin_auto/image_auth_repo (starting-kit @ d22762e), /image_auth_baseline (trained CNN + Dockerfile), /datasets/image_auth (1182 images, 3 classes)",
+    "verify-before-adopt order: univfd weights in repo (re-HEAD check) -> imageforensics_osn weight link reachability -> aide Model Zoo reachability"
+  ]
+}

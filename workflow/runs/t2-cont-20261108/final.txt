@@ -1,0 +1,46 @@
+
+
+TICKET-2 只读复核完成，未联网、未修改任何文件。以下为逐项结果。
+
+**复核范围与方式**
+- 实际读取了 `.agents/skills/darwin-workflow/SKILL.md`、`.agents/skills/solution-discovery/SKILL.md`、`runs/t2-followup-20261108/REPORT.md`、`runs/t1-real-20261108/competition_spec.json`，并独立解析/抽查了 `candidate_solutions.json`、`evidence.md`、`events.jsonl`、`skill-check2-events.jsonl`、4 个 `raw/` 证据文件及跨目录引用的 `t2-real-retry`、`t1-real` 原始来源文件（全部存在）。
+
+**一、候选权重获取与许可**
+已验证（本地离线复核）：
+- C5 代码许可 CC-BY-4.0：`raw/forensichub-pinned-license.txt` 实测 sha256 `e3cda76e…024528` 与记录一致；与 `raw/forensichub-license.json` 的 base64 内容逐字节一致；该 JSON 含 `spdx_id=CC-BY-4.0`。pinned SHA `92653068…` 与 `sha_ForensicHub.txt` 一致。残留 caveat 已如实披露：pinned 版精确抓取 URL 未记录、API 端仅覆盖 master（限流证据 `raw/pinned-license.json` 存在）。
+- C5 权重渠道：`raw/aigc-folder.html` 中 4 个 GDrive file ID（含 `1r0LXfGsO0…`）各出现 3 次，对应 `dualnet.pth`(89.6MiB)、`hifinet.pth`(76.7MiB)、`synthbuster.pth`(**11KB 异常**)、`univfd.pth`(1.59GB)；页面无任何权重许可声明 → L2=unknown 成立。
+- C1 权重大小：独立重算 `hf_fakeshield_tree.json`（26 条目）= **44.16 GB**，与候选 JSON 记录一致；许可 Apache-2.0 有 raw 证据。
+- 各候选 W1/L2 字段、`unknown` 标注完整，无省略。
+
+尚未验证 / 阻塞：
+- **B1 权重可下载性未解除**：目录页 200 ≠ 可下载，未执行实际下载与完整性验证；`synthbuster.pth` 11KB 有效性未核；Baidu/OneDrive 渠道未测。
+- **B5 权重单独许可未解除**：C5/C2/C3/C4/C6 均 unknown 或风险未消。
+- 证据链缺口：REPORT 声称对 dualnet 直链执行 `curl -I` 得 `HTTP 200 text/html size 0`，但 `events.jsonl`（全部命令 exit 0 已列明）与 `skill-check2-events.jsonl` 中**均无该命令记录**，REPORT 也未指明执行载体。该条无法独立核实；幸而其解释（HTML 响应、非 checkpoint）保守，不改变 B1 判定。
+
+**二、比赛资源限制**
+已验证：
+- Spec 记录：GPU `1/2 A100-40g`（≈20GB，S2 来源）、CPU/内存 `2c4g`（S2，单位解读为 unknown 级）、"规定资源内完成加载与推理"（S1），raw 来源文件齐全；候选 JSON 的 K1/K2 与 spec 一致。
+- C1 排除逻辑成立：44.16GB 权重是模型驻留内存的实测下界，K1(20GB)+K2(4GB) 下文档化 FP16 路径不可行。注意 REPORT 称"C1 因显存排除表述证据不足"——我认为该措辞偏强（下界推断是有效的），但 C1 不可选结论双方一致，仅记录分歧。
+
+尚未验证 / 阻塞：
+- **B3 未解除**：C5 无官方显存/内存数值，仅有 univfd≥1.6GB 估计；`2c4g` 确切单位未确认（spec unknowns 与候选 JSON 一致保留）。
+
+**三、三分类证据**
+已验证：
+- Spec 任务为三分类：类 1（原生无修实拍，S1/S2/S5）、0_1（已修图，S1/S2）、0_2（AI 全图生成，S1/S2/S5），指标 `f1_0=(f1_0_1+f1_0_2)/2`，输出契约 `result∈{1,0_1,0_2}` 与 K6/K8 对应；1 类无训练数据已列入 unknowns。
+- 候选覆盖判定：C5=unproven（域模型→三分类映射为未验证组合），其余 6 个全部 proven_partial 或更窄，与 Skill "不得把未验证组合当作已证明覆盖" 一致。
+
+尚未验证 / 阻塞：
+- **B4 未解除**：无任何候选被证明可直接产出三分类结果；C5 的映射基线未构建、未实测。
+
+**目标环境与一致性**
+- 已验证：首轮 `events.jsonl` 完整且命令全部 exit 0；`skill-check-stderr.log` 证实首次尝试 `Read-only file system (os error 30)` 失败；`skill-check2-events.jsonl` 中两份 SKILL.md 的 `cat` 均 exit 0 且 `turn.completed`；两轮 stderr 的模型列表解析错误均如实记录；REPORT 自述"重试退出码未捕获"与日志相符。
+- 已验证：`selected_candidate_id=null` 与 `status=blocked` 一致；B2 仅在 `resolved_conditions`，与 blocking 列表无矛盾；`starting-kit` 不可达（B6）维持。
+- 文档问题（不改变结论）：candidate JSON/evidence.md 中 "ticket 禁止下载" 的归因不准确，REPORT 已自我纠正为"本轮测试提示的限制"。
+
+**最终结论**
+- 阻塞**未解除**：B1、B3、B4、B5、B6 全部维持，P2 状态保持"阻塞"，不可选任何候选。
+- REPORT 总体可信：核心证据链（代码许可、目录页文件 ID/大小、C1 权重大小、Skill 读取、一致性检查）我均独立复核通过；唯一实质瑕疵是 dualnet HEAD 测试记录缺失于事件日志，建议下一 ticket 中如需引用该测试须补存原始输出。
+- 解除阻塞所需（与 REPORT 一致）：授权环境下实测 GDrive 直链下载（先 `dualnet.pth` 89.6MiB）+ 核实 11KB `synthbuster.pth`；确认 `2c4g` 单位；C5 目标环境显存/内存实测；构建并实测三分类映射基线。
+
+本次复核未修改、未创建任何文件。

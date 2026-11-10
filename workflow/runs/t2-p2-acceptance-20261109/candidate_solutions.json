@@ -1,0 +1,352 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-11-09T04:40:00Z",
+  "generated_by": "TICKET-2 P2 solution-discovery (independent acceptance run, fresh fetches only; no prior candidates/logs consulted)",
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "从用户视角判断图片是否为原图、是否被处理过、或是否完全由 AI 生成（三分类图像鉴定）",
+    "classes": {
+      "1": "原生无修实拍图",
+      "0_1": "已修图：人工处理或 AI 局部处理（PS、醒图、美图、美颜、滤镜、拼接、加字、遮挡、AI 局部重绘、AI 换背景、AI 添加/删除物体等）",
+      "0_2": "AI 全图生成"
+    },
+    "domain_scope": "文档类（发票/转账记录等）、风景类、人物动物类",
+    "ranking_metric": "f1_0 = (f1_0_1 + f1_0_2) / 2（榜单只看 0_1/0_2 两类；accuracy、f1_1 等为监控指标）",
+    "io_contract": "POST /api/v1/image-authenticity (JSON: image_base64, image_format) -> {success, message, result in {1, 0_1, 0_2}}; GET /ready; 监听 0.0.0.0:80; linux/amd64; Docker 镜像提交",
+    "provided_training_data": [
+      "训练集 0_1.zip (139,334,730 bytes, 飞书附件, 未下载未核验内部内容)",
+      "训练集 0_2.zip (437,962,033 bytes, 飞书附件, 未下载未核验内部内容)"
+    ]
+  },
+  "known_constraints": [
+    {
+      "constraint": "GPU 显存 1/2 A100-40g（解读为半张 A100-40G，约 20GB，解读未经平台确认）",
+      "source": "spec.environment.gpu (S2)"
+    },
+    {
+      "constraint": "CPU/内存 2c4g（单位按 2 核/4GB 解读，原文未注明）",
+      "source": "spec.environment.cpu_ram (S2)"
+    },
+    {
+      "constraint": "在规定资源范围内完成模型加载和推理",
+      "source": "spec.environment.model_loading_constraint (S1)"
+    },
+    {
+      "constraint": "镜像 linux/amd64，监听 0.0.0.0:80，实现 /ready 与业务接口，同步返回",
+      "source": "spec.submission.image_requirements + spec.service"
+    },
+    {
+      "constraint": "评测请求仅含 base64 图片与格式，无文件名/ID，顺序随机；任意样本最终推理失败则整次评测无成绩（S1 口径；S2 为 5% 失败率口径，冲突 C1 未裁定）",
+      "source": "spec.input.evaluation_request_properties + spec.conflicts C1"
+    },
+    {
+      "constraint": "榜单指标只含 f1_0_1 与 f1_0_2，class 1 不直接进榜但影响监控 accuracy/f1_1",
+      "source": "spec.task.ranking_metric + monitoring_metrics"
+    }
+  ],
+  "unknowns": [
+    {
+      "item": "class 1（原生无修实拍图）训练数据",
+      "note": "spec 仅列出 0_1/0_2 两个 zip；1 类数据是否存在于平台 dataset（datasets=1，内容不可列举）未核验",
+      "impact": "影响三分类监督训练路径；榜单指标 f1_0 不含 f1_1，可用双检测器+负例融合绕过，但负例来源仍需解决"
+    },
+    {
+      "item": "1/2 A100-40g 与 2c4g 的确切单位",
+      "note": "spec 已标注按 unknown 级解读使用"
+    },
+    {
+      "item": "评测管道是否保留 EXIF/C2PA 等元数据",
+      "note": "base64 内联传输通常保留原始字节，但平台是否重编码未说明",
+      "impact": "决定元数据门（C2PA/编辑软件历史）是否可用"
+    },
+    {
+      "item": "starting-kit 仓库（gitlab.4pd.io）内容与可达性",
+      "note": "本次经授权代理访问超时（HTTP 000, 20s），未读取任何内容"
+    },
+    {
+      "item": "平台是否允许使用 research-only / 非商用条款的预训练权重",
+      "note": "所有已获取来源均无相关声明，不得假定"
+    },
+    {
+      "item": "训练 zip 内部标签覆盖与规模",
+      "note": "文件名不能证明内部内容，本次未下载"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "C1",
+      "name": "自拟三通道融合架构（UnivFD 类 0_2 检测 + 篡改检测适配 0_1 + 元数据门，阈值按 f1_0 校准）",
+      "origin": "self_designed",
+      "status_in_this_run": "待实现（仅有设计，无复现、无训练、无实测）",
+      "task_coverage": "设计覆盖全部三分类：0_2=全图生成检测器高分；0_1=篡改/修图检测器高分；1=两者皆低；文档/风景/人物动物域由所依赖检测器的训练分布决定（未核验）",
+      "repro_entry": {
+        "overall": "待实现：需自建推理服务（/ready + POST 接口 + 0.0.0.0:80 + amd64 镜像）",
+        "components": [
+          {
+            "role": "0_2 检测",
+            "entry": "lynote-ai/ai-image-detector@ d3f4976d36c59974a25f55a0a7850b9866d3223b 的 UnivFD 默认后端（已验证 README 描述 CLI/API 推理入口）",
+            "url": "https://github.com/lynote-ai/ai-image-detector"
+          },
+          {
+            "role": "0_1 检测",
+            "entry": "scu-zjz/IMDLBenCo（PyPI 包 imdlbenco，NeurIPS'24 篡改检测/定位代码库）作为训练入口，需在比赛 0_1/0_2 zip 上适配并验证；操作类型到比赛 0_1 定义的映射未核验",
+            "url": "https://github.com/scu-zjz/IMDLBenCo"
+          }
+        ]
+      },
+      "dependencies": [
+        "PyTorch",
+        "transformers（ViT/CLIP 推理）",
+        "imdlbenco",
+        "c2pa（可选元数据门，未核验）",
+        "opencv/numpy（预处理）"
+      ],
+      "weights_acquisition": "UnivFD 线性头 + CLIP ViT-L/14：slxhere/UnivFD (HF, sha=4bf8aad929adfa491338cca8f58252d59a2e4516, 933MB, 可达) 或 lynote-ai 仓库指引的下载源（具体 URL 未抓取，unknown）；IMDLBenCo 预训练模型：仓库发布，逐模型条款 unknown；AIDE checkpoint：Google Drive（未验证可下载）",
+      "code_license": "组件各自：lynote-ai MIT；IMDLBenCo CC-BY-4.0；AIDE MIT；自建胶水代码自定",
+      "weight_license": "unknown（CLIP 仓库代码 MIT 但未在 README/model-card 中找到权重专用许可条款；slxhere/UnivFD 无 license 标签/文件；AIDE 为研究发布；IMDLBenCo 逐模型条款未核验）",
+      "resource_requirement": {
+        "estimate": "ViT-L/14 fp32 权重 ~1.9GB（按参数量估计），单图推理 VRAM 估计 <5GB；ViT-base ~0.34GB；均在半张 A100（约 20GB 解读）内，但未实测（本次不允许下载/运行）；2c4g 内存对数据加载偏紧，建议小 batch",
+        "measured": false
+      },
+      "selection_or_exclusion_reason": "排除（本阶段）：0_1 类映射与域覆盖无证据；权重许可 unknown；未实现未验证。保留为后续阶段首选具体路径（榜单只计 f1_0，双检测器+负例设计在指标上自洽）",
+      "unknowns": [
+        "0_1 篡改操作类型与 IMDLBenCo 基准操作的映射",
+        "class 1 负例来源",
+        "权重许可",
+        "延迟/显存实测",
+        "元数据是否保留"
+      ]
+    },
+    {
+      "id": "C2",
+      "name": "lynote-ai/ai-image-detector（外部组件：UnivFD 等后端的 AI 生成图像概率检测器）",
+      "origin": "external",
+      "source_url": "https://github.com/lynote-ai/ai-image-detector",
+      "fixed_version": "main @ d3f4976d36c59974a25f55a0a7850b9866d3223b（2026-11-09 atom feed 最新 commit；pushed_at 2026-08-05）",
+      "task_coverage": "部分：仅 AI 生成 vs 真实（二分类概率），可作 0_2 通道；不覆盖 0_1/1",
+      "repro_entry": {
+        "entry": "CLI/API 推理（README 验证描述：pip 安装后单命令输出概率与可复现报告；支持 f1/balanced_accuracy 阈值校准基准命令）",
+        "verified": "README 文档声明（未运行）"
+      },
+      "dependencies": [
+        "Python 包（MIT）",
+        "UnivFD/CLIP ViT-L/14 权重（外部下载，933MB 量级）"
+      ],
+      "weights_acquisition": "公开 HF 下载（slxhere/UnivFD 933MB 可达，2026-11-09 实测 HTTP 200 元数据）；仓库默认后端确切下载 URL 未核验 (unknown)",
+      "code_license": "MIT（GitHub API license 字段）",
+      "weight_license": "unknown（CLIP 权重无明示条款；UnivFD 头无 license 文件）",
+      "resource_requirement": {
+        "estimate": "ViT-L/14 推理，权重 ~1.9GB fp32，VRAM 估计 <5GB（未实测）",
+        "measured": false
+      },
+      "selection_or_exclusion_reason": "排除：仅覆盖 0_2 一个类（部分组件）；权重许可 unknown，不得假定允许用于比赛",
+      "unknowns": [
+        "默认权重下载源 URL",
+        "对文档类（发票/转账）AI 生成的泛化能力",
+        "延迟"
+      ]
+    },
+    {
+      "id": "C3",
+      "name": "slxhere/UnivFD（外部 HF 权重：CLIP ViT-L/14 + UnivFD 线性假/真头）",
+      "origin": "external",
+      "source_url": "https://huggingface.co/slxhere/UnivFD",
+      "fixed_version": "repo sha = 4bf8aad929adfa491338cca8f58252d59a2e4516（HF API，2026-01-24 创建）",
+      "task_coverage": "部分：AI 生成 vs 真实二分类（UnivFD，Ojha et al. CVPR 2023，跨生成器泛化）；不覆盖 0_1/1",
+      "repro_entry": {
+        "entry": "无官方推理入口（无 README）；需自写 4KB 线性头 + ViT-L/14 前向（参考 C2 仓库实现）",
+        "verified": "文件清单已核验（ViT-L-14.pt 932,768,134 B; fc_weights.pth 4,083 B）"
+      },
+      "dependencies": [
+        "PyTorch",
+        "CLIP ViT-L/14 推理代码（openai/CLIP, 代码 MIT）"
+      ],
+      "weights_acquisition": "HF 公开下载，933MB，元数据可达（本次未下载权重本体）",
+      "code_license": "n/a（纯权重仓库，无代码）",
+      "weight_license": "unknown：仓库无 license 标签/文件；ViT-L-14.pt 与 OpenAI CLIP 官方权重同尺寸，CLIP 仓库代码 MIT 但未找到权重专用条款；fc 头为 UnivFD 论文权重（论文代码许可未核验）",
+      "resource_requirement": {
+        "estimate": "同 C2（未实测）",
+        "measured": false
+      },
+      "selection_or_exclusion_reason": "排除：权重许可 unknown + 部分覆盖 + 无推理入口；保留为 C1 的 0_2 权重来源备选",
+      "unknowns": [
+        "fc 头训练数据构成",
+        "下载许可条款",
+        "0 downloads 的使用者验证缺失"
+      ]
+    },
+    {
+      "id": "C4",
+      "name": "AIDE（外部组件：CLIP 语义 + 频域/噪声特征，ICLR 2025）",
+      "origin": "external",
+      "source_url": "https://github.com/shilinyan99/AIDE",
+      "fixed_version": "main（pushed_at 2025-06-04，commit SHA 未取得：core API 配额耗尽且 atom 端点 504，unknown）",
+      "task_coverage": "部分：AI 生成检测（对 GAN/扩散/实时生成跨生成器）；不覆盖 0_1/1",
+      "repro_entry": {
+        "entry": "README 声明 2024-06-20 已发布 code + checkpoints（推理入口存在性为文档声明，未运行）",
+        "verified": "README 文档声明"
+      },
+      "dependencies": [
+        "PyTorch",
+        "CLIP",
+        "checkpoint（Google Drive 文件夹，链接已从 README 抓取）"
+      ],
+      "weights_acquisition": "Google Drive 分享链接（https://drive.google.com/drive/folders/1qx76UFvDpgCxaPLBCmsA2WY-SSzeJrd4?usp=sharing）——本次未验证可下载性 (unknown)；配套 Chameleon 数据集 README 明示仅限学术研究、商用禁止（引用见 evidence.md）",
+      "code_license": "MIT（GitHub API license 字段）",
+      "weight_license": "unknown（Drive 发布，研究性质；数据集条款明示学术限定）",
+      "resource_requirement": {
+        "estimate": "CLIP 级编码器，量级同 C2（未实测）",
+        "measured": false
+      },
+      "selection_or_exclusion_reason": "排除：checkpoint 获取未验证；部分覆盖；研究条款风险。保留为 C1 的 0_2 备选（论文报告跨生成器泛化优于 UnivFD 类基线，仅为论文声明）",
+      "unknowns": [
+        "Drive 可下载性",
+        "checkpoint 逐文件条款",
+        "commit 固定"
+      ]
+    },
+    {
+      "id": "C5",
+      "name": "IMDLBenCo（外部组件 + 训练入口：NeurIPS'24 图像篡改检测/定位基准与代码库）",
+      "origin": "external",
+      "source_url": "https://github.com/scu-zjz/IMDLBenCo",
+      "fixed_version": "main @ pushed 2026-09-04（commit SHA 未取得：atom 两次 504，unknown）；PyPI 包 imdlbenco（版本号未抓取，unknown）",
+      "task_coverage": "部分：篡改检测/定位（copy-move、splicing 等基准操作）；与比赛 0_1（美颜/滤镜/加字/AI 局部重绘等）的操作集合映射未核验；2026-08-28 博客提及统一伪造图像检测方向（未核验内容）",
+      "repro_entry": {
+        "entry": "PyPI 包 imdlbenco + 仓库训练/推理代码（README 已验证存在文档与 PyPI 徽章；入口未运行）",
+        "verified": "README 文档声明"
+      },
+      "dependencies": [
+        "PyTorch",
+        "imdlbenco (PyPI)",
+        "基准数据（其自有；比赛需换用提供的 0_1/0_2 zip）"
+      ],
+      "weights_acquisition": "仓库发布预训练模型（逐模型下载方式与条款未核验，unknown）",
+      "code_license": "CC-BY-4.0（LICENSE 文件已抓取验证：Creative Commons Attribution 4.0；GitHub API 同）",
+      "weight_license": "unknown（仓库级 CC-BY-4.0 是否覆盖全部预训练模型未逐项核验）",
+      "resource_requirement": {
+        "estimate": "检测/定位网络级（未实测；训练需 GPU，半张 A100 是否足够 unknown）",
+        "measured": false
+      },
+      "selection_or_exclusion_reason": "排除（作为独立方案）：不直接覆盖比赛 0_1 定义；作为 C1 的 0_1 训练入口价值高（可追溯、有许可的代码库）",
+      "unknowns": [
+        "操作类型映射",
+        "逐模型权重条款",
+        "commit 固定",
+        "PyPI 版本"
+      ]
+    },
+    {
+      "id": "C6",
+      "name": "dima806/ai_vs_real_image_detection（外部组件：ViT-base 微调 AI/真实二分类，Apache-2.0）",
+      "origin": "external",
+      "source_url": "https://huggingface.co/dima806/ai_vs_real_image_detection",
+      "fixed_version": "repo sha = 5d647683672ffd0080441f4e8b4345934c44cc61（HF API）",
+      "task_coverage": "部分：AI 生成 vs 真实二分类（CIFAKE 系数据，约 2023 年采集）；不覆盖 0_1/1",
+      "repro_entry": {
+        "entry": "transformers image-classification pipeline（tags: transformers/pytorch/safetensors/vit）；README 已验证含使用说明",
+        "verified": "README 文档声明（未运行）"
+      },
+      "dependencies": [
+        "transformers",
+        "google/vit-base-patch16-224-in21k 基座（其许可未核验，unknown）"
+      ],
+      "weights_acquisition": "HF 公开下载（usedStorage 6.18GB 含多文件；safetensors 85.8M 参数）",
+      "code_license": "n/a（HF 模型仓库）",
+      "weight_license": "Apache-2.0（README front-matter 与 HF tags 双重验证）",
+      "resource_requirement": {
+        "estimate": "ViT-base ~0.34GB fp32 权重，VRAM 估计 <2GB（未实测）——资源上最宽松的 0_2 备选",
+        "measured": false
+      },
+      "selection_or_exclusion_reason": "排除：作者 README 明示约 2 年前数据存在概念漂移并建议用最新标注数据重训；部分覆盖。许可最干净（Apache-2.0），可作为 C1 的低成本 0_2 基线/对照",
+      "unknowns": [
+        "对新一代扩散模型图像的检出率",
+        "CIFAKE 训练数据许可"
+      ]
+    },
+    {
+      "id": "C7",
+      "name": "C2PA/EXIF 元数据门（条件性组件：来源与编辑历史声明检测）",
+      "origin": "self_designed",
+      "status_in_this_run": "待实现（概念组件）",
+      "task_coverage": "条件性：若评测保留元数据，可辅助 0_2（AI 生成声明/C2PA manifest）与 0_1（编辑软件历史/IPTC 修改标记）；不独立覆盖任何类",
+      "repro_entry": {
+        "entry": "c2pa 工具链（c2pa-community 组织；本次 c2pa-rs raw 404、HTML 504，仓库可达性与入口未核验，unknown）",
+        "verified": "未验证"
+      },
+      "dependencies": [
+        "c2pa 解析库（许可未核验）"
+      ],
+      "weights_acquisition": "n/a（无权重，纯元数据解析，零显存）",
+      "code_license": "unknown（未核验）",
+      "weight_license": "n/a",
+      "resource_requirement": {
+        "estimate": "可忽略（未实测）",
+        "measured": false
+      },
+      "selection_or_exclusion_reason": "排除为主方案：强依赖 unknown（评测管道是否保留元数据、平台是否重编码）；保留为低成本辅助信号",
+      "unknowns": [
+        "全部：仓库可达性、许可、评测元数据保留情况"
+      ]
+    },
+    {
+      "id": "C8",
+      "name": "grip-unina/noiseprint（外部组件：相机噪声指纹，经典局部篡改检测）",
+      "origin": "external",
+      "source_url": "https://github.com/grip-unina/noiseprint",
+      "fixed_version": "master（pushed 2026-03-27；commit SHA 未取得，unknown）",
+      "task_coverage": "部分且弱：针对 copy-move/splicing 等局部篡改的噪声一致性；比赛 0_1 的美颜/滤镜/加字/AI 局部重绘与其检测目标重叠有限；不适配 0_2",
+      "repro_entry": {
+        "entry": "仓库代码（文档声明级，未运行）",
+        "verified": "未验证"
+      },
+      "dependencies": [
+        "PyTorch/原栈（未核验）"
+      ],
+      "weights_acquisition": "unknown（是否提供预训练权重未核验）",
+      "code_license": "unknown（GitHub API 返回 NOASSERTION，即自定义许可文件，未抓取内容）",
+      "weight_license": "unknown",
+      "resource_requirement": {
+        "estimate": "轻量（未实测）",
+        "measured": false
+      },
+      "selection_or_exclusion_reason": "排除：方法年代较早、操作类型不匹配、许可 unknown；仅记录为 0_1 备选思路",
+      "unknowns": [
+        "许可条款",
+        "预训练权重",
+        "commit 固定"
+      ]
+    }
+  ],
+  "selected_candidate_id": null,
+  "status": "blocked",
+  "blocking_conditions": [
+    "B1 无完整合格候选：所有外部来源均为二分类（AI/真实或篡改/真实）部分组件，不存在开箱即用的三分类（1/0_1/0_2）完整方案；自拟融合 C1 属待实现组合，本阶段不得视为已证明覆盖任务",
+    "B2 class 1 负例数据缺口：比赛仅提供 0_1/0_2 训练 zip；1 类数据来源未核验（平台 dataset 不可列举）。榜单指标 f1_0 不含 f1_1，可缓解但不改变训练数据缺失事实",
+    "B3 0_1 类映射未核验：无已验证模型直接覆盖比赛 0_1 定义（人工修图+AI 局部处理混合）；IMDLBenCo 基准操作集合与 0_1 的映射、域覆盖（文档/风景/人物动物）均需后续在真实数据上验证",
+    "B4 关键权重许可 unknown：slxhere/UnivFD（无 license）、CLIP ViT-L/14 权重（仓库 MIT 但未见权重专用条款）、AIDE（Drive 研究发布；配套数据集明示学术限定）、IMDLBenCo 逐模型条款；且平台是否允许 research-only/非商用权重无任何来源声明，按规则不得假定允许",
+    "B5 资源解读不清：'1/2 A100-40g'（约 20GB?）与 '2c4g' 单位未获平台确认；所有显存/延迟数字均为文档级估计、未实测",
+    "B6 评测失败口径冲突（spec C1）：零容忍 vs 5% 失败率未裁定，服务鲁棒性设计基准不确定",
+    "B7 starting-kit 参考仓库不可达（gitlab.4pd.io 经授权代理超时，HTTP 000），官方参考实现/模型入口缺失"
+  ],
+  "not_blocked_by": "网络/认证未构成整体阻塞：GitHub 搜索 API、HF API、raw.githubusercontent 均正常（经授权计费代理 127.0.0.1:7589 小规模访问）；本结论为'正常搜索后无合格候选 + 上述具体未决条件'，非检索能力不足",
+  "network_log": {
+    "free_proxy_18999": "unavailable：api.github.com 与 huggingface.co 均 curl 28 超时（15s, 0 bytes）",
+    "metered_proxy_7589": "available（用户授权，仅小规模元数据）：监听确认 *:7589；全部有效访问经此路由",
+    "github_api_core": "rate limit remaining=0（共享 IP 配额耗尽）→ 改用 search API（限 10/min）+ web/atom/raw 端点",
+    "atom_feed_504": "scu-zjz/IMDLBenCo commits atom 两次 504 Gateway Time-out → commit SHA 记 unknown",
+    "gitlab_4pd": "timeout（HTTP 000, 20s）→ starting-kit 不可达，未读取内容"
+  },
+  "budget_usage": {
+    "search_requests": "13 / 15（S2..S15；GitHub search API 10 次 + HF search 3 次）",
+    "tool_calls": "25 / 50",
+    "external_time_min": "~23 / 25"
+  },
+  "next_stage_actions": [
+    "下载并清点比赛 0_1/0_2 zip 的内部标签与域分布（验证 B2/B3 的前提）",
+    "在授权与流量允许下实际下载 slxhere/UnivFD 与 dima806 权重，核验许可文件并跑小规模推理（VRAM/延迟实测，验证 B5）",
+    "验证 AIDE Drive checkpoint 与 IMDLBenCo PyPI 包可获取性（B4）",
+    "确认平台对 research-only 权重的使用政策（询问平台方，勿假定）",
+    "用 C1 架构在 0_1/0_2 数据上适配 IMDLBenCo 类检测器并做 f1_0 阈值校准"
+  ]
+}

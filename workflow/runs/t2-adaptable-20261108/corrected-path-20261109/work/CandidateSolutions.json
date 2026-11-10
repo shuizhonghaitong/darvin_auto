@@ -1,0 +1,129 @@
+{
+  "schema_version": "1",
+  "ticket": "TICKET-2 solution-discovery（独立方案发现与核验；未读取其他候选方案/历史运行日志/旧工程解法）",
+  "generated_at": "2026-11-09T10:32:00+08:00",
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "从用户视角判断图片是否为原图(1)、已修图/含AI局部处理(0_1)、AI全图生成(0_2)；数据域：文档类/风景类/人物动物类",
+    "ranking_metric": "F1_0 = (F1_0_1 + F1_0_2) / 2；1 类仅监测（accuracy、F1_1）",
+    "api_contract": "POST /api/v1/image-authenticity {image_base64,image_format} → {success,message,result∈{\"1\",\"0_1\",\"0_2\"}}；GET /ready；监听 0.0.0.0:80；linux/amd64 镜像；评测请求无 ID/文件名/真实标签且顺序随机",
+    "submission": "Docker 推理镜像，darvin solution submit YAML 填 inferenceImage；可选 inferenceVolumeMounts 挂 Ceph 模型（source 固定 ceph_customer）",
+    "failure_rule": "冲突未裁定：S1 零容忍（任一重试后失败整评无效） vs S2 失败率>5% 无效；实现建议按 S1",
+    "constraints_known": [
+      "资源原文（S2 rev56）：'1/2 A100-40g显存，2c4g'——按用户指令暂按 2 核 CPU / 4GB 内存理解检查，未核实官方口径（spec unknowns：单位未注明）",
+      "模型加载与推理须在规定资源范围内完成（S1）",
+      "镜像架构 linux/amd64（S1）",
+      "训练附件：0_1 zip 139334730B + 0_2 zip 437962033B（S3 rev15）；**1 类无任何训练附件**",
+      "附件已获用户授权用于训练（本次使用授权；对外许可 unknown）"
+    ],
+    "unknowns": [
+      "2c4g 单位与适用阶段（加载/推理/训练）未核实",
+      "1/2 A100-40g 是 0.5 卡配额还是 20GB 上限未核实",
+      "测试集规模/分布/是否含 1 类未知",
+      "训练 zip 内容（图片数/格式/目录/标签分布）未解包核验",
+      "附件及派生权重对外许可条款未在任何已抓取来源给出",
+      "平台 dataset(数量1) 内容不可 CLI 只读列举",
+      "截止时间/提交次数限制未知"
+    ]
+  },
+  "candidates": [
+    {
+      "id": "C1",
+      "origin": "self-designed（自拟，未实现）",
+      "name": "自训三分类 ViT/CNN：用附件 0_1+0_2 数据微调轻量视觉模型，在 starting-kit 骨架内替换 mock 为真实推理",
+      "source_urls": [
+        "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard （starting-kit，固定 commit d22762ef44c8983a474e5079e1f4e22183b72c5d, main, 2026-11-09 实测匿名可读）",
+        "https://my.feishu.cn/docx/NSsFdVE57o0xemxcWRkcpFswnkh （S3 训练集附件清单，spec 固化）"
+      ],
+      "fixed_versions": {
+        "starting-kit": "d22762ef44c8983a474e5079e1f4e22183b72c5d",
+        "训练数据": "S3 rev15 所列 zip（token 见 task_summary 附件；未下载，版本即文档 revision 15）",
+        "基础模型": "待选定（未核验任何具体模型/权重）"
+      },
+      "task_coverage": {
+        "labels": "0_1、0_2 有训练数据（未核验内容）；1 类无训练数据——需外部来源（未获）或'两负例均不命中判 1'策略（效果未验证）",
+        "api": "starting-kit 骨架已实现全部接口契约（实测 main.py：/ready、/api/v1/image-authenticity、0.0.0.0:80、result 三值），需替换 mock 逻辑",
+        "verdict": "部分覆盖（1 类数据缺失）；排序指标所需 0_1/0_2 能力可基于附件训练，但精度上限未经任何实测"
+      },
+      "repro_entry": "待实现：starting-kit/main.py 的 SHA256%3 mock 替换为真实模型推理；训练入口需自建（数据清单→预处理→微调→导出→镜像）",
+      "dependencies": {
+        "verified": ["starting-kit 文件集（Dockerfile/requirements.txt/start.sh/main.py 等，raw 实测 200）"],
+        "gaps": ["starting-kit/requirements.txt 缺 flask（main.py import flask）→ 骨架需补依赖", "训练侧依赖（torch/框架）未定"]
+      },
+      "weights": {
+        "acquire": "无需外部权重即可起步（从零微调，收敛性未验证）；若用预训练（CLIP/ViT 系）须逐项核验地址+许可（本次未核验任何具体权重）",
+        "license": "unknown（附件训练授权仅限本次使用；派生权重对外许可无来源条款）"
+      },
+      "code_license": "unknown（仓库无 LICENSE 文件于根 tree 实测列表；匿名可读 ≠ 允许复用条款）",
+      "resources": {
+        "inference": "轻量模型（≤~200MB 权重）在 4GB RAM 内加载可行（文档级估计，未实测）；显存需求取决于 GPU 是否可用（1/2 A100-40g 语义未核实）",
+        "training": "训练资源不受比赛推理限制约束（推测，未核实官方对训练阶段的约束）",
+        "measured": "无（未训练、未部署、未压测）"
+      },
+      "why_conditional": "复现入口（自训脚本）与数据内容均未落地；1 类数据缺失未解决",
+      "unknowns": ["zip 图片数量/分布", "1 类数据策略", "基础模型选择与许可", "2c4g 语义"],
+      "exclusion_reason": "关键资源获取条件（数据未核验、1 类缺失）不满足'所有已知约束有证据'，暂不选中，保留为最可能路径"
+    },
+    {
+      "id": "C2",
+      "origin": "external（外部预训练检测器组合：篡改检测器→0_1，AI 生成检测器→0_2，双低→1）",
+      "name": "TruFor/TamTam + DIRE 类生成检测器集成",
+      "source_urls": [
+        "https://hf-mirror.com （2026-11-09 实测：api/models/tamtam-lab/TamTam → Repository not found；author=tamtam-lab → 空）",
+        "https://hf-mirror.com/api/models?search=TruFor （benjaik/trufor-ph2 license:other 0下载；alastorid/TruFor-Swift-MLX；alastorid/TruFor-DnCNN-CoreML-FP16 —— 第三方，非官方出处未核验）",
+        "https://api.github.com/search/repositories?q=DIRE+fake+image+detection （2026-11-09 实测：15s 超时失败）"
+      ],
+      "fixed_versions": { "TruFor": "unknown（官方权重在 hf-mirror 不可定位）", "DIRE": "unknown（GitHub 检索失败）" },
+      "task_coverage": {
+        "labels": "0_1（篡改/局部编辑检测）与 0_2（生成检测）为文档声明能力，未实测；1 类=两者均低阈值时的 fallback（策略未验证）",
+        "api": "无自带服务，需在 starting-kit 骨架内实现",
+        "verdict": "部分覆盖（仅 0_1/0_2 的'是/否'能力，且未核验）"
+      },
+      "repro_entry": "无已核验入口：官方权重地址不可达（tamtam-lab/TamTam not found），DIRE 仓库未定位；第三方 trufor 仓库（license:other）出处与条款未核验",
+      "dependencies": { "verified": [], "gaps": ["权重获取", "推理框架版本", "与 2c4g 的适配"] },
+      "weights": { "acquire": "unknown（官方权重本次不可定位；第三方镜像许可 unknown）", "license": "unknown（'other' 无条款原文核验）" },
+      "code_license": "unknown（TruFor 官方仓库本次未成功核验）",
+      "resources": { "inference": "unknown（模型大小/显存未核验）", "training": "n/a", "measured": "无" },
+      "why_conditional": "权重获取条件与许可全部未通过核验",
+      "unknowns": ["官方权重地址", "许可条款", "对 0_1 域（PS/美颜/加字/遮挡）的实际覆盖", "资源占用"],
+      "exclusion_reason": "权重不可获取且许可 unknown，不满足选中条件；若后续找到官方权重且许可允许，可重新评估"
+    },
+    {
+      "id": "C3",
+      "origin": "external（平台官方参考仓库 starting-kit）",
+      "name": "starting-kit Mock SUT 骨架（仅服务契约，无判别能力）",
+      "source_urls": ["https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit @ d22762ef44c8983a474e5079e1f4e22183b72c5d（2026-11-09 raw 实测 200）"],
+      "fixed_versions": { "starting-kit": "d22762ef44c8983a474e5079e1f4e22183b72c5d（main, 2026-09-18T11:59:11+08:00）" },
+      "task_coverage": {
+        "labels": "无（预测=SHA256(图片)%3 的稳定假标签，零判别力，仅 smoke test）",
+        "api": "完整覆盖接口契约（/ready、POST /api/v1/image-authenticity、0.0.0.0:80、三值 result）——已核验",
+        "verdict": "仅基础设施覆盖，不构成任务方案"
+      },
+      "repro_entry": "可核验入口存在但骨架不完整：requirements.txt 缺 flask 需补；build 需 Docker 环境（未实测构建）；仓库根部为 Judge-Flow 评测模板，不可当 SUT",
+      "dependencies": { "verified": ["Flask（代码引用）", "requirements.txt 所列 requests/Pillow/PyYAML"], "gaps": ["flask 未列入 requirements.txt（实测缺陷）", "Docker 构建/推送未实测（镜像源 harbor.4pd.io 可达性未核验）"] },
+      "weights": { "acquire": "n/a（无模型）", "license": "n/a" },
+      "code_license": "unknown（根 tree 未见 LICENSE 文件；匿名可读不等于授权条款）",
+      "resources": { "inference": "轻量（仅 Flask mock，文档级估计）", "training": "n/a", "measured": "无" },
+      "why_conditional": "作为 C1 的服务骨架基础使用，本身不覆盖分类任务",
+      "unknowns": ["复用该骨架代码的许可", "harbor.4pd.io 基础镜像/仓库可达性"],
+      "exclusion_reason": "任务覆盖=0，单独不能参赛；保留为 C1 的已核验服务入口"
+    }
+  ],
+  "selected_candidate_id": null,
+  "status": "blocked",
+  "blocking_conditions": [
+    "BC1 训练附件未下载/未解包：两个 zip（139334730B、437962033B，合计约 577MB）单文件 >20MB 需用户确认；0_1/0_2 数据规模与内容未知",
+    "BC2 标签 1 无任何训练附件（S3 仅列 0_1/0_2）；测试集是否含 1 类及占比 unknown；1 类判别策略未定",
+    "BC3 资源约束官方语义未核实：'2c4g' 单位、'1/2 A100-40g' 配额含义、适用阶段（本 ticket 仅按用户授权暂按 2 核/4GB 检查）",
+    "BC4 外部预训练权重核验失败：tamtam-lab/TamTam 在 hf-mirror 不存在；第三方 TruFor 仓库 license:other 未核验；DIRE GitHub 检索超时 → C2 权重获取与许可 unknown",
+    "BC5 许可 unknown：附件/派生权重对外许可条款无任何已抓取来源；starting-kit 代码无 LICENSE（仅用户对本次训练使用的授权）",
+    "BC6（次要）评测失败口径 S1 vs S2 冲突未裁定——不影响方案发现，影响实现验收"
+  ],
+  "verification_scope_note": "本 ticket 仅做方案发现与核验：未训练、未部署、未下载大数据、未提交；所有'实测'均指 2026-11-09 经免流代理 http://172.28.4.16:18999 的 HTTP 验证（状态见 evidence.md 表），未使用付费代理",
+  "next_steps": [
+    "用户批准后经免流代理用 lark-cli（/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/lark-cli-1.0.98/lark-cli）下载两个训练 zip 并解包清点（数量/格式/目录/标签分布）",
+    "向主办方/平台核实 2c4g 与 1/2 A100-40g 语义及 1 类数据策略",
+    "若走 C1：选定基础模型并核验权重地址+许可原文（固定 revision），补 flask 依赖，实现真实推理替换 mock",
+    "重跑验收：逐项对照 constraints_known 与 C1 资源占用实测"
+  ]
+}

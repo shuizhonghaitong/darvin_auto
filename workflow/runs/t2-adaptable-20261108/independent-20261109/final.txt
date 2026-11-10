@@ -1,0 +1,28 @@
+
+
+Both artifacts are written to the working directory and the JSON validates. Here's the wrap-up.
+
+**Skill & sources**
+- Read `solution-discovery/SKILL.md` in full (actual path is under the workflow `.agents` root; the path in the ticket prompt didn't exist).
+- Read `competition_spec.json` + raw competition-data docs `raw_doc2_xunlianji.md` (S3, training set) and `raw_doc1_bangdan_jieshao.md` (S2, rules/resources). Did not read any prior candidate, run log, or old project.
+
+**Actual searches / commands**
+- Network probes with explicit `HTTP(S)_PROXY`/lowercase + `NO_PROXY` (localhost/127.0.0.1/private), no creds printed: unmetered `172.28.4.16:18999`, metered `127.0.0.1:7589`, and direct — to hf-mirror / huggingface.co / github / gitlab.4pd.io.
+- Python `socket()`/DNS diagnostic; local cache + conda-env toolchain survey; bounded weight-file scan.
+
+**Verified**
+- **Three-class coverage:** S3 training set has **only** `0_1` (139 MB) and `0_2` (437 MB) zips; **no class-1 (native) data**. Ranking metric `F1_0=(F1_0_1+F1_0_2)/2` excludes class 1, so the leaderboard target can focus on 0_1/0_2, but native miscalls still hurt `precision_0_1/0_2`, `F1_1`, and accuracy.
+- **Local toolchain:** `evo` (torch 2.8.0+cu128, torchvision 0.23, transformers 4.57.0, cv2 4.11, accelerate) and `qwen` (torch 2.9.0, torchvision 0.24, transformers 4.57.3, cv2 4.12) — a training/inference entry is locally runnable. No relevant image weights cached.
+
+**Blocked (not claimed met)**
+- **Network:** the sandbox denies all outbound `socket()` (`EPERM`, `Errno 1`) and DNS (`EAI_AGAIN`); both proxies and direct all fail. So **no** external weights, their licenses, HF/ModelScope models, or the gitlab `starting-kit` could be fetched or verified. I recorded the exact errors and did not bypass permissions or assume connectivity.
+- **Weights/license:** obtainability + license for pretrained detectors/backbones = `unknown`.
+- **Resources:** `1/2 A100-40g + 2c4g` treated as an unverified assumption; my sandbox (64 CPU, no GPU) differs, so competition-env usage is unmeasured. `2c4g` units not explicit.
+
+**Result:** 4 candidates recorded (A: 0_1/0_2 fine-tune + native residual; B: public-detector ensemble; C: weight-free from-scratch/forensics; D: starting-kit). None has a verifiable reproduction entry plus verified resource/license conditions, so `status = blocked`, `selected_candidate_id = null`.
+
+**Artifacts (current dir only):**
+- `CandidateSolutions.json` — full comparison, source links, license/weight fields, verification results, resource & coverage, unknowns, blocking conditions (valid JSON).
+- `evidence.md` — short log of commands, results, and failures.
+
+If you want, I can (a) retry the external weight/license and starting-kit checks once a network-enabled environment is available, or (b) draft the pending training-entry script for CAND-A/C so the next phase can implement it.

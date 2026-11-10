@@ -1,0 +1,220 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-08T22:31:00+08:00",
+  "competition_spec_path": null,
+  "competition_spec": {
+    "source": "本会话用户直接提供的任务描述（无独立 CompetitionSpec 文件）；以下为完整规范内容转录",
+    "task_summary": "图片三分类：1=原生无修实拍，0_1=人工或AI局部处理，0_2=AI全图生成；覆盖领域包括文档、风景、人物动物",
+    "known_constraints": [
+      "训练数据：用户授权的压缩附件『训练集 1 0_1.zip』（预期含类别 1 与 0_1）与『训练集 0_2.zip』（预期含类别 0_2），允许用于本次比赛训练；压缩包实际内容尚未核实",
+      "算力资源：两核 CPU、4GB 内存，另有半张 A100-40GB（分区方式未知，按 ≈20GB VRAM / 16 SM 的假设处理，未验证）",
+      "本次运行约束：不读取本地历史方案、候选结果或旧工程；产物写入当前空工作目录 /tmp/t2-independent-retry-eWUewO9a",
+      "检索约束：只做小流量检索，不下载大型文件；不做训练、不做提交；仅做方案发现与核验"
+    ],
+    "unknowns": [
+      "两个 zip 内图像数量、分辨率、文件格式、类别目录/标注组织方式",
+      "三个类别是否被两个 zip 完全覆盖、类间平衡性、1 与 0_1 的标签边界定义",
+      "评测协议：测试集构成、指标（accuracy/F1/其他）、提交格式、推理硬件（是否 CPU 推理、时延要求）",
+      "比赛环境网络可用性（本沙箱无网络出口，见 network_verification）",
+      "『半张 A100-40GB』的具体划分方式（MIG 或显存配额）"
+    ]
+  },
+  "network_verification": {
+    "summary": "本沙箱无任何可用网络出口，所有外部来源（代码版本、权重、许可）本轮无法实测核验，相关字段一律标记 unknown，不作虚构",
+    "tests": [
+      {"route": "http://172.28.4.16:18999 (已知免流量代理)", "result": "curl exit 7 ECONNREFUSED（1 次小流量请求）"},
+      {"route": "http://127.0.0.1:7589 (mihomo，按用户记录为计流量)", "result": "curl exit 7 ECONNREFUSED；ss -tln 显示本机无任何监听进程"},
+      {"route": "http://172.27.128.224:8234 (终端 env 中配置的 proxy)", "result": "curl exit 7 ECONNREFUSED"},
+      {"route": "直连（--noproxy '*'）", "result": "curl exit 6 Could not resolve host（DNS 失败，沙箱无直连出口）"}
+    ],
+    "traffic_note": "仅发送 4 次 HEAD 级小请求用于诊断，未产生任何实质性检索流量",
+    "follow_up": "需用户在有网络的比赛/复现环境中执行 next_actions 中的核验命令"
+  },
+  "assumptions": [
+    "半张 A100-40GB ≈ 20GB VRAM、16 个 SM、约一半 HBM 带宽（假设，未验证；MIG 1g.20gb 为该规格的可能实现）",
+    "两核 CPU 与 4GB 内存同时承担数据预处理与（可能的）CPU 推理",
+    "zip 中类别 1/0_1 同包、类别 0_2 独立成包，即三个类别合计由两个包覆盖（来自文件名推断，未核实）",
+    "训练图片为常规 RGB 位图（jpg/png/webp 等），无特殊格式（未核实）"
+  ],
+  "candidates": [
+    {
+      "id": "C1-finetune-pretrained-backbone-3class",
+      "title": "自拟：预训练图像分类 backbone 微调 + 三分类头，直接在两个授权 zip 上训练",
+      "origin": "self_conceived_entry_with_external_components（入口自拟待实现；依赖库与权重为外部组件，需核验）",
+      "source_urls": [
+        "https://github.com/huggingface/timm",
+        "https://github.com/huggingface/transformers",
+        "https://huggingface.co/google/vit-base-patch16-224",
+        "https://github.com/openai/CLIP"
+      ],
+      "fixed_revisions": "unknown（本沙箱无网络，无法固定 commit SHA / tag；需在联网环境用 GitHub API 与 HF API 固定）",
+      "task_coverage": "条件性全覆盖：三分类头天然对应 1 / 0_1 / 0_2；前提为两个 zip 确实覆盖三类（待清点核实）。文档/风景/人物动物三领域的泛化性取决于训练数据分布（unknown）",
+      "reproduction_entry": {
+        "status": "pending_implementation（待实现，不可声称已可复现）",
+        "plan": "train.py（PyTorch）：DataLoader 从两个 zip 解压出的类别目录读图 → 预训练 backbone（候选：timm efficientnet_b0/b2 或 transformers ViT-B/16，二者选一经核验许可后确定）→ 三分类头；训练策略：先短程预热分类头、再全量微调，含图像增强与按类均衡采样（若清点显示失衡）",
+        "planned_command": "python train.py --zip1 '训练集 1 0_1.zip' --zip2 '训练集 0_2.zip' --class-map ... --epochs 20 --device cuda:0"
+      },
+      "dependencies": [
+        {"name": "PyTorch (CUDA)", "version": "unknown（联网后固定）"},
+        {"name": "timm 或 transformers（二选一，作为 backbone 库）", "version": "unknown（联网后固定）"},
+        {"name": "Pillow / numpy", "version": "unknown（联网后固定）"}
+      ],
+      "weights": {
+        "acquisition": "backbone 预训练权重从 timm hub 或 Hugging Face 下载（本阶段不下载）",
+        "url_candidates": ["timm hub tf_efficientnetb0（经 timm 库）", "https://huggingface.co/google/vit-base-patch16-224"],
+        "license": "unknown（联网后核验：timm 库代码为 MIT、transformers 代码为 Apache-2.0 系其自述，权重许可需查对应 model card / 原始发布方条款；本轮未实测，不得由代码许可推断）",
+        "size_estimate": "文档估计：EfficientNet-B0 约 20MB 级、ViT-B/16 约 330MB 级（未实测下载）"
+      },
+      "code_license": "train.py 自拟（无外部代码）；依赖库许可见 weights.license 备注",
+      "data_license": "两个 zip 获用户明确授权用于本次比赛训练（用户陈述）；数据原始授权条款 unknown",
+      "resource_requirements": {
+        "training_vram": "文档估计 < 10GB（≤110M 参数 backbone 微调，bs 32-64）→ 假设的 20GB 半张 A100 内，未实测",
+        "cpu_ram": "文档估计：num_workers=0-2、小批量下 4GB 可覆盖预处理；若 zip 含超大分辨率图需加 resize（未实测，取决于清点结果）",
+        "cpu_cores": "两核用于数据管线，训练在 GPU（文档估计，未实测）",
+        "inference": "文档估计：backbone 级模型 CPU 单图推理百毫秒级，可满足未声明的推理要求（推理硬件 unknown）"
+      },
+      "selection_or_exclusion_reason": "未选中（status=blocked 的一部分）：作为后续阶段的首要验证路径保留。排除选中的具体原因：(a) 两个 zip 不在工作目录且内容未核实，三分类覆盖前提不成立；(b) 依赖库版本、权重许可与可获取性因网络阻塞全部 unknown；(c) 评测指标未给出。上述任一补齐后本候选可满足『可核验复现入口 + 资源获取条件 + 约束满足证据』",
+      "unknowns": [
+        "zip 内容（类别、数量、分辨率、格式、平衡性）",
+        "backbone 最终选型（timm 路线 vs transformers 路线，取决于许可核验结果）",
+        "权重实际下载地址可用性与许可",
+        "评测指标与推理硬件",
+        "半张 A100 实际可用显存"
+      ],
+      "evidence_refs": [
+        "本文件 network_verification（外部来源本轮不可核验的原因）",
+        "evidence.md §本地检查（zip 未在受限搜索范围内找到）"
+      ]
+    },
+    {
+      "id": "C2-two-stage-aigc-editing-detectors",
+      "title": "外部组合：AI生成检测（DIRE/UnivFD 类）+ 编辑检测（TrecTDE 2021 类）两段式映射到三分类",
+      "origin": "external（引用开源项目；组合逻辑自拟，无现成实现）",
+      "source_urls": [
+        "https://github.com/pqoq/DIRE",
+        "https://github.com/pqoq/univfd",
+        "https://www.nist.gov/itl/iad/image-group/trectde"
+      ],
+      "fixed_revisions": "unknown（网络阻塞，无法固定 commit / 权重版本）",
+      "task_coverage": "条件性部分覆盖：0_2 由 AIGC 检测器负责（DIRE 系针对特定生成模型训练，对未知生成器与文档/风景/人物领域的泛化性 unknown）；1 vs 0_1（人工局部修图）由编辑检测器负责（TrecTDE 基线针对特定编辑类型，覆盖『人工或AI局部处理』的定义 unknown）；两段输出到三类的决策规则自拟、未验证",
+      "reproduction_entry": {
+        "status": "pending_verification（各项目含推理脚本，但入口、依赖、权重访问均未经本轮核验；不得声称可复现）",
+        "plan": "分别运行 DIRE 推理脚本与 TrecTDE 基线推理脚本，输出两个分数，再用阈值/小逻辑分类器合成三标签；合成规则需在核实数据后设计"
+      },
+      "dependencies": [
+        {"name": "PyTorch + 各项目仓库依赖", "version": "unknown"}
+      ],
+      "weights": {
+        "acquisition": "DIRE 权重经 Google Drive 分发（可访问性 unknown）；TrecTDE 训练数据/基线权重需 NIST 注册下载（可访问性 unknown，条款为研究用途限制——未核实原文）",
+        "url_candidates": ["DIRE README 中的 Google Drive 链接（未抓取）", "NIST TrecTDE 2021 数据页（未抓取）"],
+        "license": "unknown（DIRE 代码许可记忆为 GPL-3.0 系，未核实；TrecTDE 数据许可记忆为研究用途，未核实；不得由代码许可推断权重/数据许可）"
+      },
+      "code_license": "unknown（未核验）",
+      "data_license": "比赛自身 zip 数据与本项目权重/数据相互独立；TrecTDE 数据用于训练比赛模型是否被其条款允许 unknown",
+      "resource_requirements": {
+        "training_vram": "文档估计：DIRE 采用 ViT-H/14 级 backbone，显存需求高于 C1，是否在假设的 20GB 内 unknown",
+        "cpu_ram": "unknown",
+        "cpu_cores": "unknown",
+        "inference": "unknown"
+      },
+      "selection_or_exclusion_reason": "排除（作为备选记录）：(a) 权重获取存在两条未验证的访问路径（Google Drive、NIST 注册），许可 unknown；(b) 三分类组合无现成实现且未验证；(c) 对 0_1『人工或AI局部处理』的覆盖无证据；(d) 组件数量与依赖复杂度高于 C1，收益无证据支持",
+      "unknowns": [
+        "DIRE/univfd 代码许可、权重 URL 与可访问性",
+        "TrecTDE 基线的条款、权重获取方式",
+        "两检测器在文档/风景/人物动物领域的实测表现",
+        "ViT-H 级模型在假设半张 A100 上的显存占用"
+      ],
+      "evidence_refs": [
+        "本文件 network_verification"
+      ]
+    },
+    {
+      "id": "C3-clip-zero-shot-few-shot",
+      "title": "外部：CLIP zero-shot 提示分类 / 冻结 CLIP 线性探针，作为基线与兜底",
+      "origin": "external（CLIP 为外部组件；提示词设计自拟）",
+      "source_urls": [
+        "https://github.com/openai/CLIP",
+        "https://huggingface.co/openai/clip-vit-base-patch32"
+      ],
+      "fixed_revisions": "unknown（网络阻塞）",
+      "task_coverage": "条件性部分覆盖：『AI生成图 vs 真实图』zero-shot 提示可能部分有效（unknown，无证据）；『原生无修 vs 局部处理』依赖细微编辑痕迹，zero-shot 无有效证据；冻结 CLIP + 少量标注线性探针可提升，但训练数据仍是两个 zip（与 C1 共享数据前提）",
+      "reproduction_entry": {
+        "status": "pending_verification（CLIP 仓库含 zero-shot 示例脚本；本轮未核验其依赖与权重获取）",
+        "plan": "zero-shot：对三类别写提示词（如 'an unedited real photograph' / 'a photo with local editing or AI retouching' / 'an AI-generated image'）取 logit 最大值；few-shot 变体：冻结特征 + sklearn 逻辑回归"
+      },
+      "dependencies": [
+        {"name": "PyTorch + openai/CLIP", "version": "unknown"}
+      ],
+      "weights": {
+        "acquisition": "HF openai/clip-vit-base-patch32（可访问性 unknown，本沙箱无法实测）",
+        "url_candidates": ["https://huggingface.co/openai/clip-vit-base-patch32"],
+        "license": "unknown（代码记忆为 MIT、权重 model card 声明 MIT，均未核实）",
+        "size_estimate": "文档估计：ViT-B/32 约 350MB 级（未实测）"
+      },
+      "code_license": "unknown（未核验，记忆为 MIT）",
+      "data_license": "zero-shot 无需训练数据；few-shot 变体同 C1 数据前提",
+      "resource_requirements": {
+        "training_vram": "zero-shot 无需训练；线性探针 CPU 可完成（文档估计）",
+        "cpu_ram": "文档估计 4GB 内",
+        "cpu_cores": "zero-shot 推理两核偏慢但可接受（文档估计）",
+        "inference": "同上"
+      },
+      "selection_or_exclusion_reason": "排除为主方案（作为基线/兜底保留）：0_1 类别区分能力无证据，预期精度不足以作为提交方案；优点是权重获取路径单一（HF）且资源需求最低，若 C1 在复现阶段遇到权重许可问题可回退",
+      "unknowns": [
+        "CLIP 代码与权重的许可原文",
+        "HF 权重在比赛环境的可下载性",
+        "三类（尤其 1 vs 0_1）的实际精度"
+      ],
+      "evidence_refs": [
+        "本文件 network_verification"
+      ]
+    },
+    {
+      "id": "C4-train-cnn-from-scratch",
+      "title": "自拟（不推荐）：无预训练权重、从零训练轻量 CNN",
+      "origin": "self_conceived",
+      "source_urls": [],
+      "fixed_revisions": "n/a",
+      "task_coverage": "理论上可覆盖三分类，但无预训练先验，在小规模（unknown）数据上收敛质量与领域泛化风险高",
+      "reproduction_entry": {
+        "status": "pending_implementation（未计划实现）",
+        "plan": "n/a"
+      },
+      "dependencies": [
+        {"name": "PyTorch", "version": "unknown"}
+      ],
+      "weights": {
+        "acquisition": "无（随机初始化）",
+        "license": "n/a"
+      },
+      "code_license": "自拟",
+      "data_license": "同 C1",
+      "resource_requirements": {
+        "training_vram": "低（文档估计）",
+        "cpu_ram": "低",
+        "cpu_cores": "两核下从零训练耗时显著（文档估计）",
+        "inference": "低"
+      },
+      "selection_or_exclusion_reason": "排除：在有可用预训练权重的前提下，从零训练在同等资源下预期更差且更慢；无独立价值，仅作为『预训练权重全部不可得』时的降级预案",
+      "unknowns": [
+        "数据规模（决定可行性）"
+      ],
+      "evidence_refs": []
+    }
+  ],
+  "selected_candidate_id": null,
+  "status": "blocked",
+  "blocking_conditions": [
+    "B1 训练数据不可核实：『训练集 1 0_1.zip』与『训练集 0_2.zip』不在工作目录（已做 /tmp 与 darvin_auto 工作区的有界文件名搜索，均未找到），内容（类别、数量、分辨率、格式、标签组织、平衡性）全部 unknown；C1/C3(few-shot) 的三分类覆盖前提不成立",
+    "B2 网络出口不可用：免流量代理 172.28.4.16:18999、计流量 127.0.0.1:7589、终端配置 172.27.128.224:8234 均 ECONNREFUSED，本机无代理监听，直连 DNS 失败；所有外部代码版本/权重 URL/许可无法实测核验（本 JSON 中相应字段为 unknown，非虚构）",
+    "B3 评测协议缺失：测试集、指标、提交格式、推理硬件未给出，『满足所有已知约束』的判定标准不完整",
+    "B4 硬件假设未验证：半张 A100-40GB 的分区方式与可用显存（假设 ≈20GB）未知，资源满足性均为文档估计而非实测"
+  ],
+  "next_actions": [
+    "A1 获取并清点 zip：unzip -l 两个包；统计类别目录、图像数、格式与分辨率分布；确认 1/0_1/0_2 三类齐全（解决 B1，随后把 C1 数据映射写入 train.py 配置）",
+    "A2 联网后固定外部来源（各 1 次 API 小请求）：GitHub API 取 huggingface/timm、huggingface/transformers、openai/CLIP、pqoq/DIRE 的默认分支 commit SHA 与 license 字段；HF API 取 google/vit-base-patch16-224 与 openai/clip-vit-base-patch32 的 license 与文件大小；核对 timm 所选 checkpoint 的权重许可（解决 B2 中可核验部分）",
+    "A3 向比赛方/用户确认评测协议（指标、提交格式、推理硬件）（解决 B3）",
+    "A4 在目标机器确认半张 A100 的划分（nvidia-smi / MIG profile）（解决 B4）",
+    "A5 A1-A4 完成后按 C1 实现 train.py 并做小规模 smoke run（50 图、1 epoch），再决定 C1 或回退 C3"
+  ]
+}

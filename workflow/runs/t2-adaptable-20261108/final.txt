@@ -1,0 +1,21 @@
+
+
+方案发现已完成，产物已写入当前空工作目录。
+
+**产物**
+- `/tmp/t2-independent-retry-eWUewO9a/candidate_solutions.json`（已通过 JSON 校验，含完整规范转录、4 个候选、阻塞条件与后续动作）
+- `/tmp/t2-independent-retry-eWUewO9a/evidence.md`（本地实测记录、证据分级、失败条件）
+
+**实际状态：blocked（`selected_candidate_id: null`）**
+- B1 数据：两个训练 zip 在工作目录、`/tmp` 及 `darvin_auto` 工作区均未找到，内容（三类覆盖、规模、格式）全部 unknown。
+- B2 网络：本沙箱无任何可用出口——免流量 `172.28.4.16:18999`、`127.0.0.1:7589`、配置代理 `172.27.128.224:8234` 均 ECONNREFUSED（本机无代理监听），直连 DNS 失败。只发了 4 次诊断级小请求，未产生实质流量、未回退计流量路由。因此所有外部 commit SHA、权重 URL 与许可字段均如实标 `unknown`，文中版本/许可数字均注明"记忆，未核实"。
+- B3 评测协议（指标/测试集/提交格式/推理硬件）未给出。
+- B4 "半张 A100-40GB ≈ 20GB VRAM/16 SM" 已按要求注明为假设。
+
+**候选要点**
+- `C1`（首选路径）：自拟 `train.py`，预训练 backbone（timm 或 HF transformers 二选一）+ 三分类头，直接训两个 zip；入口标记待实现，未声称可复现。
+- `C2`：DIRE/UnivFD + TrecTDE 两段式组合——权重访问与许可均不可核验，排除。
+- `C3`：CLIP zero-shot/线性探针，保留为基线兜底。
+- `C4`：从零训练 CNN，不推荐的降级预案。
+
+**解除阻塞的最短路径**：在有网络的机器上先清点 zip（`unzip -l`，不依赖网络），再按 `evidence.md` §7 的 API 命令固定 timm/transformers/CLIP 的版本与许可——两者完成后 C1 即可转为可选。需要我把 zip 清点和许可核验脚本先写好备用吗？

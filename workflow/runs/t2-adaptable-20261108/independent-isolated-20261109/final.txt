@@ -1,0 +1,17 @@
+
+
+TICKET-2 完成。产物已就绪且自洽：
+
+**产物**
+- `candidate_solutions.json`（有效 JSON）：4 个候选、5 项阻塞条件、11 条网络日志、数据核验与 starting-kit 核验
+- `evidence.md`：全部实测证据、失败与未知项、最终判定
+
+**关键核验结果**
+- **数据覆盖（解除 spec 关键 unknown）**：本地找到两个训练附件副本（`darwin_auto/datasets/image_auth/`，大小与飞书元数据逐字节一致，SHA256 已记录）。实测 `训练集 1 0_1.zip` 同时含 **1 类 400 张** 与 **0_1 类 400 张**，`训练集 0_2.zip` 含 **0_2 类 400 张**；每类四域（人物/动物/文字/风景）各 100 张，jpg/png/tiff 共 1200 张，目录即标签
+- **训练/服务入口**：starting-kit 公开可读（免流代理 → gitlab.4pd.io，固定 commit `d22762ef`）——仅含 Flask mock 推理骨架（契约与 S4/S5 三方一致）和 6 个 pytest，**不含训练代码**；训练入口须自拟（候选均标"待实现"）。README 新实测：测试集 120 样本、零容忍口径
+- **权重与许可**：DINOv2-base（Apache-2.0，346MB，`f9e44c8`）、SigLIP-base（Apache-2.0，`7fd15f0`）、CLIP ViT-B/16（MIT，`57c2164`）均可经免流 hf-mirror 获取；依赖链 PyTorch/torchvision BSD-3、transformers/timm Apache-2.0、Flask BSD 均经原始文件核验。HF 多组检索未发现带许可的现成三分类模型；唯一近似件 TruthLens 仅二分类且无许可（排除为主方案）
+- **网络**：直连 `*.4pd.io` 超时 → 免流代理 200；GitHub API 403 限流 → 改 raw LICENSE 200；付费出口仅 KB 级查询；harbor.4pd.io `/v2/` 401（路由通）、nexus.4pd.io pip 200
+
+**判定**：`selected_candidate_id=null`、`status=blocked`——按 Skill 规则，微调效果与 2c4g/1/2 A100 部署资源符合性在本 ticket（禁止训练/复现）内不可实测，"未经验证的微调设想不得当作已证明覆盖任务"。**推荐路径 C1**（DINOv2-base 三分类微调 + starting-kit 骨架，全部构件已固定）及降级备选 C2、对照基线 C4 已完整记录，TICKET-3 可直接执行。
+
+需要我接着把 C1 的训练 recipe 细化成 TICKET-3 的执行清单吗？

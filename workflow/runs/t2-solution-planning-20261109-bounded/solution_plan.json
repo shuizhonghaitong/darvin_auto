@@ -1,0 +1,520 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-11-09T22:12:28+08:00",
+  "generated_by": "T2 darwin-workflow -> solution-planning, bounded run (local-only: no network/search/downloads; no implementation/training/serving/image build)",
+  "skill_usage": {
+    "darwin-workflow": {
+      "path": ".agents/skills/darwin-workflow/SKILL.md",
+      "read": true,
+      "applied": "输入为已有 CompetitionSpec：读取并验证 runs/t1-real-20261108/competition_spec.json（JSON 可解析，来源 S1-S5 及 raw 文件齐全），未重新执行需求理解；随后仅调用 solution-planning 并写入独立产物目录；方案设计结束即停止，未实现算法、未训练、未服务化、未构建镜像。"
+    },
+    "solution-planning": {
+      "path": ".agents/skills/solution-planning/SKILL.md",
+      "read": true,
+      "applied": "区分已确认要求/假设/未知项；对本地依赖与资源做了带时间戳的核实（含不稳定性观察）；设计为最简单可实现的三分类 Baseline，不要求下载或第三方权重；本文件包含全部要求键（competition_spec/task/confirmed_requirements/algorithm/inputs_outputs/dependencies/resource_assumptions/implementation/validation/risks/unknowns）；仅产出计划。"
+    },
+    "prior_artifacts_referenced_context_only": [
+      {
+        "path": "runs/t2-real-20261108/candidate_solutions.json",
+        "role": "旧 solution-discovery 链路的候选方案对比（含 OSS 检测器可覆盖性、许可证、权重可达性结论与既往本地运行证据）；本次未复核其外部链接，仅作为设计输入参考"
+      },
+      {
+        "path": "runs/t2-environment-diagnostics-20261109.md",
+        "role": "此前两次 T2 本地 Qwen 运行失败的诊断；本 bounded 运行由 Agent 直接执行，不再依赖本地 Qwen"
+      }
+    ]
+  },
+  "competition_spec": {
+    "path": "runs/t1-real-20261108/competition_spec.json",
+    "schema_version": "1",
+    "spec_generated_at": "2026-11-08T06:37:00Z",
+    "source_url": "https://darvin.originlabs.cc/subnet/detail?subnetId=196",
+    "validated": "JSON 可解析（本次运行验证）；S1-S5 来源均有 raw 文件同目录留存；spec 自带 conflicts C1/C2 与 unknowns 已继承"
+  },
+  "task": {
+    "name": "图像真伪鉴定榜（三分类图像鉴定）",
+    "objective": "从用户视角判断图片为 1（原生无修实拍图）、0_1（已修图：人工/AI 局部处理）或 0_2（AI 全图生成）",
+    "domain_scope": "文档类（发票/转账记录等）、风景类、人物动物类",
+    "ranking_metric": "f1_0 = (f1_0_1 + f1_0_2) / 2（class 1 不计入排行分）",
+    "monitored_metrics": "accuracy, f1_1, precision/recall/f1_0_1, precision/recall/f1_0_2, avg_response_time_ms, fail_rate",
+    "delivery_form": "Docker 推理镜像（S1+S4 一致；S2 的“提交结果文件”表述为未裁定冲突 C2）",
+    "service_contract": "HTTP，监听 0.0.0.0:80；GET /ready 探活；POST /api/v1/image-authenticity 同步返回 {success, message, result}"
+  },
+  "confirmed_requirements": [
+    {
+      "id": "R1",
+      "requirement": "服务监听 0.0.0.0:80，HTTP 协议",
+      "sources": [
+        "S1",
+        "S4"
+      ]
+    },
+    {
+      "id": "R2",
+      "requirement": "实现 GET /ready 探活接口",
+      "sources": [
+        "S1",
+        "S4"
+      ]
+    },
+    {
+      "id": "R3",
+      "requirement": "实现 POST /api/v1/image-authenticity，Content-Type: application/json，同步返回",
+      "sources": [
+        "S4",
+        "S5"
+      ]
+    },
+    {
+      "id": "R4",
+      "requirement": "请求字段：image_base64 (String, 必填, 不含 data:image/...;base64, 前缀)、image_format (String, 必填, 如 jpg/jpeg/png)",
+      "sources": [
+        "S5"
+      ]
+    },
+    {
+      "id": "R5",
+      "requirement": "响应字段：success (Boolean)、message (String)、result (String, 取值 1|0_1|0_2)",
+      "sources": [
+        "S5"
+      ]
+    },
+    {
+      "id": "R6",
+      "requirement": "评测请求仅含图片内容与格式，无 ID/文件名/标签，顺序随机 → 服务必须无状态、单图可独立推理",
+      "sources": [
+        "S4"
+      ]
+    },
+    {
+      "id": "R7",
+      "requirement": "镜像架构 linux/amd64",
+      "sources": [
+        "S1"
+      ]
+    },
+    {
+      "id": "R8",
+      "requirement": "在规定资源范围内完成模型加载和推理：1/2 A100-40g 显存；2c4g（单位未显式注明，见假设 A1）",
+      "sources": [
+        "S1",
+        "S2"
+      ]
+    },
+    {
+      "id": "R9",
+      "requirement": "提交 YAML：inferenceImage.repository/tag 为参赛镜像地址；可选 inferenceVolumeMounts（name 固定 model、source 固定 ceph_customer、mountPoint/srcRelativePath 可配置）挂载 Ceph 模型文件",
+      "sources": [
+        "S1"
+      ]
+    },
+    {
+      "id": "R10",
+      "requirement": "排行榜指标 f1_0 = (f1_0_1 + f1_0_2)/2",
+      "sources": [
+        "S1",
+        "S2"
+      ]
+    },
+    {
+      "id": "R11",
+      "requirement": "训练数据（飞书附件）：训练集 1 0_1.zip（139,334,730 B, token Ofj7bQtFMoe66fxcCGMc9pBSnug）与 训练集 0_2.zip（437,962,033 B, token Hab7b2O8lo6LCaxXjaNc1jV5nQh）；S3 未列出 class 1 专属数据",
+      "sources": [
+        "S3"
+      ]
+    },
+    {
+      "id": "R12",
+      "requirement": "评测失败判定存在冲突（C1）：S1 零容忍（任一样本重试后仍失败则本次评测无有效成绩）vs S2 失败率>5%（返回结果为空）",
+      "sources": [
+        "S1",
+        "S2"
+      ]
+    },
+    {
+      "id": "R13",
+      "requirement": "提交方式存在冲突（C2）：S1/S4 为 Docker 镜像 vs S2 为“提交结果文件”",
+      "sources": [
+        "S1",
+        "S4",
+        "S2"
+      ]
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "A1",
+      "assumption": "2c4g 解释为 2 CPU 核 / 4GB 内存（spec 原文未注明单位，unknown 级解读）",
+      "consequence": "服务与压测按 2 核 4GB 设计；若解释错误，T3 需重新评估并发与内存"
+    },
+    {
+      "id": "A2",
+      "assumption": "“训练集 1 0_1.zip”同时含 class 1 与 class 0_1 样本（依据：旧 candidate_solutions.json 引用的既往本地运行记录 1:400/0_1:382/0_2:400，本次未复核）",
+      "consequence": "若 T3 解压后无 class 1，触发决策点 D2"
+    },
+    {
+      "id": "A3",
+      "assumption": "按 S1+S4 的镜像提交形式实现（C2 倾向，非裁定）",
+      "consequence": "若平台实际要求结果文件，T3 需与用户确认后补充离线推理导出"
+    },
+    {
+      "id": "A4",
+      "assumption": "评测输入为标准 jpg/png 图像，单图大小有限（具体上限未给出）",
+      "consequence": "服务端设 10MB 解码上限兜底（保护 4GB 内存），超限走失败兜底而非崩溃"
+    },
+    {
+      "id": "A5",
+      "assumption": "/ready 在模型加载完成前返回 503、完成后返回 200（spec 仅要求实现探活，未规定状态码语义）",
+      "consequence": "平台若要求加载期也返回 200，T3 一行修改即可"
+    },
+    {
+      "id": "A6",
+      "assumption": "训练与本地验证在开发机 CPU 上进行（本环境无可用 GPU 驱动，2026-11-09T21:59 观测）",
+      "consequence": "模型规模限制在数 M 参数内，CPU 可训练可推理"
+    },
+    {
+      "id": "A7",
+      "assumption": "推理失败兜底标签固定为 '1'（常量，可配置）",
+      "consequence": "兜底仅影响极端坏样本的 f1 单点，避免触发 C1 零容忍失败"
+    }
+  ],
+  "open_items_requiring_confirmation": [
+    {
+      "id": "D1",
+      "item": "inferenceImage 的真实 registry 地址与推送凭证（spec 示例为占位符 harbor.example.com）",
+      "owner": "T3/用户",
+      "blocks": "仅阻塞镜像推送与 darvin solution submit，不阻塞本地实现与验证"
+    },
+    {
+      "id": "D2",
+      "item": "class 1 训练数据的实际可得性（解压缩验确认）",
+      "owner": "T3",
+      "blocks": "若缺失，三分类的 class 1 分支设计需调整（可退化为：以可用类别训练 + 未命中判 1，需用户确认口径）"
+    },
+    {
+      "id": "D3",
+      "item": "本地 darwin_auto 兄弟目录（datasets/image_auth、image_auth_repo、image_auth_baseline、runtime/venv-ml）在本次运行中观察到存在→消失的波动；T3 开工时须重新核实，若缺失需经 lark-cli 重新下载训练 zip（需要网络授权，遵循未计量代理策略）",
+      "owner": "T3",
+      "blocks": "训练数据可得性"
+    },
+    {
+      "id": "D4",
+      "item": "T3 是否允许 pip 安装 torch/numpy/Pillow（网络或本地 wheel 缓存）；本运行未验证 wheel 缓存存在",
+      "owner": "T3",
+      "blocks": "训练与服务框架选型（torch 主选 vs numpy 回退）"
+    },
+    {
+      "id": "D5",
+      "item": "docker 守护进程是否可连通（本运行仅确认 /usr/bin/docker 存在）",
+      "owner": "T3",
+      "blocks": "容器级验证与构建（本地实现阶段不阻塞）"
+    }
+  ],
+  "algorithm": {
+    "approach": "从零训练的紧凑三分类 CNN Baseline（MobileNetV2 级，~2.2M 参数，224x224 输入，3 类 softmax 头），CPU 训练、CPU 推理、权重烘焙进镜像；服务层保证任何输入都返回合法 result（零失败设计）",
+    "rationale": [
+      "排行分只看 f1_0_1 与 f1_0_2，但三分类单头是最简单实现，且 class 1 样本可得性较好（A2）时无需拆分模型",
+      "旧候选分析结论（runs/t2-real-20261108/candidate_solutions.json）：无任何单一 OSS 检测器原生覆盖 0_1+0_2+1 三类；OSS 方案（UnivFD/TruFor/ImageForensics-OSN 等）存在许可证（NC/无 LICENSE）或权重可达性风险，且需外部下载 → 作为复现阶段升级路径，不作为 Baseline",
+      "从零训练不依赖第三方预训练权重，满足本 skill“不要求搜索、下载、第三方权重或复现”的约束，且无许可证风险",
+      "可行性证据（既往本地运行，本次未复核）：390K 参数 numpy CNN 在同类开发机 CPU 上训练得到 val acc 0.678 / val f1_0 0.7052，证明该数据规模下 CPU 训练小 CNN 可行；本方案模型更大但机器有 128 核（本次实测）",
+      "CPU-only 推理在 2c4g 约束下按构造满足（不依赖 1/2 A100），规避 GPU 显存/驱动的不确定性"
+    ],
+    "data_preparation": {
+      "steps": [
+        "解压两个训练 zip 到 data/raw（unzip 本地可用）",
+        "整理为 data/classified/{1,0_1,0_2}/*.jpg|png，统计各类数量与格式分布并写入 data_audit.json",
+        "若 class 1 缺失 → 触发 D2 决策点并记录",
+        "分层 80/20 划分 train/val（固定随机种子 42），图像不跨类复制"
+      ],
+      "augmentation": "随机水平翻转（p=0.5）+ 亮度扰动（0.9-1.1）；不做重度几何/颜色失真，避免抹平伪造痕迹",
+      "normalization": "使用训练集自算的 per-channel mean/std（从零训练，不采用 ImageNet 统计量）"
+    },
+    "model_training": {
+      "primary": {
+        "framework": "PyTorch（CPU wheel）",
+        "backbone": "MobileNetV2（torchvision，num_classes=3，不使用预训练权重）",
+        "input": "224x224 RGB",
+        "optimizer": "AdamW, lr=1e-3, cosine 衰减, 40 epochs, batch=32, early-stop patience=5 on val f1_0",
+        "data_parallelism": "DataLoader workers=8~16（128 核开发机），单进程 CPU 训练",
+        "artifacts": "best_model.pt（含权重、类顺序、输入尺寸、归一化参数、框架版本）+ train_report.json"
+      },
+      "fallback": {
+        "framework": "纯 numpy CNN（沿用既往 image_auth_baseline 路线，若 D4 无法 provision torch）",
+        "note": "结构 ~0.4-2M 参数，160x160 输入；参考既往实现（文件当前不可访问，T3 需按 D3 核实或重写）"
+      },
+      "expected_training_time": "数小时量级（1.2k~2k 图，128 核 CPU；未验证，属估计）"
+    },
+    "inference_pipeline": "base64 解码（无 data-URI 前缀，兼容误带前缀的情形）→ PIL 打开并转 RGB（截断图像用 LOAD_TRUNCATED_IMAGES 重试）→ 限幅 10MB（A4）→ resize 224 → 归一化 → 前向 → argmax 得 {1,0_1,0_2} → 同步返回",
+    "zero_failure_design": "针对 C1 冲突按更严格口径设计：整条流水线 try/retry 一次/最终兜底；任何异常都返回 HTTP 200 + {success:true, message:'<降级原因>', result:'1'}（A7），保证 result 永不为空、服务永不 5xx；message 保留真实错误便于平台日志排查"
+  },
+  "inputs_outputs": {
+    "training_inputs": {
+      "本地数据（若 D3 核实可得）": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/datasets/image_auth（波动挂载，见 D3）",
+      "否则": "经 lark-cli 下载 S3 两个附件 zip（token 见 R11；需网络授权）",
+      "平台 dataset": "内容未知（spec unknown），Baseline 不依赖"
+    },
+    "service_input": "POST /api/v1/image-authenticity, JSON {image_base64: str, image_format: str}",
+    "service_output": "HTTP 200 JSON {success: true, message: str, result: '1'|'0_1'|'0_2'}（永远合法，见 zero_failure_design）",
+    "readiness_output": "GET /ready → 200（模型就绪后）/ 503（就绪前，A5）",
+    "model_artifacts": "best_model.pt（烘焙进镜像，预计 ≤10MB，无需 Ceph 挂载；inferenceVolumeMounts 保留为可选项）",
+    "submission_artifact": "solution.yaml 模板（inferenceImage.repository/tag 待 D1 填写）"
+  },
+  "dependencies": {
+    "verified_this_run": [
+      {
+        "item": "开发机 CPU 128 核 / ~2TB 内存",
+        "checked_at": "2026-11-09T21:59+08:00",
+        "evidence": "nproc / free -g"
+      },
+      {
+        "item": "本环境无可用 GPU（nvidia-smi 无法连驱动，/dev/nvidia* 不存在）",
+        "checked_at": "2026-11-09T21:59+08:00",
+        "evidence": "nvidia-smi 失败"
+      },
+      {
+        "item": "/usr/bin/docker、git、zip、unzip、taskset 存在",
+        "checked_at": "2026-11-09T22:07+08:00",
+        "evidence": "command -v；docker 守护进程连通性未验证（D5）"
+      },
+      {
+        "item": "runtime/venv：python 3.11.16，requests 2.34.2，darvin CLI 可执行；无 torch/numpy/PIL/flask/cv2",
+        "checked_at": "2026-11-09T21:59+08:00",
+        "evidence": "import 探测；该路径 22:05 已不可见（D3）"
+      },
+      {
+        "item": "系统 python3 无 numpy/PIL",
+        "checked_at": "2026-11-09T22:05+08:00",
+        "evidence": "import 报错"
+      },
+      {
+        "item": "workflow 仓库（本目录）可写，runs/ 与 .agents/skills 稳定可读",
+        "checked_at": "本次运行全程",
+        "evidence": "读写正常"
+      }
+    ],
+    "unstable_or_unverified": [
+      {
+        "item": "darwin_auto 兄弟目录：datasets/image_auth、image_auth_repo/starting-kit（main.py + model_weights.npz 1,571,082 B @commit d22762e）、image_auth_baseline、runtime/venv-ml、RUN_RECORD_image_auth.md、lark-cli",
+        "observation": "2026-11-09T22:04+08:00 stat 显示存在；22:05+08:00 同一绝对路径消失；/mnt/disk3 为 ro ext4 挂载，内容由外部进程变动",
+        "treatment": "不得当作可用事实；T3 开工时逐项重新核实（D3），可用时第一时间快照到本仓库 runs/ 下可写目录"
+      },
+      {
+        "item": "docker 守护进程连通性、构建镜像能力",
+        "treatment": "未验证（D5）"
+      },
+      {
+        "item": "torch/numpy/Pillow 的 pip 安装通道（网络或本地 wheel 缓存）",
+        "treatment": "未验证（D4）"
+      },
+      {
+        "item": "gitlab.4pd.io starting-kit 远端",
+        "treatment": "旧分析记录为不可达；本次未复测；Baseline 不依赖远端，仅需本地副本（D3）"
+      }
+    ]
+  },
+  "resource_assumptions": [
+    "评测端 1/2 A100-40g（≈20GB 显存）+ 2c4g（A1）；本 Baseline 训练/推理全 CPU，按构造满足，不使用 GPU",
+    "服务常驻内存：torch CPU 运行时 + 2.2M 参数模型 < 1GB（估计，未验证；若 D4 走 numpy 回退则 < 200MB）",
+    "单图推理延迟目标 avg < 200ms @2 核 224 输入（A6/A1 下估计，T3 用 taskset 压测验证）",
+    "Docker 镜像大小无已确认约束（unknown）；torch CPU 镜像预计 1-2GB，numpy 镜像预计 <100MB——如平台有限制需用户提供",
+    "开发机训练资源：128 核 CPU、~2TB 内存（已验证），无 GPU（已验证）"
+  ],
+  "implementation": {
+    "entry": "T3 在本仓库新建 runs/t3-implementation-<date>/image_auth/ 作为工作目录（可写、稳定），结构：data_prep.py, train.py, serve.py, Dockerfile, solution.yaml.template, tests/",
+    "steps": [
+      {
+        "no": 1,
+        "step": "环境快照：按 D3 核实 darwin_auto 各路径；可得则将 datasets/image_auth（或两个 zip）、starting-kit、venv-ml wheel 等复制到 t3 工作目录 local_cache/ 固定下来；不可得则与用户确认 lark-cli 下载授权（遵循未计量代理 172.28.4.16:18999 优先策略）",
+        "gate": "两个训练 zip 或已解压数据在工作目录就位"
+      },
+      {
+        "no": 2,
+        "step": "data_prep.py：解压/整理/统计/划分，产出 data_audit.json 与 train/val 清单",
+        "gate": "三类样本数均 >0（否则触发 D2）"
+      },
+      {
+        "no": 3,
+        "step": "provision 训练环境：新建 venv，pip 安装 torch(CPU)/numpy/Pillow（D4）；失败则切换 numpy 回退路线",
+        "gate": "import 自检通过"
+      },
+      {
+        "no": 4,
+        "step": "train.py：MobileNetV2 从零训练，记录每 epoch val f1_0，产出 best_model.pt + train_report.json",
+        "gate": "val f1_0 报告生成（不设绝对阈值，与既往 0.705 参考对比）"
+      },
+      {
+        "no": 5,
+        "step": "serve.py：stdlib ThreadingHTTPServer + 推理管线 + zero_failure_design；开发期监听可配置端口（默认 8000，容器内 80）",
+        "gate": "本地契约测试全过（见 validation）"
+      },
+      {
+        "no": 6,
+        "step": "资源压测：taskset -c 0,1 + 4GB 内存限制下跑 100~500 张 val 图，记录 avg/p95 延迟、峰值 RSS、失败数（必须为 0）",
+        "gate": "失败数 0 且延迟达标（或记录不达标原因）"
+      },
+      {
+        "no": 7,
+        "step": "Dockerfile + 构建：python:3.11-slim-bookworm，--platform linux/amd64，COPY 权重与代码，EXPOSE 80，CMD serve.py；容器内重跑契约测试（--cpus 2 --memory 4g）（依赖 D5）",
+        "gate": "容器契约测试全过"
+      },
+      {
+        "no": 8,
+        "step": "提交（需用户确认 D1 后执行）：填写 solution.yaml（inferenceImage 真实地址；无需 inferenceVolumeMounts），darvin solution submit --config solution.yaml",
+        "gate": "用户批准 + registry 凭证就绪"
+      }
+    ],
+    "notes": "步骤 1-6 不依赖网络（若 local_cache 命中）；7-8 依赖 docker/registry 可用性；任何 gate 不满足时停止并上报，不自行绕过"
+  },
+  "validation": {
+    "data_audit": "各类数量/格式/尺寸分布写入 data_audit.json；与 A2 预期（1:400, 0_1:382, 0_2:400）比对，偏差>10% 时上报",
+    "quality": "val 集 f1_0 与 per-class f1/precision/recall；参考基线：既往 numpy 390K CNN val f1_0 0.7052（旧记录，非承诺）",
+    "contract_tests": [
+      "GET /ready → 200（就绪后）",
+      "POST 每类各 1 张已知图 → result 与期望一致且 schema 合法",
+      "POST 非法输入（坏 base64 / 缺字段 / 非图像字节 / 超大 payload / 带 data-URI 前缀）→ HTTP 200 + 合法 {success,message,result}，无 5xx",
+      "随机 100 张 val 图循环 → 100% schema 合法，失败数 0（对齐 C1 零容忍）"
+    ],
+    "resource_tests": "taskset -c 0,1 + ulimit 4GB 下：avg/p95 延迟、峰值 RSS、并发 2 不劣化",
+    "container_tests": "amd64 镜像在 --cpus 2 --memory 4g 下重跑全部 contract_tests",
+    "not_validated_this_run": "本次 T2 未执行任何训练/服务/构建/提交（scope 限制）；以上为 T3 的验收清单"
+  },
+  "risks": [
+    {
+      "risk": "class 1 训练数据实际缺失或极少",
+      "impact": "0_1/0_2 精度被误判为 1 的样本拖累",
+      "mitigation": "D2 决策点；兜底标签 A7 保持 '1' 与数据缺失情形一致"
+    },
+    {
+      "risk": "C1/C2 冲突未按所选口径执行",
+      "impact": "C1 按 S2 口径实现则存在整评作废风险；C2 若平台要结果文件则镜像白做",
+      "mitigation": "按更严格口径（零失败）与 S1+S4（镜像）实现；提交前与用户确认，必要时双轨准备结果文件导出（serve.py 可加离线批量模式）"
+    },
+    {
+      "risk": "/mnt/disk3 挂载内容波动（本次实测存在→消失）",
+      "impact": "T3 开工时数据/工具可能不可得，阻塞训练",
+      "mitigation": "步骤 1 快照前置；数据可得性作为 gate 上报而非静默继续"
+    },
+    {
+      "risk": "torch 安装通道不可用（无网络/无 wheel 缓存）",
+      "impact": "主路线无法训练",
+      "mitigation": "numpy 回退路线（依赖 starting-kit/model_weights.npz 或重写）"
+    },
+    {
+      "risk": "2c4g 单位解释错误（A1）",
+      "impact": "资源设计过紧或过松",
+      "mitigation": "压测按 2 核 4GB 执行，若实际更宽裕可放宽并发"
+    },
+    {
+      "risk": "评测图经 HTTP/base64 重压缩，与训练 zip 分布有偏移",
+      "impact": "频域类特征更敏感，CNN 受影响较小",
+      "mitigation": "Baseline 接受；升级路径（ImageForensics-OSN 等抗退化方案）留待复现阶段"
+    },
+    {
+      "risk": "单图推理延迟不达标（avg_response_time_ms 被监控）",
+      "impact": "虽不计入 f1_0 但影响可观测性/后续优化方向",
+      "mitigation": "CPU 推理 + 线程上限 2；不达标则降输入尺寸 160 或切 numpy 小模型"
+    }
+  ],
+  "unknowns": [
+    {
+      "item": "task_type",
+      "note": "S1 返回 '-'（继承 spec）"
+    },
+    {
+      "item": "截止时间 / 提交次数限制",
+      "note": "所有来源未提供（继承 spec）"
+    },
+    {
+      "item": "平台 dataset（数量 1）内容",
+      "note": "CLI 无只读列举（继承 spec）；Baseline 不依赖"
+    },
+    {
+      "item": "starting-kit 远端（gitlab.4pd.io）可用性",
+      "note": "旧记录不可达，本次未复测；仅需本地副本"
+    },
+    {
+      "item": "测试集规模/分布",
+      "note": "来源未提供（继承 spec）"
+    },
+    {
+      "item": "2c4g 确切单位",
+      "note": "继承 spec；按 A1 使用"
+    },
+    {
+      "item": "“训练集 1 0_1.zip”中 '1' 的含义与是否含 class 1",
+      "note": "继承 spec unknown；A2 假设待 T3 解压验证（D2）"
+    },
+    {
+      "item": "inferenceImage 真实 registry 地址与凭证",
+      "note": "spec 仅占位示例；D1"
+    },
+    {
+      "item": "镜像大小/推送配额限制",
+      "note": "来源未提供"
+    },
+    {
+      "item": "评测请求并发度与单请求超时",
+      "note": "来源未提供；按串行/低并发设计"
+    },
+    {
+      "item": "/ready 探活状态码语义",
+      "note": "来源未规定；按 A5 实现"
+    },
+    {
+      "item": "darwin_auto 兄弟目录的波动原因",
+      "note": "疑似外部同步进程写入 ro 挂载；本次未排查（不在 T2 scope）"
+    }
+  ],
+  "feasibility_checks": {
+    "checked": [
+      "CompetitionSpec JSON 可解析、来源 raw 文件齐全",
+      "开发机 CPU 核数/内存（128 核/~2TB）",
+      "本环境无 GPU 驱动 → CPU-only 路线成立",
+      "docker/git/zip/unzip/taskset 二进制存在",
+      "runtime/venv python 与包清单（21:59 观测）",
+      "darwin_auto 本地数据/starting-kit/venv-ml 的可得性（波动，按不可用规划 + T3 快照策略）",
+      "既往 CPU 训练小 CNN 的可行性证据（旧记录引用，未复核）"
+    ],
+    "not_checked": [
+      "docker 守护进程连通性与 amd64 构建能力（D5）",
+      "torch/numpy/Pillow 安装通道（D4）",
+      "训练 zip 实际内容/类分布（需解压，T3 步骤 1-2）",
+      "推理延迟与内存实测（T3 步骤 6）",
+      "平台评测行为（重试机制、失败口径 C1、提交形式 C2 的实际执行）",
+      "gitlab.4pd.io / lark-cli 远端可达性（本运行不联网）"
+    ]
+  },
+  "conflict_handling": [
+    {
+      "conflict": "C1 评测失败判定（S1 零容忍 vs S2 5%）",
+      "handling": "按 S1 严格口径设计：服务永不返回空 result、永不 5xx、内部重试一次后兜底合法标签；spec 建议一致，不擅自裁定"
+    },
+    {
+      "conflict": "C2 提交形式（镜像 vs 结果文件）",
+      "handling": "按 S1+S4 镜像提交实现；serve.py 预留离线批量推理模式以便在 C2 裁定为结果文件时低成本切换；最终口径提交前与用户确认"
+    }
+  ],
+  "major_decisions": [
+    "Baseline = 从零训练紧凑三分类 CNN（CPU 训练/推理），不用 OSS 预训练检测器（许可证/权重可达性/三类覆盖不足，依据旧候选分析）",
+    "主框架 PyTorch（CPU），回退纯 numpy（沿用既往 390K CNN 路线）",
+    "权重烘焙进镜像（≤10MB），不使用 Ceph inferenceVolumeMounts（保留可选）",
+    "零失败设计（兜底 success:true + result='1'），对齐 C1 严格口径",
+    "T3 工作目录设在本仓库 runs/ 可写区，并前置不稳定挂载的快照步骤",
+    "提交前保留两个人工决策点：D1（registry）与 C2 口径确认"
+  ],
+  "handoff_to_t3": {
+    "plan_path": "runs/t2-solution-planning-20261109-bounded/solution_plan.json",
+    "spec_path": "runs/t1-real-20261108/competition_spec.json",
+    "blocking_for_local_implementation": [
+      "D3（数据/工具快照）",
+      "D4（训练依赖 provision）",
+      "D2（class 1 数据确认，在步骤 2 后）"
+    ],
+    "blocking_for_submission": [
+      "D1（registry 与凭证）",
+      "C2 口径与用户确认",
+      "D5（docker 可用性）"
+    ],
+    "stop_conditions": "任何 gate 不满足：停止并上报证据，不静默降级、不联网绕过、不补造数据"
+  }
+}

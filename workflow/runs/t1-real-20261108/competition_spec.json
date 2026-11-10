@@ -1,0 +1,223 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-11-08T06:37:00Z",
+  "generated_by": "TICKET-1 darwin-workflow -> competition-intake (server agent run, fresh fetches only, no stale snapshots)",
+  "source_url": "https://darvin.originlabs.cc/subnet/detail?subnetId=196",
+  "sources": [
+    {
+      "id": "S1",
+      "type": "darwin_cli_subnet_inspect",
+      "url": "https://darvin.originlabs.cc/subnet/detail?subnetId=196",
+      "command": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/venv/bin/darvin subnet inspect 196 --json",
+      "tool_path": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/venv/bin/darvin",
+      "fetched_at": "2026-11-08T06:34:14Z",
+      "fetch_status": "success",
+      "raw_file": "raw_subnet_196.json",
+      "version_info": "envelope schema_version=1, profile=prod, duration_ms=2034, no warnings/errors"
+    },
+    {
+      "id": "S2",
+      "type": "feishu_docx",
+      "title": "图像真伪鉴定榜（榜单介绍）",
+      "url": "https://my.feishu.cn/docx/GguVdTxCBoGul4xqTPscxfztn6g",
+      "document_id": "GguVdTxCBoGul4xqTPscxfztn6g",
+      "revision_id": 56,
+      "command": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/lark-cli-1.0.98/lark-cli docs +fetch --doc <url> --doc-format markdown",
+      "fetched_at": "2026-11-08T06:34:42Z",
+      "fetch_status": "success",
+      "raw_file": "raw_doc1_bangdan_jieshao.md"
+    },
+    {
+      "id": "S3",
+      "type": "feishu_docx",
+      "title": "图像鉴定-训练集",
+      "url": "https://my.feishu.cn/docx/NSsFdVE57o0xemxcWRkcpFswnkh",
+      "document_id": "NSsFdVE57o0xemxcWRkcpFswnkh",
+      "revision_id": 15,
+      "command": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/lark-cli-1.0.98/lark-cli docs +fetch --doc <url> --doc-format markdown",
+      "fetched_at": "2026-11-08T06:34:47Z",
+      "fetch_status": "success",
+      "raw_file": "raw_doc2_xunlianji.md"
+    },
+    {
+      "id": "S4",
+      "type": "feishu_wiki_doc",
+      "title": "图像真伪鉴定榜接口文档",
+      "url": "https://scn6dw1sar4n.feishu.cn/wiki/OLL0wZi94ilpgKkTHmkcXNVCn7f",
+      "wiki_node_token": "OLL0wZi94ilpgKkTHmkcXNVCn7f",
+      "document_id": "HL7JdRbb6ovlP1xwgN3cnNy7n3g",
+      "revision_id": 29,
+      "command": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/lark-cli-1.0.98/lark-cli docs +fetch --doc <wiki url> --doc-format markdown",
+      "fetched_at": "2026-11-08T06:34:50Z",
+      "fetch_status": "success",
+      "raw_file": "raw_doc3_tuili_jiekou.md"
+    },
+    {
+      "id": "S5",
+      "type": "feishu_sheet",
+      "title": "接口表格（S4 内嵌电子表格）",
+      "spreadsheet_token": "Gz7OsS2NIhYCYCt09ybca1Y6nud",
+      "revision": 26,
+      "sheets": {
+        "RUblU0": "接口说明 (A1:B5)",
+        "Cl5ExX": "请求参数说明 (A1:D3)",
+        "G2lxWB": "接口响应要求 (A1:C4)"
+      },
+      "command": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/lark-cli-1.0.98/lark-cli sheets +csv-get --spreadsheet-token Gz7OsS2NIhYCYCt09ybca1Y6nud --sheet-id <id> --format csv",
+      "fetched_at": "2026-11-08T06:35:18Z",
+      "fetch_status": "success (has_more=false for all three sheets)",
+      "raw_file": "raw_sheet_RUblU0.csv, raw_sheet_Cl5ExX.csv, raw_sheet_G2lxWB.csv"
+    }
+  ],
+  "competition": {
+    "name": { "value": "图像真伪鉴定榜", "sources": ["S1", "S2", "S4"] },
+    "query_id": { "value": "196", "sources": ["S1"], "note": "URL 参数 subnetId=196；与 backend_id 相同，按约定分别保留" },
+    "backend_id": { "value": "196", "sources": ["S1"] },
+    "internal_subnet_id": { "value": "85", "sources": ["S1"], "note": "与查询 ID 196 不同，下游使用内部 ID 时以 85 为准并核对契约地址" },
+    "contract_address": { "value": "0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb", "sources": ["S1"] },
+    "status": { "value": "ACTIVE", "sources": ["S1"] },
+    "stage": { "value": "IN_PROGRESS", "sources": ["S1"] },
+    "evaluation_mode": { "value": "automatic", "sources": ["S1"] },
+    "submission_type": { "value": "DockerImage", "sources": ["S1"], "note": "与 S2 的“提交结果文件”表述存在冲突，见 conflicts C2" },
+    "task_type": { "value": "unknown", "sources": ["S1"], "note": "S1 该字段返回 '-'，无有效值" },
+    "solutions_at_fetch": { "value": "114", "sources": ["S1"], "note": "获取时刻已有方案数，会变化" },
+    "participants_at_fetch": { "value": "11", "sources": ["S1"] },
+    "platform_datasets_count": { "value": "1", "sources": ["S1"], "note": "平台数据集数量；内容无法经 CLI 只读列举（darvin dataset 仅有 upload 子命令）" },
+    "deadline": { "value": "unknown", "sources": [], "note": "已获取来源中均未给出截止时间" },
+    "submission_attempt_limits": { "value": "unknown", "sources": [], "note": "已获取来源中均未给出提交次数限制" }
+  },
+  "task": {
+    "objective": { "value": "从用户视角判断图片是否为原图、是否被处理过、或是否完全由 AI 生成", "sources": ["S2"] },
+    "category": { "value": "三分类图像鉴定", "sources": ["S1", "S2"] },
+    "class_definitions": {
+      "1": { "value": "原生无修实拍图", "sources": ["S1", "S2", "S5"] },
+      "0_1": { "value": "已修图，包括人工处理和 AI 局部处理（例如 PS、醒图、美图、美颜、滤镜、拼接、加字、遮挡、AI 局部重绘、AI 换背景、AI 添加/删除物体等）", "sources": ["S2", "S1"] },
+      "0_2": { "value": "AI 全图生成", "sources": ["S1", "S2", "S5"] }
+    },
+    "dataset_domain_scope": { "value": "文档类（发票/转账记录等）、风景类、人物动物类", "sources": ["S2"] },
+    "ranking_metric": { "value": "f1_0 = (f1_0_1 + f1_0_2) / 2", "sources": ["S1", "S2"] },
+    "monitoring_metrics": {
+      "value": ["accuracy", "f1_1", "precision_0_1", "recall_0_1", "f1_0_1", "precision_0_2", "recall_0_2", "f1_0_2", "avg_response_time_ms", "fail_rate"],
+      "sources": ["S1"],
+      "note": "S2 以中文给出同一组指标（准确率/原图 F1/已修图 F1/R/P/AI 全图生成 F1/R/P/平均响应时间 ms/失败率），两者一致"
+    },
+    "evaluation_failure_rule": {
+      "value": "conflicting",
+      "sources": ["S1", "S2"],
+      "note": "S1：任意样本重试后仍推理失败则本次评测无有效排行榜成绩；S2：请求失败率超过 5%（返回结果为空）判定失败。见 conflicts C1，未裁定"
+    },
+    "test_set_size_or_distribution": { "value": "unknown", "sources": [], "note": "已获取来源未给出测试集规模或分布" }
+  },
+  "data": {
+    "training_materials": {
+      "value": [
+        { "name": "训练集 1 0_1.zip", "mime": "application/zip", "size_bytes": 139334730, "attachment_token": "Ofj7bQtFMoe66fxcCGMc9pBSnug", "sources": ["S3"] },
+        { "name": "训练集 0_2.zip", "mime": "application/zip", "size_bytes": 437962033, "attachment_token": "Hab7b2O8lo6LCaxXjaNc1jV5nQh", "sources": ["S3"] }
+      ],
+      "note": "文件名为 S3 原文，'训练集 1 0_1.zip' 中 '1' 的确切含义（序号或类别标记）未确认；本阶段未下载、未解压"
+    },
+    "class_1_training_data": { "value": "unknown", "sources": ["S3"], "note": "S3 仅列出 0_1 与 0_2 两个训练 zip，未见原生无修实拍图（1 类）训练数据；是否存在于其他位置未核验" },
+    "platform_dataset_content": { "value": "unknown", "sources": ["S1"], "note": "S1 显示 datasets=1，但 CLI 无只读列举命令，内容未核验" },
+    "access_policy": { "value": "intake 阶段不下载数据/模型（skill 约定）；训练 zip 通过飞书附件 token 可后续下载", "sources": ["S3"] }
+  },
+  "input": {
+    "modality": { "value": "图片，jpg/png 等常见格式", "sources": ["S2"] },
+    "request_transport": { "value": "POST JSON，图片以 Base64 内联传输（无文件上传接口描述）", "sources": ["S4", "S5"] },
+    "request_fields": {
+      "value": [
+        { "name": "image_base64", "type": "String", "required": true, "description": "图片二进制内容的 Base64 编码，不包含 data:image/...;base64, 前缀", "sources": ["S5"] },
+        { "name": "image_format", "type": "String", "required": true, "description": "图片格式，例如 jpg、jpeg、png", "sources": ["S5"] }
+      ]
+    },
+    "evaluation_request_properties": { "value": "评测请求仅包含图片内容和图片格式，不提供图片 ID、文件名、文件路径或真实标签；请求顺序随机打乱", "sources": ["S4"] }
+  },
+  "output": {
+    "form": { "value": "鉴定结果三分类，经 HTTP 响应同步返回", "sources": ["S2", "S5"] },
+    "label_space": { "value": ["1", "0_1", "0_2"], "sources": ["S1", "S2", "S4", "S5"] },
+    "response_schema": {
+      "value": [
+        { "field": "success", "type": "Boolean", "description": "是否成功", "sources": ["S5"] },
+        { "field": "message", "type": "String", "description": "提示信息", "sources": ["S5"] },
+        { "field": "result", "type": "String", "description": "鉴定结果：1=原生无修实拍图，0_1=已修图，0_2=AI 全图生成", "sources": ["S5"] }
+      ],
+      "example": { "success": true, "message": "鉴定完成", "result": "0_1" },
+      "example_source": ["S4"]
+    }
+  },
+  "service": {
+    "protocol": { "value": "HTTP", "sources": ["S4", "S5"] },
+    "listen_address": { "value": "0.0.0.0:80", "sources": ["S1"], "note": "S4 示例使用 http://localhost:80，一致" },
+    "readiness_probe": {
+      "value": "GET /ready (httpGet: path=/ready, port=80)",
+      "sources": ["S1", "S4"]
+    },
+    "business_endpoint": {
+      "value": "POST /api/v1/image-authenticity, Content-Type: application/json, 同步返回鉴定结果",
+      "sources": ["S4", "S5"]
+    },
+    "starting_kit_reference": {
+      "value": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit",
+      "sources": ["S4"],
+      "note": "外部 GitLab 参考仓库，本阶段未获取（非飞书资料，属后续实现参考），可用性未核验"
+    }
+  },
+  "environment": {
+    "image_arch": { "value": "linux/amd64", "sources": ["S1"] },
+    "gpu": { "value": "1/2 A100-40g 显存", "sources": ["S2"] },
+    "cpu_ram": { "value": "2c4g", "sources": ["S2"], "note": "原文表述；按常见记法理解为 2 CPU 核 / 4GB 内存，原文未显式注明单位，按 unknown 级解读使用" },
+    "model_loading_constraint": { "value": "在规定资源范围内完成模型加载和推理", "sources": ["S1"], "note": "具体数值以 S2 的资源限制为准" },
+    "model_mount": { "value": "如需挂载 Ceph 模型文件，通过提交 YAML 的 inferenceVolumeMounts 配置（见 submission.model_mount）", "sources": ["S1"] }
+  },
+  "submission": {
+    "method": { "value": "提交 Docker 推理镜像（SUT 镜像），在 Darwin 提交 YAML 中填写镜像地址", "sources": ["S1", "S4"], "note": "与 S2 '提交结果文件' 存在冲突，见 conflicts C2" },
+    "yaml_inference_image": {
+      "value": { "fields": ["inferenceImage.repository", "inferenceImage.tag"] },
+      "example": { "inferenceImage": { "repository": "harbor.example.com/namespace/image-authenticity-model", "tag": "0.0.1" } },
+      "sources": ["S1"]
+    },
+    "yaml_model_mount": {
+      "value": {
+        "fields": ["inferenceVolumeMounts[].name(固定 model，不可修改)", "inferenceVolumeMounts[].mountPoint(容器内挂载目录，可修改)", "inferenceVolumeMounts[].source(固定 ceph_customer，不可修改)", "inferenceVolumeMounts[].srcRelativePath(Ceph 相对目录，替换为实际路径)"]
+      },
+      "note": "该配置与 inferenceImage 平级；需要时去掉注释填写",
+      "sources": ["S1"]
+    },
+    "image_requirements": {
+      "value": ["镜像架构 linux/amd64", "服务监听 0.0.0.0:80", "实现 GET /ready 探活接口", "实现图像真伪鉴定业务接口", "在规定资源范围内完成模型加载和推理"],
+      "sources": ["S1"]
+    },
+    "cli_submit_command": { "value": "darvin solution submit --config <solution.yaml>", "sources": [], "note": "来自 darvin CLI 帮助（工具事实，非比赛来源）；本 ticket 未执行提交" }
+  },
+  "conflicts": [
+    {
+      "id": "C1",
+      "topic": "评测失败判定口径",
+      "entries": [
+        { "source": "S1", "quote": "所有测试样本均需返回合法预测。任意样本在重试后仍推理失败，则本次评测无有效排行榜成绩。", "meaning": "只要存在单个样本最终推理失败，整次评测即无有效成绩（零容忍）" },
+        { "source": "S2", "quote": "失败判定：请求失败率超过 5%（返回结果为空）", "meaning": "以失败率阈值 5% 判定，且以返回结果为空为失败定义" }
+      ],
+      "status": "unresolved",
+      "note": "两处口径不一致，未擅自裁定；建议实现时按更严格的 S1 口径设计（重试+全量合法返回），最终以平台实际评测行为为准"
+    },
+    {
+      "id": "C2",
+      "topic": "提交形式（镜像 vs 结果文件）",
+      "entries": [
+        { "source": "S1", "quote": "submission_type=DockerImage；在提交 YAML 中填写参赛镜像地址（inferenceImage）；提交镜像需实现 /ready 与业务接口", "meaning": "提交形式为 Docker 镜像，平台自动评测" },
+        { "source": "S2", "quote": "资源限制与提交方式：1/2 A100-40g显存，2c4g；提交结果文件", "meaning": "表述为提交结果文件，未提及镜像" }
+      ],
+      "status": "unresolved",
+      "note": "S1（平台当前描述）与 S4（要求 SUT 镜像实现接口）相互一致，倾向镜像提交；S2 的'提交结果文件'可能为旧表述，但未核验，不裁定"
+    }
+  ],
+  "unknowns": [
+    { "item": "task_type", "note": "S1 返回 '-'", "sources": ["S1"] },
+    { "item": "截止时间 / 提交次数限制", "note": "所有已获取来源均未提供", "sources": [] },
+    { "item": "1 类（原生无修实拍图）训练数据", "note": "S3 未列出对应 zip", "sources": ["S3"] },
+    { "item": "平台 dataset(数量 1) 的内容", "note": "CLI 无只读列举能力", "sources": ["S1"] },
+    { "item": "starting-kit 仓库可用性与内容", "note": "外部 GitLab，本阶段未获取", "sources": ["S4"] },
+    { "item": "测试集规模/分布", "note": "来源未提供", "sources": [] },
+    { "item": "2c4g 的确切单位", "note": "原文未显式注明", "sources": ["S2"] },
+    { "item": "'训练集 1 0_1.zip' 文件名中 '1' 的含义", "note": "按原文保留，未解释", "sources": ["S3"] }
+  ]
+}

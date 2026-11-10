@@ -1,0 +1,251 @@
+{
+  "schema_version": "1",
+  "ticket": "TICKET-2 solution-discovery (independent run, no other-run candidates/logs read)",
+  "generated_at": "2026-11-09T05:40:00Z",
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "三分类图像真伪鉴定：1=原生无修实拍图, 0_1=已修图(人工/AI局部处理), 0_2=AI全图生成；域覆盖文字(文档)、风景、人物、动物",
+    "ranking_metric": "f1_0 = (f1_0_1 + f1_0_2) / 2（仅 0_1/0_2 两类进入主榜指标；accuracy/f1_1 等为监控指标）",
+    "interface": "Docker 镜像 linux/amd64，监听 0.0.0.0:80，GET /ready，POST /api/v1/image-authenticity (JSON: image=base64, image_format)，同步返回 {success, message, result}",
+    "resources": {
+      "deployment": "S2 原文: 1/2 A100-40g 显存, 2c4g（原文未显式注明单位；本次按 2 核 CPU / 4GB 内存理解检查，属暂定假设而非已核实官方限制）",
+      "training": "未知（比赛未提供训练资源配置说明；训练在本地/自有环境进行，仅受数据与工程能力约束）"
+    },
+    "verification": "平台自动评测，DockerImage 提交；存在口径冲突 C1（S1 零容忍 vs S2 失败率>5%）与 C2（镜像 vs 结果文件），未裁定"
+  },
+  "known_constraints": [
+    "镜像架构 linux/amd64；服务监听 0.0.0.0:80；GET /ready 探活；业务接口 POST /api/v1/image-authenticity",
+    "部署资源（S2 原文，单位未显式注明）：1/2 A100-40g 显存 + 2c4g；模型加载与推理须在规定资源范围内完成",
+    "评测请求仅含图片 base64 + 格式，无 ID/路径/标签；顺序随机",
+    "提交形式：Darwin YAML inferenceImage（S1/S4 一致；S2 '提交结果文件' 表述冲突未裁定，倾向镜像）",
+    "Ceph 模型挂载可用（inferenceVolumeMounts, source=ceph_customer）",
+    "测试集共 120 个样本（starting-kit 根 README @ d22762ef：'所有 120 个样本必须返回合法预测'）；任意样本重试耗尽后仍失败则本次评测 _score=0（与 S1 口径一致，S2 的 5% 口径仍为未裁定冲突 C1）"
+  ],
+  "unknowns": [
+    "截止时间 / 提交次数限制（来源未提供）",
+    "平台 dataset(数量1) 内容（CLI 无只读列举；未核验）",
+    "2c4g 确切单位与是否为硬性官方限制（原文未注明；本次按 2核CPU/4GB 内存假设检查）",
+    "starting-kit 仓库内容与可用性（进行中）",
+    "各类别 400 张训练样本是否足以支撑 f1_0 排名（训练充分性，待评估）",
+    "0_2 训练样本的生成来源/模型分布是否与测试集一致（无法核验）"
+  ],
+  "data_verification": {
+    "status": "verified (local copies of the two Feishu attachments found at darwin_auto/datasets/image_auth/, sizes match S3 exactly)",
+    "files": [
+      {
+        "path": "darwin_auto/datasets/image_auth/train_1_0_1.zip",
+        "bytes": 139334730,
+        "sha256": "b540fa9d90e1026dea4223cac23041251f6515c5aa5610025db0c74ea82144a8",
+        "s3_attachment": "训练集 1 0_1.zip",
+        "contents": "class 0_1: 400 images (4 cats x 100: 人物/动物/文字/风景); class 1: 400 images (same 4 cats); plus __MACOSX/.DS_Store packaging junk"
+      },
+      {
+        "path": "darwin_auto/datasets/image_auth/train_0_2.zip",
+        "bytes": 437962033,
+        "sha256": "3f10c7a8bb4e7b1d93ba1ea0555cf4231988dd947d17b3170829dc76589d9253",
+        "s3_attachment": "训练集 0_2.zip",
+        "contents": "class 0_2: 400 images (4 cats x 100: 人物/动物/文字/风景); plus __MACOSX packaging junk"
+      }
+    ],
+    "label_scheme": "labels by directory (top-level class dir: 1 / 0_1 / 0_2); filenames are MD5-like, no per-image label file",
+    "resolves_spec_unknown": "S3 文档仅列两个 zip，spec 曾标 '1 类训练数据 unknown'；实测 train_1_0_1.zip 同时包含 class 1 与 class 0_1，三类标签均有 400 张本地可用数据",
+    "caveat": "本地副本为 2026-11-03 下载/解压产物（本次未重新下载）；zip 大小与 S3 附件元数据逐字节一致，testzip 通过；附件内容授权用于训练（用户确认），但本核验仅证明结构与计数，不证明每张图标注正确性"
+  },
+  "candidates": [
+    {
+      "id": "C1",
+      "name": "DINOv2-base 预训练视觉编码器 + 自拟三分类微调（SigLIP/CLIP 为备选权重）",
+      "origin": "self-designed (自拟, 未实现)",
+      "task_coverage": "设计上覆盖全部三类标签(1/0_1/0_2)与四域(人物/动物/文字/风景)——训练数据本地实测 400/400/400 张；覆盖率主张为设计推断，非实测（未训练，本 ticket 禁止）",
+      "training_entry": "待实现：自拟 PyTorch 脚本（transformers/timm + PyTorch，均已核验许可），输入 datasets/image_auth/ 解压目录（目录即标签），输出 3 类 softmax 头；recipe 建议：linear-probe 或全量微调 ViT，224/320 输入，类别均衡（天然均衡），小数据增强（色彩/几何），1200 张规模下 1-2 GPU 小时量级（未实测）",
+      "serving_entry": "可核验：starting-kit @ gitlab.4pd.io gaoziming/image_authenticity_verification_leaderboard, commit d22762ef44c8983a474e5079e1f4e22183b72c5d（main, 2026-09-18）——Flask 服务骨架，接口契约与 S4/S5 一致（image_base64+image_format → {success,result,message}，GET /ready，0.0.0.0:80）；mock 标签逻辑按文件内 TODO 替换为真实推理",
+      "weights": {
+        "primary": {
+          "repo": "facebook/dinov2-base",
+          "url": "https://hf-mirror.com/facebook/dinov2-base",
+          "pinned_revision": "main@f9e44c814b77203eaa57a6bdbbd535f21ede1415",
+          "license": "apache-2.0 (HF cardData 实测)",
+          "files": "model.safetensors 346.3MB / pytorch_model.bin 346.4MB (实测大小)",
+          "acquire": "免流代理 http://172.28.4.16:18999 → hf-mirror.com 可达(API 200)；TICKET-3 下载 346MB"
+        },
+        "alt1": {
+          "repo": "google/siglip-base-patch16-224",
+          "pinned_revision": "main@7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed",
+          "license": "apache-2.0 (HF cardData 实测)",
+          "files": "model.safetensors 812.7MB（双塔，视觉塔约一半）",
+          "note": "zero-shot 与监督微调均可用；文件较大"
+        },
+        "alt2": {
+          "repo": "openai/clip-vit-base-patch16",
+          "pinned_revision": "main@57c216476eefef5ab752ec549e440a49ae4ae5f3",
+          "license": "MIT (openai/CLIP 仓库 raw LICENSE 实测；HF 卡片无 license 标记)",
+          "files": "pytorch_model.bin 598.6MB",
+          "note": "zero-shot 提示分类亦可用（见 C4）"
+        }
+      },
+      "code_license": {
+        "self_code": "无许可问题（自有实现）",
+        "deps": "PyTorch BSD-3-Clause / torchvision BSD-3-Clause / transformers Apache-2.0 / timm Apache-2.0 / Flask BSD(PyPI classifier 'OSI Approved :: BSD License')——均经原始文件元数据核验",
+        "docker_base": "harbor.4pd.io/lab-platform/inf/python:3.9（内网 Harbor，许可 unknown；/v2/ 可达 HTTP 401=路由通，拉取可行性待 TICKET-3）"
+      },
+      "data_license": "比赛提供附件，用户确认授权用于训练（本任务范围内）；正式条款 unknown（S3 文档未载）",
+      "resource_requirements": {
+        "training": "自拟（未实测）：单卡 GPU 或 CPU 均可（1200 张×ViT-B 规模小）；训练资源比赛未提供/未限制",
+        "deployment": "1/2 A100-40g(≈20GB VRAM) + 2c4g（暂定假设）：DINOv2-base 权重 346MB → 推理内存估计 1.5-2.5GB（VRAM/RAM），有余量；为文件大小+常规估计，非本环境实测峰值 → 待 TICKET-3 测量；avg_response_time_ms 为监控指标，无硬性文档限值"
+      },
+      "reason_not_selected": "微调效果未实测（本 ticket 禁止训练）；部署资源符合性仅估计未测量；数据正式许可 unknown。满足 skill 排除条件：'未经验证的微调设想不得当作已证明覆盖任务'、'已知约束缺少满足证据不能被选中'。其余条件（数据存在性、入口可核验、权重可获取、许可、资源估计）均已具备且为各候选中证据最完整。",
+      "next_steps_for_ticket3": "1) 解压已备数据集(已存在)→2) 经免流代理下载 dinov2-base safetensors(346MB, f9e44c8)→3) 按 training_entry recipe 训练并本地 f1_0 评估→4) 以 starting-kit 骨架接入推理(ONNX/Torch, GPU 优先, 2c 下延迟测量)→5) 资源峰值测量(内存/显存/延迟)→6) Docker 构建(amd64)与 120 样本零容忍健壮性(解码失败回退/重试)"
+    },
+    {
+      "id": "C2",
+      "name": "轻量 CNN（torchvision MobileNetV3-Large / EfficientNet-B0）三分类微调",
+      "origin": "self-designed (自拟, 未实现)",
+      "task_coverage": "设计覆盖三类标签；轻量 CNN 对'修图 vs 原图'细微痕迹的判别力通常弱于大 ViT（设计推断，未实测）",
+      "training_entry": "待实现：torchvision/timm 标准分类微调，同 C1 数据布局",
+      "serving_entry": "同 C1（starting-kit @ d22762ef）",
+      "weights": {
+        "source": "torchvision 官方预训练权重（随 PyTorch/torchvision 发布，权重 URL 在 download.pytorch.org）",
+        "license": "模型权重许可需按 torchvision 各自来源（BSD 框架 + 各权重声明；本次未逐一核验每个 checkpoint 的权重条款 → partial unknown）",
+        "files": "~14-50MB 量级（未实测本网络可达性：download.pytorch.org 未探测）"
+      },
+      "code_license": "同 C1 依赖链（PyTorch/torchvision BSD-3 已核验）",
+      "resource_requirements": {
+        "training": "极低（CPU 可训）",
+        "deployment": "最小占用（<1GB RAM 估计），对 2c4g 最友好；延迟低（估计）"
+      },
+      "reason_not_selected": "权重下载可达性未核验；判别力主张未实测；许可部分 unknown。作为 C1 失败时的降级备选保留。"
+    },
+    {
+      "id": "C3",
+      "name": "TruthLens 现成 AIGC 二分类检测器（Medsa/ai-image-authenticity-detector）作辅助组件",
+      "origin": "external (HF 现成组件)",
+      "source": {
+        "url": "https://hf-mirror.com/Medsa/ai-image-authenticity-detector",
+        "pinned": "repo lastModified 2026-03-07；文件 detector_scripted.pt 15.16MB / improved_detector_weights.pt 15.11MB（实测列表）"
+      },
+      "task_coverage": "仅二分类 FAKE(AI生成)/REAL(真实)；输入 32×32 多分支 CNN（空间/频域/噪声）；**不覆盖** 0_1 与 0_2 的区分，也不是三分类完整方案；'REAL' 与 1 类的'原生无修实拍'口径未必一致（无法核验其训练数据）",
+      "weights_license": "unknown（HF 卡片无 license 字段；0 下载/1 like，来源可信度低）",
+      "code_license": "unknown（无源码架构定义，仅 TorchScript）",
+      "resource_requirements": "极小（15MB，CPU 可跑）",
+      "reason_not_selected": "许可 unknown + 仅二分类 + 无下载量佐证 + 32×32 输入信息损失；按 skill：'权重不可获取(许可不明)时如实说明'、组件级不能覆盖完整任务。保留价值：其 freq/noise 分支思想可启发 C1 的特征设计（仅思想借鉴，不复制权重）。",
+      "serving_entry": "无独立服务入口（仅为可嵌入 C1/C2 推理管线的检测组件；TorchScript 单文件加载，需自拟调用代码，待实现）"
+    },
+    {
+      "id": "C4",
+      "name": "CLIP zero-shot 三提示分类基线（无训练）",
+      "origin": "self-designed (自拟, 未实现) + external 权重",
+      "task_coverage": "设计覆盖三类（提示：original unedited photo / edited or retouched photo / fully AI-generated image）；zero-shot CLIP 对像素级编辑痕迹与'原生 vs 已修'的区分能力通常有限（设计推断，未实测）；作为最快可跑的基线用于 TICKET-3 对照",
+      "training_entry": "无需训练（zero-shot）；这是四个候选中唯一不依赖自训模型的",
+      "serving_entry": "同 C1（starting-kit @ d22762ef）",
+      "weights": {
+        "repo": "openai/clip-vit-base-patch16",
+        "pinned_revision": "main@57c216476eefef5ab752ec549e440a49ae4ae5f3",
+        "license": "MIT（openai/CLIP 仓库 raw LICENSE 实测）",
+        "files": "pytorch_model.bin 598.6MB（含文本塔，zero-shot 需要）"
+      },
+      "resource_requirements": {
+        "training": "无",
+        "deployment": "~1.2GB 权重占用估计（双塔），2c4g/20GB VRAM 内（估计）"
+      },
+      "reason_not_selected": "任务覆盖为未验证设想（zero-shot 对'已修图'类别尤其不可靠）；资源符合性未实测。保留为 TICKET-3 的对照基线。",
+      "code_license": {
+        "self_code": "无许可问题（自有实现）",
+        "deps": "同 C1 依赖链（transformers Apache-2.0 / PyTorch BSD-3，已核验）",
+        "docker_base": "同 C1（harbor.4pd.io 内网基础镜像，许可 unknown）"
+      }
+    }
+  ],
+  "selected_candidate_id": null,
+  "status": "blocked",
+  "blocking_conditions": [
+    "B1 任务覆盖未实测：所有候选的三分类判别能力（尤其 0_1 vs 1 的细微修图痕迹）都未经训练/评测证明；本 ticket 禁止训练与复现（TICKET-3 范围）。已尝试：HF 检索 4 组关键词（image authenticity / aigc detection / ai generated image / deepfake / image forensics / image manipulation，免流代理）与 GitHub 检索 1 次（付费代理，436 repo，多为学术拼贴检测）——未发现带许可的现成三分类(1/0_1/0_2)模型。",
+    "B2 部署资源符合性未实测：1/2 A100-40g + 2c4g（S2 原文，单位未官方注明，按暂定假设检查）下模型加载内存/显存/延迟均无本环境测量证据，仅有权重文件大小+常规估计。",
+    "B3 数据正式许可条款 unknown：用户已授权附件用于训练（本任务范围可用），但 S3 文档未载正式条款；平台 dataset(1) 内容亦无法经 CLI 只读核验。",
+    "B4 内部基础设施可用性部分未决：harbor.4pd.io 基础镜像拉取（/v2/ 可达 401，拉取权限 unknown）；nexus.4pd.io pip 源可达 200；gitlab.4pd.io 仅可经免流代理访问（直连超时）。均不阻塞方案判断，阻塞 Docker 构建（TICKET-3/4 范围）。",
+    "B5 评测口径冲突 C1/C2 未裁定（S1 零容忍 vs S2 失败率5%；镜像 vs 结果文件）：starting-kit 根 README 实测支持 S1 口径（120 样本、任意失败 _score=0）与镜像流程，但未平台终裁。"
+  ],
+  "network_log": [
+    {
+      "route": "free proxy http://172.28.4.16:18999",
+      "target": "https://hf-mirror.com/",
+      "http_code": 200,
+      "ok": true
+    },
+    {
+      "route": "paid proxy http://127.0.0.1:7589",
+      "target": "https://github.com/",
+      "http_code": 200,
+      "ok": true
+    },
+    {
+      "route": "direct (NO_PROXY *.4pd.io)",
+      "target": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard",
+      "http_code": 0,
+      "ok": false,
+      "error": "curl exit 28 timeout 20s, 0 bytes"
+    },
+    {
+      "route": "free proxy http://172.28.4.16:18999",
+      "target": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard",
+      "http_code": 200,
+      "ok": true
+    },
+    {
+      "route": "free 18999",
+      "target": "gitlab.4pd.io api (project 13071, tree/commits/files)",
+      "http_code": 200,
+      "note": "starting-kit 全部文件已取，固定 commit d22762ef44c8983a474e5079e1f4e22183b72c5d"
+    },
+    {
+      "route": "free 18999",
+      "target": "hf-mirror.com api (模型元数据/tree/commits)",
+      "http_code": 200,
+      "note": "dinov2-base/siglip/clip/medsa 已核验；search 端点间歇返回 HTML 挑战页（节流），换词重试部分成功"
+    },
+    {
+      "route": "free 18999",
+      "target": "harbor.4pd.io/v2/",
+      "http_code": 401,
+      "note": "路由可达（401=到服务器，属 Docker registry 正常鉴权响应）；拉取权限 unknown"
+    },
+    {
+      "route": "free 18999",
+      "target": "nexus.4pd.io pypi simple",
+      "http_code": 200,
+      "note": "内部 pip 源可达"
+    },
+    {
+      "route": "paid 7589",
+      "target": "api.github.com/repos/*",
+      "http_code": 403,
+      "note": "共享出口 IP(151.242.36.40) 匿名限流；改用 raw.githubusercontent.com 成功"
+    },
+    {
+      "route": "paid 7589",
+      "target": "raw.githubusercontent.com (CLIP/timm/transformers/pytorch/vision LICENSE, api.search 1次)",
+      "http_code": 200,
+      "note": "仅小文件(许可证头部)与 1 次搜索 API；无大文件下载"
+    },
+    {
+      "route": "paid 7589",
+      "target": "pypi.org Flask 3.0.3 json",
+      "http_code": 200,
+      "note": "license classifier 核验"
+    }
+  ],
+  "starting_kit_verification": {
+    "repo": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard",
+    "fixed_commit": "d22762ef (main, 2026-09-18, latest of 3 commits; full id fetchable via API)",
+    "access": "public read via free proxy http://172.28.4.16:18999 (direct *.4pd.io NO_PROXY route times out)",
+    "contents": {
+      "starting-kit/": "参赛方 SUT mock 服务：Flask, main.py (POST /api/v1/image-authenticity: image_base64+image_format -> {success,result,message}, GET /ready, 0.0.0.0:80, 端口环境变量 MOCK_SERVER_PORT); requirements.txt=Flask>=2.3.0; Dockerfile FROM harbor.4pd.io/lab-platform/inf/python:3.9, pip 源 nexus.4pd.io; build.sh 构建并推送 harbor-contest.4pd.io/gaoziming/sut/...; start.sh 运行 python3 main.py",
+      "root README.md": "任务说明+接口契约+评测规则（120 样本、零容忍、f1_0 排序）+ 榜单部署流程 (darvin dataset upload / subnet deploy)",
+      "root Dockerfile": "Judge-Flow 评测镜像（主办方侧，FROM harbor.4pd.io/inf/base-python3.8-ubuntu:1.1.0）",
+      "tests/": "pytest 用例 6 个（call_inference/failure_branch/main_failure_path/security/starting_kit/timeout_resolution）",
+      "utils/": "file.py/logger.py/request.py 辅助库"
+    },
+    "license": "unknown — 仓库无 LICENSE 文件（tree 列表中未见），README 未声明许可；代码为公开可读的项目方参考实现，复用其接口契约与 mock 结构属任务指定资料；直接复制其代码的许可状态未确认",
+    "note": "starting-kit 仅提供推理服务骨架（mock 标签），不含训练代码与模型；训练入口需自拟（待实现）"
+  },
+  "selection_note": "发现工作本身已完成（数据/入口/权重/许可/网络全部按 skill 逐项核验），但按 skill 选择规则——\"不能把未经验证的组件组合、改造或微调设想当作已证明覆盖比赛任务；任何已知约束缺少满足证据则该候选不能被选中\"——所有候选的核心主张（三分类微调/适配能否取得合格 f1_0）与部署资源实测在本 ticket 范围（禁止训练/复现/下载大权重）内不可证明，故 selected_candidate_id=null、status=blocked。C1 为推荐路径，全部可核验构件已固定，供 TICKET-3 直接执行。"
+}

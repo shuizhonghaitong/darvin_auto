@@ -1,0 +1,44 @@
+{
+  "schema_version": "1",
+  "ticket": "TICKET-2 solution-discovery (independent run 2026-11-09, paid-proxy allowed)",
+  "generated_at": "2026-11-09T11:40:00+08:00",
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "三分类图像鉴定：1=原生无修实拍图，0_1=已修图（人工+AI局部处理），0_2=AI全图生成",
+    "ranking_metric": "F1_0 = (F1_0_1 + F1_0_2) / 2（仅两个非原图类计入排序）",
+    "monitoring_metrics": ["accuracy", "f1_1", "precision/recall/f1 for 0_1 and 0_2", "avg_response_time_ms", "fail_rate"],
+    "interface": "Docker 镜像 linux/amd64；监听 0.0.0.0:80；GET /ready；POST /api/v1/image-authenticity {image_base64, image_format} -> {success, message, result in {\"1\",\"0_1\",\"0_2\"}}",
+    "failure_rule_conflict": "S1 零容忍 vs S2 失败率>5%（未裁定，按严格口径设计）",
+    "dataset_scope": "文档类（发票/转账记录等）、风景类、人物动物类",
+    "deployment_resources_provisional": {
+      "value": "1/2 A100-40g 显存 + 2c4g（按 2 核 CPU / 4GB 内存解读）",
+      "source": "S2 raw_doc1（原文未注明 2c4g 单位）；用户授权暂按此检查",
+      "status": "provisional_assumption_NOT_verified_official"
+    },
+    "training_resources": {
+      "value": "unknown",
+      "note": "来源未规定训练资源；训练发生在参赛者本地，产物为含模型权重的镜像。本机资源待核。"
+    }
+  },
+  "known_constraints": [
+    "提交形式：Docker 推理镜像（S1/S4 一致；S2 称提交结果文件，冲突 C2 未裁定）",
+    "result 必须是 \"1\"/\"0_1\"/\"0_2\" 三个字符串之一",
+    "评测请求随机顺序、无图片 ID/文件名",
+    "镜像架构 linux/amd64",
+    "排序仅看 F1_0_1 与 F1_0_2 均值；accuracy 与 F1_1 为监测指标"
+  ],
+  "unknown_items": [
+    "训练附件 zip 内部实际标签覆盖（文件名不能证明内容）：'训练集 1 0_1.zip'(139334730 B, token Ofj7bQtFMoe66fxcCGMc9pBSnug)、'训练集 0_2.zip'(437962033 B, token Hab7b2O8lo6LCaxXjaNc1jV5nQh)；S3 未列出 1 类 zip",
+    "'训练集 1 0_1.zip' 文件名中 '1' 的含义",
+    "starting-kit 仓库（https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit）可用性与内容",
+    "2c4g 确切单位与是否为官方限制",
+    "平台 dataset(数量1) 内容（CLI 无只读列举）",
+    "测试集规模/分布",
+    "截止时间/提交次数限制"
+  ],
+  "candidates": [],
+  "selected_candidate_id": null,
+  "status": "in_progress",
+  "blocking_conditions": [],
+  "note": "初始骨架；随核验更新。"
+}

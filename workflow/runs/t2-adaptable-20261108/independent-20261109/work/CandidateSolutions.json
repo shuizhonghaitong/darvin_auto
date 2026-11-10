@@ -1,0 +1,280 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-11-09T00:00:00+08:00",
+  "generated_by": "TICKET-2 darwin-workflow -> solution-discovery (independent run; execution sandbox blocks all outbound network -> offline local-cache/competition-data verification only)",
+  "skill_read": {
+    "path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/.agents/skills/solution-discovery/SKILL.md",
+    "status": "read in full",
+    "note": "The path given in the ticket prompt (/mnt/disk3/liuyutong_home/.agents/skills/solution-discovery/SKILL.md) did not exist; the actual skill lives under the workflow .agents root and was read there."
+  },
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "从用户视角对单张图片做三分类鉴定：1=原生无修实拍图；0_1=已修图(人工+AI局部处理)；0_2=AI全图生成。数据域：文档类(发票/转账)、风景类、人物动物类。",
+    "input": "POST /api/v1/image-authenticity (JSON, image_base64 无前缀 + image_format)，评测请求仅含图片内容与格式，顺序随机打乱，无ID/文件名/真实标签。",
+    "output": "HTTP 同步响应 {success, message, result in [1,0_1,0_2]}；服务监听 0.0.0.0:80，含 GET /ready。",
+    "submission": "Docker 推理镜像 linux/amd64；可选 Ceph 挂载(inferenceVolumeMounts)。S1/S4 一致为镜像提交，S2 旧表述为结果文件(冲突 C2 未裁定)。",
+    "ranking_metric": "F1_0 = (F1_0_1 + F1_0_2) / 2  —— 排序指标只含两个0类，不含1类(原生)。1类仅为监测指标 F1_1/准确率。",
+    "evaluation_failure_rule": "冲突 C1 未裁定：S1 零容忍(任一样本重试后失败则整次无成绩) vs S2 失败率>5%(返回为空)。实现建议按更严格 S1。",
+    "sources": [
+      "S1(raw_subnet_196.json)",
+      "S2(raw_doc1_bangdan_jieshao.md)",
+      "S3(raw_doc2_xunlianji.md)",
+      "S4(raw_doc3_tuili_jiekou.md)",
+      "S5(raw_sheet_*.csv)"
+    ]
+  },
+  "known_constraints": [
+    {
+      "item": "资源",
+      "value": "1/2 A100-40g 显存 + 2c4g (S2 原文；单位未在原文显式注明)",
+      "treated_as": "待验证运行资源假设，非已证实官方限制(按本 ticket 指令)",
+      "source": "S2"
+    },
+    {
+      "item": "提交物",
+      "value": "镜像需实现 /ready 与业务接口，在 0.0.0.0:80 监听，规定资源内完成模型加载与推理",
+      "source": "S1/S4"
+    },
+    {
+      "item": "训练数据可获取性",
+      "value": "用户确认 '图像鉴定-训练集' 附件(0_1/0_2 两 zip)可用于训练",
+      "source": "user instruction + S3"
+    },
+    {
+      "item": "权重许可",
+      "value": "代码/权重/数据许可须分别核实；不得由框架代码许可推断权重许可(技能要求)",
+      "source": "skill"
+    },
+    {
+      "item": "失败口径",
+      "value": "C1 未裁定(零容忍 vs 5%)",
+      "source": "conflict C1"
+    }
+  ],
+  "unknowns": [
+    {
+      "item": "1类(原生无修实拍图)训练数据",
+      "status": "CONFIRMED ABSENT in provided S3 training zips",
+      "impact": "缺少原生负样本；对排序指标 F1_0 影响为：原生样本若被误判为0_1/0_2会成为假阳性、拉低 precision_0_1/0_2；对 F1_1/准确率为直接缺陷。"
+    },
+    {
+      "item": "2c4g 的确切单位",
+      "status": "unknown",
+      "note": "原文未显式注明"
+    },
+    {
+      "item": "预训练权重可获取性及其许可",
+      "status": "UNVERIFIABLE (sandbox 阻断所有出站网络)",
+      "evidence": "socket() -> EPERM(errno 1)，DNS -> EAI_AGAIN；curl 6/7 于 172.28.4.16:18999、127.0.0.1:7589、直连"
+    },
+    {
+      "item": "starting-kit 仓库(gitlab.4pd.io)可用性与内容",
+      "status": "UNVERIFIABLE (网络阻断)"
+    },
+    {
+      "item": "测试集规模/分布",
+      "status": "unknown (来源未提供)"
+    },
+    {
+      "item": "截止时间/提交次数限制",
+      "status": "unknown"
+    },
+    {
+      "item": "平台 dataset(数量1)内容",
+      "status": "unknown (CLI 无只读列举)"
+    }
+  ],
+  "verification": {
+    "network": {
+      "status": "BLOCKED_BY_SANDBOX",
+      "unmetered_proxy_172.28.4.16_18999": "curl (7) Couldn't connect to server；socket() -> EPERM",
+      "metered_proxy_127.0.0.1_7589": "curl (7) Couldn't connect to server；socket() -> EPERM（本 sandbox 内不可达，即使调用前曾监听）",
+      "direct_no_proxy": "curl (6) Could not resolve host (DNS -> EAI_AGAIN)",
+      "conclusion": "执行沙箱在网络层禁止一切出站 socket；无法进行任何外部检索/元数据/权重/许可核验。未尝试绕过权限。",
+      "env_set": "HTTP_PROXY/HTTPS_PROXY/http_proxy/https_proxy 分别设为两个代理；NO_PROXY/no_proxy 含 localhost,127.0.0.1,0.0.0.0,(172.28.4.16)。未输出任何代理凭据。"
+    },
+    "local_toolchain": {
+      "status": "VERIFIED_PRESENT",
+      "base_python": "python3 3.10.21 (miniconda base): torch/transformers/cv2/PIL/timm/sklearn/onnxruntime 均 MISSING",
+      "env_evo": "torch 2.8.0+cu128, torchvision 0.23.0+cu128, transformers 4.57.0, opencv 4.11.0, numpy 1.26.4, PIL 12.2.0, accelerate 0.34.2; cuda_available=False(本机无GPU), 64 线程",
+      "env_qwen": "torch 2.9.0+cu128, torchvision 0.24.0+cu128, transformers 4.57.3, opencv 4.12.0, numpy 2.2.6, PIL 12.0.0",
+      "note": "本机为开发沙箱(64核/无GPU)，与比赛 2c4g+1/2 A100 不同，不能据此度量比赛资源占用。"
+    },
+    "local_model_weights": {
+      "status": "NONE_RELEVANT_CACHED",
+      "hf_hub_cache": "仅 models--kernels-community--flash-attn3 (kernel, 无图像分类权重)",
+      "torch_checkpoints_cache": "不存在",
+      "bounded_scan": "在 ~/.cache 与 darvin_auto (maxdepth 6) 未发现图像模型 .safetensors/.ckpt/.pth/.pt 权重"
+    },
+    "data_coverage": {
+      "status": "VERIFIED",
+      "source": "raw_doc2_xunlianji.md (S3, revision 15)",
+      "training_zips": [
+        {
+          "name": "训练集 1 0_1.zip",
+          "size_bytes": 139334730,
+          "class": "0_1",
+          "feishu_token": "Ofj7bQtFMoe66fxcCGMc9pBSnug"
+        },
+        {
+          "name": "训练集 0_2.zip",
+          "size_bytes": 437962033,
+          "class": "0_2",
+          "feishu_token": "Hab7b2O8lo6LCaxXjaNc1jV5nQh"
+        }
+      ],
+      "class_1_native_data": "NONE listed in S3 -> 提供数据不覆盖 1 类",
+      "ranking_metric_check": "F1_0=(F1_0_1+F1_0_2)/2 不含 1 类 -> 排序目标可仅围绕 0_1/0_2 优化，但原生样本误判仍会拉低 precision_0_1/0_2 与 F1_1/准确率",
+      "zip_integrity_note": "本 ticket 未下载/解压(网络阻断+>20MB 需用户确认)；仅核验 S3 文档层级的类覆盖。"
+    }
+  },
+  "candidates": [
+    {
+      "id": "CAND-A",
+      "type": "self_conceived",
+      "name": "轻量CNN 0_1/0_2 微调 + 原生作为残差/置信度判定",
+      "description": "以提供的 0_1/0_2 训练集微调一个轻量分类骨干(ResNet18/MobileNetV3/EfficientNet-B0 量级)，产出 {0_1,0_2}；原生(1)通过 OOD/置信度阈值或 'non-processed' 判定得到。排序指标 F1_0 只含 0_1/0_2，与目标对齐。",
+      "task_coverage": {
+        "0_1": "有训练数据(0_1.zip, 139MB)",
+        "0_2": "有训练数据(0_2.zip, 437MB)",
+        "1_native": "无训练数据 -> 原生判定为未解决设计问题(见 unknowns/阻塞)"
+      },
+      "reproduction_entry": "待实现(pending)。本机工具链可支撑(torch 2.8/2.9 + torchvision + transformers + cv2 已装于 evo/qwen)，但训练入口脚本为自拟、尚未编写/验证。",
+      "dependencies": [
+        "torch/torchvision(已具备)",
+        "OpenCV/PIL(已具备)",
+        "轻量骨干预训练权重(需下载->当前不可获取/未核实)",
+        "FastAPI/Flask 服务框架(标准库级, 待确认本机可用性)",
+        "0_1/0_2 zip(需经飞书 token 下载, >20MB 需用户确认)"
+      ],
+      "weight_acquisition": "预训练骨干权重：网络阻断下无法获取，本地无缓存 -> unknown/blocked；许可亦无法核实。",
+      "code_license": "自拟代码(本次未编写) -> 许可未定；所用框架 torchvision 代码 Apache-2.0(未在本次环境核实)。",
+      "weight_license": "unknown (无法核实，网络阻断)",
+      "resource_requirements": {
+        "runtime_inference": "轻量CNN 推理预计远低于 4GB RAM 与 1/2 A100 显存(文档估计, 未实测)",
+        "training": "若仅用 2 CPU/4GB 从头/微调训练：4GB 内存对数据加载偏紧、2核偏慢；1/2 A100 可显著加速。均为假设，未实测。",
+        "verified": false
+      },
+      "select_or_exclude_reason": "排除(暂不可选中)：原生类无训练数据(数据覆盖缺口)，且预训练权重可获取性/许可无法核实(沙箱阻断网络)。排序目标对齐度高、可自研，是有条件候选而非已验证合格候选。",
+      "unknowns": [
+        "原生判定方法",
+        "权重许可",
+        "训练资源实测",
+        "服务框架本机可用性"
+      ],
+      "supporting_links": [
+        "S3 raw_doc2_xunlianji.md",
+        "S2 raw_doc1_bangdan_jieshao.md",
+        "本地 conda envs: evo/qwen"
+      ]
+    },
+    {
+      "id": "CAND-B",
+      "type": "external",
+      "name": "公开预训练检测器集成 (AI生成检测 + 图像篡改/取证检测)",
+      "description": "用公开预训练 'AI生成图像检测' 模型判 0_2、'图像篡改/拼接取证' 模型判 0_1、两者皆否判原生 1。无需本比赛数据训练，依赖现成权重。",
+      "task_coverage": {
+        "0_1": "依赖篡改/取证检测器(组件级, 非端到端保证)",
+        "0_2": "依赖AI生成检测器",
+        "1_native": "由 '皆否' 残差得到"
+      },
+      "reproduction_entry": "unknown：需指向具体公开模型(如 HF/ModelScope 上的 AI-image / manipulation 检测器)。本次网络阻断，未定位到任何可固定的具体模型、commit/revision 或权重地址。",
+      "dependencies": [
+        "多个外部预训练权重(网络阻断, 无法获取/核实)",
+        "对应推理代码/依赖"
+      ],
+      "weight_acquisition": "unverifiable (sandbox 阻断网络, 本地无相关权重缓存)",
+      "code_license": "unknown (无法核实)",
+      "weight_license": "unknown (无法核实)",
+      "resource_requirements": {
+        "note": "取决于所选检测器，未确定 -> unknown",
+        "verified": false
+      },
+      "select_or_exclude_reason": "排除(暂不可选中)：未找到并可核实任何具体外部检测器的权重、版本与许可(网络阻断)；且 '检测器输出->比赛三类' 的映射与文档/风景/人物域适配均无证据。",
+      "unknowns": [
+        "具体模型选择",
+        "权重地址/版本",
+        "许可",
+        "域适配",
+        "资源"
+      ],
+      "supporting_links": []
+    },
+    {
+      "id": "CAND-C",
+      "type": "self_conceived",
+      "name": "无预训练权重(从头训练)轻量CNN/取证特征分类器",
+      "description": "回答 '权重是否必要'：可设计完全无外部预训练权重的方案——用 torch/torchvision/cv2 从头训练轻量CNN，或基于经典取证特征(如 JPEG 量化/噪声残差/ELA)训练分类器，仅用 0_1/0_2 数据，原生残差。",
+      "task_coverage": {
+        "0_1": "有数据",
+        "0_2": "有数据",
+        "1_native": "无数据 -> 同 CAND-A 的缺口"
+      },
+      "reproduction_entry": "待实现(pending)。无外部权重依赖，本机工具链(torch/torchvision/cv2/numpy/PIL)已具备，故 '无权重路径可复现性' 在工具链层面成立；具体脚本尚未编写/训练/验证。",
+      "dependencies": [
+        "torch/torchvision/cv2/numpy/PIL(已具备)",
+        "0_1/0_2 zip(需下载)"
+      ],
+      "weight_acquisition": "不需要预训练权重(方案本身不依赖外部权重)。",
+      "code_license": "自拟(未编写) -> 未定；框架许可(未在本次环境核实)。",
+      "weight_license": "n/a (无外部权重)",
+      "resource_requirements": {
+        "weight_free_reproducible": "是——无需外部下载即可训练/推理，工具链本地可复现",
+        "training_on_2c4g": "从头训练在 2 CPU/4GB 上偏慢且内存偏紧(文档估计, 未实测)；推理在 4GB 内可行(估计)",
+        "quality_caveat": "从头/取证特征通常弱于预训练 warm-start，且仍未解决原生类数据缺口",
+        "verified": false
+      },
+      "select_or_exclude_reason": "作为 '无权重可复现' 的条件性候选保留：它证明了在工具链层面不依赖外部权重也能推进，但仍受原生数据缺口与未实测资源约束，不能据此判定已满足全部比赛约束。",
+      "unknowns": [
+        "原生判定",
+        "训练资源实测",
+        "分类器质量上限"
+      ],
+      "supporting_links": [
+        "本地 conda envs: evo/qwen",
+        "S3 raw_doc2_xunlianji.md"
+      ]
+    },
+    {
+      "id": "CAND-D",
+      "type": "external",
+      "name": "基于任务引用的 starting-kit 参考仓库",
+      "description": "S4 引用的外部参考仓库 gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard (starting-kit)，可能含期望的训练入口/数据格式/推理脚手架。",
+      "task_coverage": {
+        "note": "未知，无法访问核实"
+      },
+      "reproduction_entry": "unknown：URL=https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit ；本次网络阻断(socket EPERM)无法访问，可用性/内容/commit 均未核实。",
+      "dependencies": [
+        "该仓库可访问(未核实)"
+      ],
+      "weight_acquisition": "unknown (无法核实)",
+      "code_license": "unknown (无法核实)",
+      "weight_license": "unknown (无法核实)",
+      "resource_requirements": {
+        "note": "unknown",
+        "verified": false
+      },
+      "select_or_exclude_reason": "排除(暂不可选中)：任务直接引用但完全无法访问/核实(沙箱阻断网络)，不能据其存在推断任何满足约束的证据。",
+      "unknowns": [
+        "可访问性",
+        "内容",
+        "训练入口",
+        "数据格式",
+        "许可"
+      ],
+      "supporting_links": [
+        "S4 参考链接(未访问)"
+      ]
+    }
+  ],
+  "selected_candidate_id": null,
+  "status": "blocked",
+  "blocking_conditions": [
+    "网络：执行沙箱在网络层禁止一切出站 socket(socket() -> EPERM, DNS -> EAI_AGAIN)。无法核实任何外部预训练权重、其使用许可、HF/ModelScope 模型、或 starting-kit 仓库。此为本次全部外部核验的硬阻塞。",
+    "数据覆盖：提供的 S3 训练集仅含 0_1 与 0_2，缺 1 类(原生)训练数据。原生判定方法未解决；虽然排序指标 F1_0 不含 1 类，但原生样本误判仍会拉低 precision_0_1/0_2、F1_1 与准确率。",
+    "权重许可：CAND-A/B/D 依赖的预训练权重可获取性与许可均 unknown(无法核实)；CAND-C 无外部权重、工具链本地可复现，但仍受原生数据缺口与未实测资源约束。",
+    "资源：2c4g + 1/2 A100 为待验证假设；本机沙箱(64核/无GPU)与比赛环境不同，无法实测训练/推理资源占用；2c4g 单位未显式注明。",
+    "训练入口：所有自拟候选(CAND-A/C)的训练/推理入口均为待实现(pending)，尚未编写、训练或验证；不满足技能 '具备可核验复现入口' 的选中条件。"
+  ],
+  "not_claims_acceptance": "依据技能约定：网络阻断导致关键约束(权重获取/许可、原生数据覆盖、资源实测、starting-kit)缺少满足证据，故 status=blocked、selected_candidate_id=null；未宣称任何候选已通过验收。"
+}

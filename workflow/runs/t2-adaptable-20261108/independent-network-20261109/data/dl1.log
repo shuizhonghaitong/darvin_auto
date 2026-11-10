@@ -1,0 +1,21 @@
+[lark-cli] [WARN] uat-client: refresh failed for ou_e8431a3fa60c5914a571acaa6d8fb29e, token cleared: The refresh token has been revoked. Please note that a refresh token can only be used once.
+warning: token lookup failed; using original file resolution (type=authentication subtype=token_missing)
+{
+  "ok": false,
+  "identity": "user",
+  "error": {
+    "type": "authentication",
+    "subtype": "token_missing",
+    "message": "need_user_authorization (user: ou_e8431a3fa60c5914a571acaa6d8fb29e)",
+    "hint": "run `lark-cli auth login --scope \"drive:file:download docs:permission.member:auth drive:drive.metadata:readonly wiki:node:retrieve\" --no-wait --json` to get device_code and verification_url; present verification_url to the user exactly and end this turn; after the user confirms authorization, run `lark-cli auth login --device-code <device_code>` in a later turn to finish login",
+    "user_open_id": "ou_e8431a3fa60c5914a571acaa6d8fb29e"
+  },
+  "_notice": {
+    "update": {
+      "command": "lark-cli update",
+      "current": "1.0.98",
+      "latest": "1.0.99",
+      "message": "lark-cli 1.0.99 available, current 1.0.98, run: lark-cli update"
+    }
+  }
+}

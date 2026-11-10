@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "retrieved_at": "2026-11-08",
+  "sources": {
+    "darvin": {"url": "https://darvin.originlabs.cc/subnet/detail?subnetId=196", "description": "Darvin CLI subnet inspect 196 业务详情；查询 ID 196，返回 subnet_id 85"},
+    "overview": {"url": "https://my.feishu.cn/docx/GguVdTxCBoGul4xqTPscxfztn6g", "revision": 56},
+    "training": {"url": "https://my.feishu.cn/docx/NSsFdVE57o0xemxcWRkcpFswnkh", "revision": 15},
+    "interface": {"url": "https://scn6dw1sar4n.feishu.cn/wiki/OLL0wZi94ilpgKkTHmkcXNVCn7f", "document_id": "HL7JdRbb6ovlP1xwgN3cnNy7n3g", "revision": 29},
+    "interface_tables": {"spreadsheet_id": "Gz7OsS2NIhYCYCt09ybca1Y6nud", "sheet_ids": {"interface": "RUblU0", "request": "Cl5ExX", "response": "G2lxWB"}, "revision": 26, "source": "interface"}
+  },
+  "competition": {"name": "图像真伪鉴定榜", "backend_id": 196, "subnet_id": 85, "status": "ACTIVE", "competition_status": "IN_PROGRESS", "contract_address": "0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb", "sources": ["darvin"]},
+  "task": {"objective": "对图片进行三分类：原生无修实拍图、已修图或 AI 全图生成。", "labels": {"1": "原生无修实拍图", "0_1": "人工或 AI 局部修改图片", "0_2": "AI 全图生成"}, "sources": ["darvin", "overview", "interface_tables"]},
+  "data": {"formats": ["jpg", "jpeg", "png"], "examples": ["票据", "转账截图", "风景", "人物", "动物"], "training_attachments": [{"name": "训练集 1 0_1.zip", "size_bytes": 139334730}, {"name": "训练集 0_2.zip", "size_bytes": 437962033}], "unknown": ["训练和评测数据的具体划分、样本数量及分布", "附件下载和使用条件"], "sources": ["overview", "training", "interface_tables"]},
+  "input": {"content_type": "application/json", "fields": {"image_base64": {"type": "string", "required": true, "description": "图片二进制内容的 Base64 编码，不包含 data:image/...;base64, 前缀"}, "image_format": {"type": "string", "required": true, "examples": ["jpg", "jpeg", "png"]}}, "provided_context": "评测仅提供图片及格式，不提供图片 ID、文件名、路径或标签；顺序随机。", "sources": ["interface", "interface_tables"]},
+  "output": {"content_type": "application/json", "fields": {"success": {"type": "boolean", "description": "是否成功"}, "message": {"type": "string", "description": "提示信息"}, "result": {"type": "string", "allowed_values": ["1", "0_1", "0_2"]}}, "example": {"success": true, "message": "鉴定完成", "result": "0_1"}, "unknown": ["错误响应的完整约定及 HTTP 状态码"], "sources": ["interface", "interface_tables"]},
+  "evaluation": {"score": "(f1_0_1 + f1_0_2) / 2", "monitoring": ["accuracy", "f1_1", "已修图及 AI 生成图的 precision、recall、f1", "平均推理时延（毫秒）", "失败率"], "unknown": ["失败条件的冲突需平台确认，见 conflicts"], "sources": ["darvin", "overview"]},
+  "environment": {"architecture": "linux/amd64", "resource_statement": "1/2 A100-40g显存，2c4g", "unknown": ["资源描述的精确定义和其他限制", "基础镜像及运行时版本"], "sources": ["darvin", "overview"]},
+  "service": {"listen": "0.0.0.0:80", "readiness": {"method": "GET", "path": "/ready"}, "inference": {"method": "POST", "path": "/api/v1/image-authenticity", "synchronous": true}, "unknown": ["就绪检查响应体及超时要求"], "sources": ["darvin", "interface", "interface_tables"]},
+  "docker": {"architecture": "linux/amd64", "submission_fields": ["inferenceImage.repository", "inferenceImage.tag"], "optional_volume": {"field": "inferenceVolumeMounts", "example_fields": {"name": "model", "mountPoint": "/model", "source": "ceph_customer", "srcRelativePath": "实际路径"}}, "unknown": ["镜像仓库及认证要求", "挂载的实际路径"], "sources": ["darvin"]},
+  "submission": {"platform_submission_type": "DockerImage", "evaluation_mode": "automatic", "unknown": ["飞书概览所述结果文件与平台镜像提交要求的冲突，见 conflicts", "实际提交命令、仓库和凭证"], "sources": ["darvin", "overview"]},
+  "conflicts": [{"topic": "提交方式", "darvin": "提交 DockerImage", "overview": "提交结果文件", "resolution": "未确认；保留两种来源，不推断优先级。", "sources": ["darvin", "overview"]}, {"topic": "失败条件", "darvin": "任何样本重试后仍失败则没有有效榜单分数", "overview": "请求失败率大于 5% 或结果为空", "resolution": "未确认；两种条件的适用关系需平台确认。", "sources": ["darvin", "overview"]}]
+}

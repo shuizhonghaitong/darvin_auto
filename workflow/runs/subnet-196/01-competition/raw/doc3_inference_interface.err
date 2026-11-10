@@ -1,0 +1,20 @@
+[lark-cli] [WARN] uat-client: token storage is not writable while refreshing: keychain Set failed: open /mnt/disk3/liuyutong_home/.local/share/lark-cli/cli_aa6371a6b2f95d09_cli_aa6371a6b2f95d09_ou_e8431a3fa60c5914a571acaa6d8fb29e_refresh-storage-probe.enc.c22fa497-e640-444b-a400-b22a1202647a.tmp: read-only file system
+[lark-cli] [WARN] uat-client: token storage is not writable while refreshing: keychain Set failed: open /mnt/disk3/liuyutong_home/.local/share/lark-cli/cli_aa6371a6b2f95d09_cli_aa6371a6b2f95d09_ou_e8431a3fa60c5914a571acaa6d8fb29e_refresh-storage-probe.enc.44c458cb-a942-44e3-a871-6d2f262d9f3b.tmp: read-only file system
+{
+  "ok": false,
+  "identity": "user",
+  "error": {
+    "type": "internal",
+    "subtype": "storage",
+    "message": "keychain Set failed: open /mnt/disk3/liuyutong_home/.local/share/lark-cli/cli_aa6371a6b2f95d09_cli_aa6371a6b2f95d09_ou_e8431a3fa60c5914a571acaa6d8fb29e_refresh-storage-probe.enc.44c458cb-a942-44e3-a871-6d2f262d9f3b.tmp: read-only file system",
+    "hint": "Check if the OS keychain/credential manager is locked or accessible. If running inside a sandbox or CI environment, please ensure the process has the necessary permissions to access the keychain, you can try running this outside the sandbox."
+  },
+  "_notice": {
+    "update": {
+      "command": "lark-cli update",
+      "current": "1.0.98",
+      "latest": "1.0.99",
+      "message": "lark-cli 1.0.99 available, current 1.0.98, run: lark-cli update"
+    }
+  }
+}

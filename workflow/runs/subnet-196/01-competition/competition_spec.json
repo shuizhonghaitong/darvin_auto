@@ -1,0 +1,703 @@
+{
+  "schema_version": "1",
+  "artifact": "competition_spec",
+  "stage": "competition-intake",
+  "generated_at": "2026-11-08T05:30:20Z",
+  "generated_by": "competition-intake skill (development agent; darvin 0.5.2 + lark-cli 1.0.98, profile prod)",
+  "scope_note": "仅比赛需求理解阶段；未检索解法、未下载数据/模型、未提交比赛。关键事实均带 sources 引用；不确定值显式标注 unknown。",
+  "sources": [
+    {
+      "id": "S-darvin-subnet",
+      "kind": "darwin-cli",
+      "description": "Darwin 公共子网详情（本次获取，authoritative）。命令：darwin subnet inspect 196 --json --profile prod。产物 raw/subnet_inspect_fresh.json。",
+      "tool": "darvin 0.5.2",
+      "profile": "prod",
+      "fetched_at": "2026-11-08T05:22:54.754357Z",
+      "status": "success",
+      "local_path": "raw/subnet_inspect_fresh.json",
+      "remote_url": "https://darvin.originlabs.cc/subnet/detail?subnetId=196"
+    },
+    {
+      "id": "S-darvin-subnet-hist",
+      "kind": "darwin-cli",
+      "description": "历史子网详情（更早一次获取），raw_subnet_196.json。字段与本次完全一致（仅时间戳不同），作为交叉核对副本。",
+      "tool": "darvin 0.5.2",
+      "profile": "prod",
+      "fetched_at": "2026-11-08T05:18:46.618684Z",
+      "status": "success",
+      "local_path": "../raw_subnet_196.json",
+      "remote_url": "https://darvin.originlabs.cc/subnet/detail?subnetId=196"
+    },
+    {
+      "id": "S-doc-intro",
+      "kind": "feishu-doc",
+      "description": "榜单介绍飞书文档（本次获取）。raw/fresh_doc1_introduction.md。",
+      "tool": "lark-cli 1.0.98 (docs +fetch --doc <url> --doc-format markdown)",
+      "remote_url": "https://my.feishu.cn/docx/GguVdTxCBoGul4xqTPscxfztn6g",
+      "document_id": "GguVdTxCBoGul4xqTPscxfztn6g",
+      "revision_id": 56,
+      "fetched_at": "2026-11-08T13:23 (本地文件时间)",
+      "status": "success",
+      "local_path": "raw/fresh_doc1_introduction.md",
+      "referenced_by": "S-darvin-subnet (榜单介绍链接)"
+    },
+    {
+      "id": "S-doc-trainset",
+      "kind": "feishu-doc",
+      "description": "图像鉴定-训练集飞书文档（本次获取）。raw/fresh_doc2_training_set.md。",
+      "tool": "lark-cli 1.0.98 (docs +fetch --doc <url> --doc-format markdown)",
+      "remote_url": "https://my.feishu.cn/docx/NSsFdVE57o0xemxcWRkcpFswnkh",
+      "document_id": "NSsFdVE57o0xemxcWRkcpFswnkh",
+      "revision_id": 15,
+      "fetched_at": "2026-11-08T13:23 (本地文件时间)",
+      "status": "success",
+      "local_path": "raw/fresh_doc2_training_set.md",
+      "referenced_by": "S-darvin-subnet (图像鉴定-训练集链接) 与 S-doc-intro (文档 cite)"
+    },
+    {
+      "id": "S-doc-iface",
+      "kind": "feishu-wiki",
+      "description": "推理接口要求飞书 wiki 文档（本次获取）。raw/fresh_doc3_inference_interface.md。",
+      "tool": "lark-cli 1.0.98 (docs +fetch --doc <url> --doc-format markdown)",
+      "remote_url": "https://scn6dw1sar4n.feishu.cn/wiki/OLL0wZi94ilpgKkTHmkcXNVCn7f",
+      "wiki_node_token": "OLL0wZi94ilpgKkTHmkcXNVCn7f",
+      "document_id": "HL7JdRbb6ovlP1xwgN3cnNy7n3g",
+      "revision_id": 29,
+      "fetched_at": "2026-11-08T13:23 (本地文件时间)",
+      "status": "success",
+      "local_path": "raw/fresh_doc3_inference_interface.md",
+      "referenced_by": "S-darvin-subnet (推理接口要求链接)"
+    },
+    {
+      "id": "S-sheet-iface",
+      "kind": "feishu-sheet",
+      "description": "接口说明表格（本次获取）。raw/fresh_sheet_RUblU0.csv。由 S-doc-iface 第 a 节 <sheet> 引用。",
+      "tool": "lark-cli 1.0.98 (sheets +csv-get --spreadsheet-token Gz7OsS2NIhYCYCt09ybca1Y6nud --sheet-id RUblU0)",
+      "spreadsheet_token": "Gz7OsS2NIhYCYCt09ybca1Y6nud",
+      "sheet_id": "RUblU0",
+      "revision": 26,
+      "actual_range": "A1:B5",
+      "status": "success",
+      "local_path": "raw/fresh_sheet_RUblU0.csv"
+    },
+    {
+      "id": "S-sheet-reqparams",
+      "kind": "feishu-sheet",
+      "description": "请求参数说明表格（本次获取）。raw/fresh_sheet_Cl5ExX.csv。由 S-doc-iface 第 b 节 <sheet> 引用。",
+      "tool": "lark-cli 1.0.98 (sheets +csv-get --spreadsheet-token Gz7OsS2NIhYCYCt09ybca1Y6nud --sheet-id Cl5ExX)",
+      "spreadsheet_token": "Gz7OsS2NIhYCYCt09ybca1Y6nud",
+      "sheet_id": "Cl5ExX",
+      "revision": 26,
+      "actual_range": "A1:D3",
+      "status": "success",
+      "local_path": "raw/fresh_sheet_Cl5ExX.csv"
+    },
+    {
+      "id": "S-sheet-resp",
+      "kind": "feishu-sheet",
+      "description": "接口响应要求表格（本次获取）。raw/fresh_sheet_G2lxWB.csv。由 S-doc-iface 第 c 节 <sheet> 引用。",
+      "tool": "lark-cli 1.0.98 (sheets +csv-get --spreadsheet-token Gz7OsS2NIhYCYCt09ybca1Y6nud --sheet-id G2lxWB)",
+      "spreadsheet_token": "Gz7OsS2NIhYCYCt09ybca1Y6nud",
+      "sheet_id": "G2lxWB",
+      "revision": 26,
+      "actual_range": "A1:C4",
+      "status": "success",
+      "local_path": "raw/fresh_sheet_G2lxWB.csv"
+    },
+    {
+      "id": "S-doc-failed-hist",
+      "kind": "feishu-doc",
+      "description": "历史飞书文档抓取失败记录：raw/doc1_introduction.md / doc2_training_set.md / doc3_inference_interface.md 均为 0 字节，对应 .err 报 keychain/token 存储只读（沙盒内 token 刷新写失败）。本次 fresh_doc*.md 为同一资源重新成功抓取，取代该失败副本。",
+      "tool": "lark-cli 1.0.98 (docs +fetch)",
+      "fetched_at": "2026-11-08T05:19 (本地文件时间)",
+      "status": "failed",
+      "local_path": "raw/doc1_introduction.md, raw/doc2_training_set.md, raw/doc3_inference_interface.md (+ .err)"
+    }
+  ],
+  "competition": {
+    "name": {
+      "value": "图像真伪鉴定榜",
+      "sources": [
+        "S-darvin-subnet",
+        "S-doc-intro"
+      ],
+      "quote": "图像真伪鉴定榜"
+    },
+    "query_id": {
+      "value": "196",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "backend_id: 196",
+      "note": "URL 查询参数 subnetId；等于详情返回的 backend_id"
+    },
+    "internal_subnet_id": {
+      "value": "85",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "subnet_id: 85",
+      "note": "详情返回的内部 subnet_id；与查询 ID(196/backend_id) 不同，二者不可假定相等"
+    },
+    "contract_address": {
+      "value": "0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb",
+      "sources": [
+        "S-darvin-subnet",
+        "S-darvin-subnet-hist"
+      ],
+      "quote": "contract_address: 0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb",
+      "note": "子网合约地址，可作为后续 darvin 命令的 identifier"
+    },
+    "status": {
+      "value": "ACTIVE",
+      "sources": [
+        "S-darvin-subnet"
+      ]
+    },
+    "stage": {
+      "value": "IN_PROGRESS",
+      "sources": [
+        "S-darvin-subnet"
+      ]
+    },
+    "submission_type": {
+      "value": "DockerImage",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "submission_type: DockerImage",
+      "note": "平台级提交类型为 Docker 镜像"
+    },
+    "evaluation_mode": {
+      "value": "automatic",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "note": "自动评测"
+    },
+    "solutions_count": {
+      "value": "114",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "solutions: 114",
+      "unit": "个",
+      "note": "当前已有 solution 数（快照值）"
+    },
+    "participants_count": {
+      "value": "11",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "participants: 11",
+      "unit": "人",
+      "note": "当前参与人数（快照值）"
+    },
+    "datasets_count": {
+      "value": "1",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "datasets: 1",
+      "unit": "个",
+      "note": "平台登记数据集数量（快照值）；训练集实际含两个压缩包，见 data.training"
+    },
+    "task_type_field": {
+      "value": "-",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "note": "详情 task_type 字段为空占位，未提供任务类型标签"
+    },
+    "profile": {
+      "value": "prod",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "note": "生产环境"
+    },
+    "summary": {
+      "value": "从用户视角判断图片是原图 / 已被处理 / 完全由 AI 生成，帮助区分图片真实性；三分类，主排序为 0 类（已修图+AI全图生成）的宏平均 F1。",
+      "sources": [
+        "S-doc-intro",
+        "S-darvin-subnet"
+      ],
+      "quote": "重点判断图片是否为原图、是否被处理过、或是否完全由 AI 生成"
+    }
+  },
+  "task": {
+    "objective": {
+      "value": "对输入图片做真伪三分类：1=原生无修实拍图；0_1=已修图（含人工处理与 AI 局部处理）；0_2=AI 全图生成。",
+      "sources": [
+        "S-doc-intro",
+        "S-darvin-subnet",
+        "S-sheet-resp"
+      ],
+      "quote": "模型需要将输入图片识别为以下三种类型之一"
+    },
+    "dataset_scope": {
+      "value": [
+        "文档类（发票/转账记录等）",
+        "风景类",
+        "人物动物类"
+      ],
+      "sources": [
+        "S-doc-intro"
+      ],
+      "quote": "本榜单数据集范围：文档类（发票/转账记录等）、风景类、人物动物类"
+    },
+    "classes": {
+      "value": {
+        "1": "原生无修实拍图",
+        "0_1": "已修图：包括人工处理和 AI 局部处理（PS、醒图、美图、美颜、滤镜、拼接、加字、遮挡、AI 局部重绘、AI 换背景、AI 添加/删除物体等）",
+        "0_2": "AI 全图生成"
+      },
+      "sources": [
+        "S-doc-intro",
+        "S-darvin-subnet",
+        "S-sheet-resp"
+      ],
+      "quote": "1：原生无修实拍图；0_1：已修图；0_2：AI 全图生成"
+    },
+    "class_grouping": {
+      "value": "存在超类 0 = 0_1 ∪ 0_2（非原图：已修图或 AI 全图生成）；1 为独立原图类。",
+      "sources": [
+        "S-doc-intro",
+        "S-darvin-subnet"
+      ],
+      "quote": "0分类（已修图+AI全图生成）F1_0 = （ F1_0_1 + F1_0_2）/ 2",
+      "note": "由排序指标 f1_0=(f1_0_1+f1_0_2)/2 推出：主指标只对超类 0 的两个子类求宏平均 F1，原图类 1 不进入主排序"
+    },
+    "primary_metric": {
+      "value": {
+        "name": "f1_0",
+        "formula": "f1_0 = (f1_0_1 + f1_0_2) / 2",
+        "leaderboard_score": "_score = f1_0"
+      },
+      "sources": [
+        "S-darvin-subnet",
+        "S-doc-intro"
+      ],
+      "quote": "f1_0 = (f1_0_1 + f1_0_2) / 2 ; _score = f1_0",
+      "note": "排行榜主排序指标；f1_0_1 为已修图类 F1，f1_0_2 为 AI 全图生成类 F1"
+    },
+    "monitoring_metrics": {
+      "value": [
+        "accuracy",
+        "f1_1",
+        "precision_0_1",
+        "recall_0_1",
+        "f1_0_1",
+        "precision_0_2",
+        "recall_0_2",
+        "f1_0_2",
+        "avg_response_time_ms",
+        "fail_rate"
+      ],
+      "sources": [
+        "S-darvin-subnet",
+        "S-doc-intro"
+      ],
+      "quote": "准确率 accuracy；原图 F1_1；已修图 精准率/召回率/F1；AI 全图生成 精准率/召回率/F1；平均响应时间；失败率"
+    },
+    "metric_consistency": {
+      "value": "一致",
+      "sources": [
+        "S-darvin-subnet",
+        "S-doc-intro"
+      ],
+      "note": "S-darvin-subnet 与 S-doc-intro 的主/监测指标定义相互吻合，无冲突"
+    }
+  },
+  "data": {
+    "training": {
+      "value": {
+        "container": "飞书文档 S-doc-trainset 内两个附件压缩包（figure Card）",
+        "files": [
+          {
+            "filename": "训练集 1 0_1.zip",
+            "mime": "application/zip",
+            "size_bytes": 139334730,
+            "size_approx": "132.9 MiB",
+            "note": "文件名标注 1 / 0_1，推测覆盖原图类 1 与已修图类 0_1；内部结构未核验"
+          },
+          {
+            "filename": "训练集 0_2.zip",
+            "mime": "application/zip",
+            "size_bytes": 437962033,
+            "size_approx": "417.7 MiB",
+            "note": "文件名标注 0_2，推测覆盖 AI 全图生成类；内部结构未核验"
+          }
+        ],
+        "total_size_bytes": 577296763,
+        "download_token_present": true
+      },
+      "sources": [
+        "S-doc-trainset"
+      ],
+      "quote": "训练集 1 0_1.zip (139334730); 训练集 0_2.zip (437962033)",
+      "note": "下载用附件 token 已存在于 raw/fresh_doc2_training_set.md（本阶段不下载，P2 复现阶段使用）；压缩包内部目录/标注格式 = unknown"
+    },
+    "test": {
+      "value": "私有测试集",
+      "sources": [
+        "S-doc-iface"
+      ],
+      "quote": "评测请求仅包含图片内容和图片格式，不会提供图片 ID、文件名、文件路径或真实标签。评测图片的请求顺序会随机打乱。",
+      "note": "测试集规模/分布 = unknown；线上评测时以 POST 请求逐张推送，无真实标签、顺序随机"
+    },
+    "platform_dataset_count": {
+      "value": "1",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "unit": "个",
+      "note": "Darwin 登记 datasets=1，与训练集文档对应"
+    },
+    "image_formats": {
+      "value": [
+        "jpg",
+        "jpeg",
+        "png",
+        "常见图片格式"
+      ],
+      "sources": [
+        "S-doc-intro",
+        "S-sheet-reqparams"
+      ],
+      "quote": "输入：图片，jpg/png等常见格式；image_format 例如 jpg、jpeg、png"
+    }
+  },
+  "input": {
+    "channel": {
+      "value": "HTTP POST JSON 请求体",
+      "sources": [
+        "S-sheet-iface",
+        "S-sheet-reqparams",
+        "S-doc-iface"
+      ],
+      "quote": "Content-Type: application/json"
+    },
+    "fields": {
+      "value": [
+        {
+          "name": "image_base64",
+          "type": "String",
+          "required": true,
+          "desc": "图片二进制内容的 Base64 编码，不包含 data:image/...;base64, 前缀"
+        },
+        {
+          "name": "image_format",
+          "type": "String",
+          "required": true,
+          "desc": "图片格式，例如 jpg、jpeg、png"
+        }
+      ],
+      "sources": [
+        "S-sheet-reqparams"
+      ],
+      "quote": "image_base64 String 是；image_format String 是"
+    },
+    "request_example": {
+      "value": "curl -X POST http://localhost:80/api/v1/image-authenticity -H 'Content-Type: application/json' -d '{\"image_base64\":\"...\",\"image_format\":\"jpg\"}'",
+      "sources": [
+        "S-doc-iface"
+      ],
+      "quote": "请求示例（application/json）"
+    }
+  },
+  "output": {
+    "channel": {
+      "value": "同步 HTTP 响应 JSON",
+      "sources": [
+        "S-sheet-resp",
+        "S-doc-iface",
+        "S-sheet-iface"
+      ],
+      "quote": "接收图片 Base64 数据并同步返回图像真伪鉴定结果"
+    },
+    "fields": {
+      "value": [
+        {
+          "name": "success",
+          "type": "Boolean",
+          "desc": "是否成功"
+        },
+        {
+          "name": "message",
+          "type": "String",
+          "desc": "提示信息"
+        },
+        {
+          "name": "result",
+          "type": "String",
+          "desc": "鉴定结果，取值 {\"1\",\"0_1\",\"0_2\"} 之一"
+        }
+      ],
+      "sources": [
+        "S-sheet-resp"
+      ],
+      "quote": "result String 鉴定结果：1=原生无修实拍图，0_1=已修图，0_2=AI 全图生成"
+    },
+    "response_example": {
+      "value": "{\"success\": true, \"message\": \"鉴定完成\", \"result\": \"0_1\"}",
+      "sources": [
+        "S-doc-iface"
+      ],
+      "quote": "响应样例"
+    },
+    "result_allowed_values": {
+      "value": [
+        "1",
+        "0_1",
+        "0_2"
+      ],
+      "sources": [
+        "S-sheet-resp",
+        "S-doc-iface"
+      ],
+      "quote": "result 必须是以下三个字符串之一：\"1\" \"0_1\" \"0_2\""
+    }
+  },
+  "service": {
+    "image_arch": {
+      "value": "linux/amd64",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "镜像架构为 linux/amd64"
+    },
+    "listen": {
+      "value": "0.0.0.0:80",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "服务监听 0.0.0.0:80"
+    },
+    "liveness": {
+      "value": {
+        "method": "GET",
+        "path": "/ready",
+        "port": 80
+      },
+      "sources": [
+        "S-darvin-subnet",
+        "S-doc-iface"
+      ],
+      "quote": "实现 GET /ready 探活接口；httpGet path /ready port 80"
+    },
+    "business_endpoint": {
+      "value": {
+        "method": "POST",
+        "path": "/api/v1/image-authenticity",
+        "content_type": "application/json"
+      },
+      "sources": [
+        "S-sheet-iface",
+        "S-doc-iface"
+      ],
+      "quote": "接口路径 /api/v1/image-authenticity；请求方法 POST；Content-Type application/json"
+    },
+    "response_mode": {
+      "value": "同步（单次请求返回鉴定结果）",
+      "sources": [
+        "S-sheet-iface"
+      ],
+      "quote": "接收图片 Base64 数据并同步返回图像真伪鉴定结果"
+    },
+    "starting_kit_reference": {
+      "value": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit",
+      "sources": [
+        "S-doc-iface"
+      ],
+      "quote": "starting-kit 参考",
+      "note": "官方提供 starting-kit 参考仓库；本阶段未拉取，属外部数据"
+    }
+  },
+  "environment": {
+    "gpu": {
+      "value": "1/2 A100-40g 显存",
+      "sources": [
+        "S-doc-intro"
+      ],
+      "quote": "1/2 A100-40g显存，2c4g",
+      "note": "原文如此；按字面理解为 A100(40GB) 的 1/2 显存（约 20GB），具体配额 = unknown 需确认"
+    },
+    "cpu": {
+      "value": "2 核",
+      "sources": [
+        "S-doc-intro"
+      ],
+      "quote": "2c4g",
+      "note": "原文 '2c'，按 2 CPU core 理解"
+    },
+    "memory": {
+      "value": "4 GB",
+      "sources": [
+        "S-doc-intro"
+      ],
+      "quote": "2c4g",
+      "note": "原文 '4g'，按 4GB RAM 理解"
+    },
+    "platform_profile": {
+      "value": "prod / production=true",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "profile: prod; production: true"
+    },
+    "model_mount": {
+      "value": "可选 Ceph 模型挂载",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "inferenceVolumeMounts: name 固定 model; source 固定 ceph_customer; mountPoint 可改; srcRelativePath 为 Ceph 相对目录",
+      "note": "需要挂载模型文件时使用；本阶段未提供具体模型或 Ceph 路径 = unknown"
+    },
+    "tooling": {
+      "value": {
+        "darvin": "0.5.2",
+        "lark_cli": "1.0.98"
+      },
+      "sources": [
+        "S-darvin-subnet",
+        "S-doc-intro"
+      ],
+      "note": "本地已安装并可用的 CLI 版本；lark-cli 存在 1.0.99 可用更新（_notice），本次未升级"
+    }
+  },
+  "submission": {
+    "type": {
+      "value": "DockerImage",
+      "sources": [
+        "S-darvin-subnet"
+      ]
+    },
+    "image_yaml": {
+      "value": {
+        "inferenceImage": {
+          "repository": "",
+          "tag": ""
+        }
+      },
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "quote": "inferenceImage: repository / tag",
+      "note": "示例 repository=harbor.example.com/namespace/image-authenticity-model, tag=0.0.1"
+    },
+    "optional_volume_mount_yaml": {
+      "value": {
+        "inferenceVolumeMounts": [
+          {
+            "name": "model",
+            "mountPoint": "/model",
+            "source": "ceph_customer",
+            "srcRelativePath": "xxxx"
+          }
+        ]
+      },
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "note": "与 inferenceImage 平级；name/source 固定不可改，mountPoint/srcRelativePath 需按实际填写；默认注释，用时去注释"
+    },
+    "requirements": {
+      "value": [
+        "镜像架构 linux/amd64",
+        "服务监听 0.0.0.0:80",
+        "实现 GET /ready 探活接口",
+        "实现图像真伪鉴定业务接口",
+        "在规定资源范围内完成模型加载和推理"
+      ],
+      "sources": [
+        "S-darvin-subnet"
+      ]
+    },
+    "suggested_next_command": {
+      "value": "darvin solution list --subnet 0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb --profile prod",
+      "sources": [
+        "S-darvin-subnet"
+      ],
+      "note": "详情 artifacts.next 提供的下一步只读命令；本阶段不执行提交"
+    }
+  },
+  "conflicts": [
+    {
+      "id": "C1",
+      "topic": "失败判定 / 评测有效性标准",
+      "severity": "medium",
+      "resolved": false,
+      "positions": [
+        {
+          "source": "S-darvin-subnet",
+          "meaning": "任意测试样本在重试后仍推理失败，则本次评测无有效排行榜成绩（单样本硬失败即整轮作废）",
+          "quote": "所有测试样本均需返回合法预测。任意样本在重试后仍推理失败，则本次评测无有效排行榜成绩。"
+        },
+        {
+          "source": "S-doc-intro",
+          "meaning": "请求失败率超过 5%（返回结果为空）即判定失败（阈值制）",
+          "quote": "失败判定：请求失败率超过 5%（返回结果为空）"
+        }
+      ],
+      "note": "两处失败标准不一致（单样本作废 vs 5% 阈值）。未裁定；稳健实现应目标 0 失败以同时满足更严格解释。需向主办方确认线上实际判定逻辑。"
+    },
+    {
+      "id": "C2",
+      "topic": "提交产物形态",
+      "severity": "high",
+      "resolved": false,
+      "positions": [
+        {
+          "source": "S-darvin-subnet",
+          "meaning": "提交 Docker 镜像，实现 GET /ready + POST /api/v1/image-authenticity（平台 submission_type=DockerImage）",
+          "quote": "submission_type: DockerImage；实现 GET /ready 探活接口；实现图像真伪鉴定业务接口"
+        },
+        {
+          "source": "S-doc-intro",
+          "meaning": "提交结果为“结果文件”",
+          "quote": "资源限制与提交方式 …… 提交结果文件"
+        }
+      ],
+      "note": "S-darvin-subnet 与 S-doc-iface/S-sheet-* 的 HTTP 镜像方案内部一致且与平台 submission_type=DockerImage 吻合；S-doc-intro 的“提交结果文件”为不一致表述。未裁定；倾向以平台级 Docker 镜像 + 推理接口为准，需确认“结果文件”是否指线上逐请求返回的 result 或另有离线文件。"
+    },
+    {
+      "id": "C3",
+      "topic": "输出形态表述（与 C2 相关）",
+      "severity": "low",
+      "resolved": false,
+      "positions": [
+        {
+          "source": "S-doc-intro",
+          "meaning": "输出为“鉴定结果文件，结果三分类”",
+          "quote": "输出：鉴定结果文件。结果三分类"
+        },
+        {
+          "source": "S-sheet-resp / S-doc-iface",
+          "meaning": "每次请求返回 JSON：{success,message,result}，result∈{1,0_1,0_2}",
+          "quote": "响应样例：{\"success\": true, \"message\": \"鉴定完成\", \"result\": \"0_1\"}"
+        }
+      ],
+      "note": "“结果文件”与“逐请求 JSON 结果”表述不一致；推断线上为逐请求 JSON（与 C2 的镜像接口一致），未裁定。"
+    },
+    {
+      "id": "C4",
+      "topic": "训练集数据平台计数 vs 实际附件数",
+      "severity": "low",
+      "resolved": false,
+      "positions": [
+        {
+          "source": "S-darvin-subnet",
+          "meaning": "datasets 计数为 1",
+          "quote": "datasets: 1"
+        },
+        {
+          "source": "S-doc-trainset",
+          "meaning": "训练集文档含 2 个 zip 附件（0_1 与 0_2）",
+          "quote": "训练集 1 0_1.zip；训练集 0_2.zip"
+        }
+      ],
+      "note": "平台登记 1 个数据集，但文档内为 2 个压缩包；可能 2 个 zip 同属一个数据集。未裁定，仅记录差异。"
+    }
+  ]
+}

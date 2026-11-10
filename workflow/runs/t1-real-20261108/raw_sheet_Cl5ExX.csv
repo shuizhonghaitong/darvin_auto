@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "identity": "user",
+  "data": {
+    "actual_range": "A1:D3",
+    "annotated_csv": "[row=1] 参数名,类型,必填,说明\n[row=2] image_base64,String,是,\"图片二进制内容的 Base64 编码，不包含 data:image/...;base64, 前缀\"\n[row=3] image_format,String,是,图片格式，例如 jpg、jpeg、png",
+    "col_count": 4,
+    "col_indices": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "create_time": "2026-07-15T02:14:12.000Z",
+    "current_region": "A1:D3",
+    "has_more": false,
+    "modified_time": "2026-07-15T02:32:47.000Z",
+    "revision": 26,
+    "row_count": 3,
+    "row_indices": [
+      1,
+      2,
+      3
+    ],
+    "token": "Gz7OsS2NIhYCYCt09ybca1Y6nud",
+    "warning_message": "①定位行号：必须直接读取 annotated_csv 中每行开头的 [row=N] 前缀（N 即为实际表格行号），不要自己数行，不要用\"序号/ID/编号\"列的值推导（这些列可能跳号或从非 1 开始，会全盘错位）；②定位列字母：必须用 col_indices[j]，不要手数。"
+  },
+  "_notice": {
+    "update": {
+      "command": "lark-cli update",
+      "current": "1.0.98",
+      "latest": "1.0.99",
+      "message": "lark-cli 1.0.99 available, current 1.0.98, run: lark-cli update"
+    }
+  }
+}

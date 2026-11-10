@@ -1,0 +1,20 @@
+
+
+复核完成。TICKET-2 followup 结论如下：
+
+**任务与范围**
+- 仅复核 TICKET-2：读取 spec、t2-audit 审计、`runs/t2-followup-20261108/raw` 新证据，核查 7 个候选的复现入口、固定版本、权重可获得性及单独许可、资源需求、三分类覆盖。零新增网络请求，未下载权重，未执行提交，未修改其他文件（已用 mtime/git 核验）。
+
+**产物**
+- `runs/t2-followup-20261108/candidate_solutions.json`（含 R1–R7 复核发现、更新后的 constraint_matrix、B1–B6 变化）
+- `runs/t2-followup-20261108/evidence.md`（含 sha256 清单、字节级核验步骤、失败与未解决条件）
+
+**关键核验结果**
+- **B2 解除（C5 代码许可）**：pinned LICENSE 与 GitHub API（ref=master）base64 全文、以及已核实的 IMDL-BenCo CC-BY-4.0 文本三方逐字节一致（sha256 `e3cda76e…`），GitHub 分类器 spdx_id=CC-BY-4.0 → L1 升为 satisfied。残留 caveat：固定 SHA 的 API 调用遇限流（`pinned-license.json`），pinned txt 抓取 URL 未记录。
+- **W1 仅部分推进**：`aigc-folder.html` folder id 与 pinned README「Checkpoints for AIGC Benchmark」链接逐字符一致，列出 4 个文件（dualnet 89.6MiB / hifinet 76.7MiB / synthbuster **11KB 异常** / univfd 1.6GB）；按 ticket 规则目录页 200≠可下载，且 synthbuster 11KB 完整性存疑 → 维持 unsatisfied_unverified。
+- **L2 维持 unknown**：目录页无任何权重许可声明，仓库 CC-BY-4.0 不自动覆盖独立权重。
+- **K1/K2/K8 维持 unknown/unproven**：无官方资源数值（仅 1.6GB 估计数据点）；三分类映射仍是未验证组合，不得假定。
+- 其余 6 候选（C1/C2/C3/C4/C6/C7）无新证据，t2-audit 排除裁定全部维持。
+
+**最终状态**
+- `status=blocked`，`selected_candidate_id=null`；阻塞条件 B1（权重可下载性，file id 已就绪，建议下一 ticket 先取 89.6MiB 小文件分块验证 + 核实 synthbuster 异常）、B3、B4、B5、B6 保留，B2 移入 resolved。C5 为最接近解锁的候选（唯一 E1+L1 双满足且域覆盖最广）。

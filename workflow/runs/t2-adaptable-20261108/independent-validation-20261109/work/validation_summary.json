@@ -1,0 +1,87 @@
+{
+ "torch_threads": 2,
+ "torch_version": "2.8.0+cu128",
+ "stage_load_file_s": 0.009,
+ "num_tensors": 223,
+ "arch": {
+  "hidden_size": 768,
+  "patch_size": 14,
+  "num_hidden_layers": 12,
+  "intermediate_size": 3072,
+  "native_position_grid": "37x37 (518px)",
+  "total_params": 86580480
+ },
+ "weight_sanity": {
+  "patch_proj_mean_abs": 0.005664,
+  "patch_proj_max_abs": 0.0582,
+  "cls_token_norm": 0.3997
+ },
+ "config_num_position_embeddings": 1445,
+ "stage_model_init_load_s": 1.673,
+ "load_report": {
+  "missing_keys_count": 0,
+  "unexpected_keys_count": 0,
+  "missing_keys": [],
+  "unexpected_keys": []
+ },
+ "model_mem_params_bytes": 346321920,
+ "stage_forward_s": 0.493,
+ "forward": {
+  "feat_shape": [
+   2,
+   768
+  ],
+  "logits_shape": [
+   2,
+   3
+  ],
+  "softmax_sums": [
+   1.0,
+   1.0
+  ],
+  "argmax_to_label": [
+   "0_1",
+   "0_1"
+  ]
+ },
+ "backward": {
+  "loss": 2.835316,
+  "head_weight_grad_finite": true,
+  "head_weight_grad_norm": 43.433372,
+  "head_bias_grad_norm": 0.954582,
+  "encoder_grad_present": 0.525582
+ },
+ "stage_optimizer_step_s": 0.0,
+ "param_change": {
+  "head_weight_max_abs_delta": 0.64066666,
+  "head_weight_changed": true,
+  "head_bias_max_abs_delta": 0.06439096
+ },
+ "resolution_check": {
+  "224": {
+   "ok": true,
+   "logits_shape": [
+    1,
+    3
+   ]
+  },
+  "518": {
+   "ok": true,
+   "logits_shape": [
+    1,
+    3
+   ]
+  }
+ },
+ "stage_infer10_avg_ms": 224.2,
+ "head_labels": [
+  "1",
+  "0_1",
+  "0_2"
+ ],
+ "label_index_map": {
+  "1": 0,
+  "0_1": 1,
+  "0_2": 2
+ }
+}

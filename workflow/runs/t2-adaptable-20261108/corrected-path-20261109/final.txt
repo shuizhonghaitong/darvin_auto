@@ -1,0 +1,19 @@
+
+
+**TICKET-2 完成：status=blocked, selected=null**（8 分钟预算内结束，产物已落盘且 JSON 校验通过）
+
+**产物**
+- `/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-adaptable-20261108/corrected-path-20261109/work/CandidateSolutions.json`
+- `/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t2-adaptable-20261108/corrected-path-20261109/work/evidence.md`
+
+**网络路线**
+- 全部出站走免流代理 `http://172.28.4.16:18999`（hf-mirror.com 200、gitlab.4pd.io 200）；未用付费 7589；NO_PROXY 保留本机/内网；无 >20MB 下载
+
+**已核验事实**
+- 附件覆盖：S3 仅列 `训练集 1 0_1.zip`(139MB)、`训练集 0_2.zip`(438MB)；**1 类（原生无修实拍）无训练附件**；zip 不在本机（find 无果），未解包
+- starting-kit（commit `d22762ef44c8983a474e5079e1f4e22183b72c5d`，匿名可读）：main.py 是 SHA256%3 的 **mock SUT**，接口契约完整；`requirements.txt` 缺 `flask`（骨架不能零改构建）；仓库根部是 Judge-Flow 评测模板，非参赛镜像
+- 预训练路线：`tamtam-lab/TamTam` 在 hf-mirror **Repository not found**；第三方 TruFor 仓库 license:other 未核验；DIRE GitHub 检索超时 → C2 权重与许可均 unknown
+
+**候选**：C1 自训三分类（最可能路径，待实现）、C2 预训练检测器集成（权重不可核验）、C3 starting-kit 骨架（仅服务契约，作 C1 基础）
+
+**阻塞与下一步**：BC1 附件下载需你确认（两 zip 约 577MB，经免流代理 lark-cli）；BC2 1 类数据策略未定；BC3 2c4g / 1/2 A100 官方语义未核实（暂按 2 核/4GB 检查）。你批准下载后我即可解包清点并推进 C1。

@@ -1,0 +1,19 @@
+
+
+复核完成。全程仅读取指定文件，未访问 events.jsonl、未联网、未下载权重、未修改文件、未提交。
+
+**Skill 规则适用**
+- `darwin-workflow`：产物检查要求「JSON 可解析、将产物路径/选择依据/未知项及阻塞交给调用方」「不以文件存在代替验收」。
+- `solution-discovery`：选择规则「只有当至少一个候选具备可核验复现入口和资源获取条件，且有证据满足**所有**已知约束时才选择；否则 blocked」；「关键条件（显存、任务覆盖、权重获取/使用许可）未知时不得标为满足」；「未经验证的组合不得当作已证明覆盖任务」；「最终检查所选 ID、状态、未知项及阻塞条件不得互相矛盾」。
+
+**复核核查结果**
+- `runs/t2-followup-20261108/candidate_solutions.json` 可解析（jq/python 验证），顶层 `status=blocked`、`selected_candidate_id=null`、7 个候选、9 项 spec 未知项、阻塞 B1/B3/B4/B5/B6。
+- B2（C5 代码许可）解除证据链扎实：`raw/forensichub-pinned-license.txt` 与 `raw/forensichub-license.json` base64 解码逐字节一致（同 sha256），GitHub 分类器 `spdx_id=CC-BY-4.0`，已正确移入 `resolved_conditions`。
+- 但 C5 仍缺：B1 权重可下载性（GDrive 目录页 200≠可下载，本次未实测，`unsatisfied_unverified`）、B3 显存/内存（仅 1.6GB 估计，无官方数值）、B4 三分类覆盖（域模型→三分类映射是未验证组合）、B5 权重单独许可（unknown，代码 CC-BY-4.0 不自动覆盖权重）。其余候选无新增证据。
+- 一致性：selected=null 与 blocked 及 5 项未解除阻塞无矛盾，符合 Skill 最终检查要求。
+
+**结论**
+- **证据不足以解除阻塞**。唯一实质进展是 C5 的 B2 代码许可核实，按 Skill 规则「任何已知约束缺少满足证据即不能选中」，W1/L2/K1/K2/K8 任一缺口均维持候选不可选，`status=blocked`、`selected_candidate_id=null` 判定正确。
+- 解除阻塞的下一步（需另行授权的 ticket）：从比赛构建环境实测 GDrive 直链下载（4 个 file id 已就绪，先取 89.6MiB 的 `dualnet.pth` 分块验证），并核实 `synthbuster.pth` 11KB 异常。
+
+按 TICKET-2 边界，本次复核到此为止，不执行复现、下载或提交；未修改任何文件。

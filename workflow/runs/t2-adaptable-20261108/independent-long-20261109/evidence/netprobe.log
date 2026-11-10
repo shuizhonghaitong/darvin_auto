@@ -1,0 +1,5 @@
+2026-11-09T03:09:41Z 18999_rc=bash: socket: Operation not permitted
+bash: line 1: /dev/tcp/172.28.4.16/18999: Operation not permitted
+1 7589_rc=bash: socket: Operation not permitted
+bash: line 1: /dev/tcp/127.0.0.1/7589: Operation not permitted
+1 dns_gitlab=fail

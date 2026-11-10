@@ -1,0 +1,7 @@
+Reading additional input from stdin...
+2026-11-08T08:59:00.553906Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)
+2026-11-08T08:59:00.587721Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)
+2026-11-08T09:03:30.573274Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)
+2026-11-08T09:04:33.483725Z ERROR codex_core::tools::router: error=write_stdin failed: stdin is closed for this session; rerun exec_command with tty=true to keep stdin open
+2026-11-08T09:08:00.606582Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)
+2026-11-08T09:12:30.624989Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)

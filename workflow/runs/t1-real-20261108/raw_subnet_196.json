@@ -1,0 +1,96 @@
+{
+  "command": "subnet inspect",
+  "started_at": "2026-11-08T06:34:14.325182Z",
+  "schema_version": "1",
+  "environment": {
+    "profile": "prod",
+    "production": true
+  },
+  "data": {},
+  "error_code": null,
+  "finished_at": "2026-11-08T06:34:16.359621Z",
+  "duration_ms": 2034,
+  "status": "success",
+  "steps": [
+    {
+      "name": "inspect public subnet",
+      "status": "success",
+      "detail": "Public subnet details loaded."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Subnet",
+      "fields": [
+        {
+          "name": "backend_id",
+          "value": "196"
+        },
+        {
+          "name": "subnet_id",
+          "value": "85"
+        },
+        {
+          "name": "name",
+          "value": "图像真伪鉴定榜"
+        },
+        {
+          "name": "contract_address",
+          "value": "0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb"
+        },
+        {
+          "name": "status",
+          "value": "ACTIVE"
+        },
+        {
+          "name": "stage",
+          "value": "IN_PROGRESS"
+        },
+        {
+          "name": "submission_type",
+          "value": "DockerImage"
+        },
+        {
+          "name": "task_type",
+          "value": "-"
+        },
+        {
+          "name": "evaluation_mode",
+          "value": "automatic"
+        },
+        {
+          "name": "solutions",
+          "value": "114"
+        },
+        {
+          "name": "participants",
+          "value": "11"
+        },
+        {
+          "name": "datasets",
+          "value": "1"
+        },
+        {
+          "name": "description",
+          "value": "## 参赛说明\n\n### 榜单介绍\n\nhttps://my.feishu.cn/docx/GguVdTxCBoGul4xqTPscxfztn6g\n\n### 图像鉴定-训练集\nhttps://my.feishu.cn/docx/NSsFdVE57o0xemxcWRkcpFswnkh\n\n### 推理接口要求\n\n提交的推理镜像必须按照以下文档实现探活接口和图像真伪鉴定接口：\n\nhttps://scn6dw1sar4n.feishu.cn/wiki/OLL0wZi94ilpgKkTHmkcXNVCn7f\n\n### 评测类别\n\n模型需要将输入图片识别为以下三种类型之一：\n\n* `1`：原生无修实拍图\n* `0_1`：已修图，包括人工处理和 AI 局部处理\n* `0_2`：AI 全图生成\n\n### 评测指标\n\n排行榜主排序指标为：\n\n```text\nf1_0 = (f1_0_1 + f1_0_2) / 2\n```\n\n其中：\n\n* `f1_0_1`：已修图类别的 F1\n* `f1_0_2`：AI 全图生成类别的 F1\n\n最终排行榜分数：\n\n```text\n_score = f1_0\n```\n\n同时展示以下监测指标：\n\n* 准确率 `accuracy`\n* 原生无修实拍图 F1：`f1_1`\n* 已修图精准率：`precision_0_1`\n* 已修图召回率：`recall_0_1`\n* 已修图 F1：`f1_0_1`\n* AI 全图生成精准率：`precision_0_2`\n* AI 全图生成召回率：`recall_0_2`\n* AI 全图生成 F1：`f1_0_2`\n* 平均响应时间：`avg_response_time_ms`\n* 推理失败率：`fail_rate`\n\n所有测试样本均需返回合法预测。任意样本在重试后仍推理失败，则本次评测无有效排行榜成绩。\n\n### 提交方式\n\n在提交 YAML 中填写参赛镜像地址：\n\n```yaml\ninferenceImage:\n  repository: \"\"\n  tag: \"\"\n```\n\n示例：\n\n```yaml\ninferenceImage:\n  repository: \"harbor.example.com/namespace/image-authenticity-model\"\n  tag: \"0.0.1\"\n```\n\n提交镜像需满足：\n\n* 镜像架构为 `linux/amd64`\n* 服务监听 `0.0.0.0:80`\n* 实现 `GET /ready` 探活接口\n* 实现图像真伪鉴定业务接口\n* 在规定资源范围内完成模型加载和推理\n\n### 模型挂载方式\n\n需要挂载 Ceph 模型文件时，在提交 YAML 中添加以下配置。\n\n该配置需要与 `inferenceImage` 平级，提交时去掉注释并填写实际的 Ceph 相对目录：\n\n```yaml\ninferenceVolumeMounts:\n  - name: model\n    mountPoint: /model\n    source: ceph_customer\n    srcRelativePath: xxxxxxxx\n```\n\n字段说明：\n\n* `name`：固定为 `model`，不可以修改\n* `mountPoint`：模型在推理容器中的挂载目录，可根据需要修改\n* `source`：固定为 `ceph_customer`，不可以修改\n* `srcRelativePath`：模型文件在 Ceph 中的相对目录，需要替换为实际路径\n\n完整提交示例：\n\n```yaml\ninferenceImage:\n  repository: \"harbor.example.com/namespace/image-authenticity-model\"\n  tag: \"0.0.1\"\n\ninferenceVolumeMounts:\n  - name: model\n    mountPoint: /model\n    source: ceph_customer\n    srcRelativePath: xxxxxxxx\n```\n"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "artifacts": [
+    {
+      "name": "profile",
+      "value": "prod",
+      "path": null
+    },
+    {
+      "name": "next",
+      "value": "darvin solution list --subnet 0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb --profile prod",
+      "path": null
+    }
+  ],
+  "warnings": [],
+  "errors": [],
+  "raw_output": null
+}

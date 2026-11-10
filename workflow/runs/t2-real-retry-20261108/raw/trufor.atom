@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xml:lang="en-US">
+  <id>tag:github.com,2008:/grip-unina/TruFor/commits/main</id>
+  <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commits/main"/>
+  <link type="application/atom+xml" rel="self" href="https://github.com/grip-unina/TruFor/commits/main.atom"/>
+  <title>Recent Commits to TruFor:main</title>
+  <updated>2025-05-29T07:46:01Z</updated>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/ae54475df6f41a491d7615100feb19263dec13f7</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/ae54475df6f41a491d7615100feb19263dec13f7"/>
+    <title>
+        Delete pycache
+    </title>
+    <updated>2025-05-29T07:46:01Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Delete pycache&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/c33fdf2765ac53d34544d437891761a963a02829</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/c33fdf2765ac53d34544d437891761a963a02829"/>
+    <title>
+        Delete pycache
+    </title>
+    <updated>2025-05-29T07:45:50Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Delete pycache&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/2726a3cfcb798e8b51ccea9abe0db56fb2978873</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/2726a3cfcb798e8b51ccea9abe0db56fb2978873"/>
+    <title>
+        Delete pycache
+    </title>
+    <updated>2025-05-29T07:45:32Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Delete pycache&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/04bc2bbd7bc83a1292b7d00d209eb1ef871f535f</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/04bc2bbd7bc83a1292b7d00d209eb1ef871f535f"/>
+    <title>
+        removed comment
+    </title>
+    <updated>2025-05-29T07:44:37Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;removed comment&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/0a87d1fba7ec6166b968b178555cfbc83db49f69</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/0a87d1fba7ec6166b968b178555cfbc83db49f69"/>
+    <title>
+        Updated key metric for validation
+    </title>
+    <updated>2025-05-12T10:35:27Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Updated key metric for validation&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/e8b4c8772567676d5fd931b7d2d43c07c9ef8f70</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/e8b4c8772567676d5fd931b7d2d43c07c9ef8f70"/>
+    <title>
+        solved bug for balanced accuracy
+    </title>
+    <updated>2025-05-12T10:12:33Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;solved bug for balanced accuracy&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/aa644dc9cbe0e885a7de7350a1e764047e7fe2da</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/aa644dc9cbe0e885a7de7350a1e764047e7fe2da"/>
+    <title>
+        Update index.md
+    </title>
+    <updated>2025-04-03T19:24:23Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update index.md&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/0a41406545675c2d5ede24c87bb7d309d183f166</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/0a41406545675c2d5ede24c87bb7d309d183f166"/>
+    <title>
+        Merge branch &#39;main&#39; of https://github.com/grip-unina/TruFor
+    </title>
+    <updated>2025-03-06T14:22:24Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Merge branch &amp;#39;main&amp;#39; of https://github.com/grip-unina/TruFor&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/864355d8b9cee844566f1a25e5322a3ebc79a632</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/864355d8b9cee844566f1a25e5322a3ebc79a632"/>
+    <title>
+        uploaded lib folder
+    </title>
+    <updated>2025-03-06T14:19:41Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;uploaded lib folder&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/aec8b537b75bab09b811f7fff058259abf824438</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/aec8b537b75bab09b811f7fff058259abf824438"/>
+    <title>
+        Update README.md
+    </title>
+    <updated>2025-03-05T15:30:11Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update README.md&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/d8c37193af3dd8c1da4afea72c447be844cf0771</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/d8c37193af3dd8c1da4afea72c447be844cf0771"/>
+    <title>
+        trufor training code
+    </title>
+    <updated>2025-03-05T15:20:05Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;trufor training code&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/f1f1b7410e6332b8123866bd6c149991cb641be1</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/f1f1b7410e6332b8123866bd6c149991cb641be1"/>
+    <title>
+        Update visualize.py
+    </title>
+    <updated>2024-04-12T13:21:56Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update visualize.py&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/0f7ccfdc37190ee3f343974bdff37a8cbb2adf31</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/0f7ccfdc37190ee3f343974bdff37a8cbb2adf31"/>
+    <title>
+        Update metrics.py
+    </title>
+    <updated>2023-09-27T13:09:52Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update metrics.py&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/665f523a8618e24023587e9fbc9dbb6c994cc725</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/665f523a8618e24023587e9fbc9dbb6c994cc725"/>
+    <title>
+        Update README.md
+    </title>
+    <updated>2023-08-08T15:46:41Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update README.md&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/cb2d28c5b65073f25bfdc18a0a12233777c799dc</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/cb2d28c5b65073f25bfdc18a0a12233777c799dc"/>
+    <title>
+        added test data lists
+    </title>
+    <updated>2023-08-01T09:10:56Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;added test data lists&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/6ca31560545e93c26c872d2f8efef33ade44e706</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/6ca31560545e93c26c872d2f8efef33ade44e706"/>
+    <title>
+        Update metrics.py
+    </title>
+    <updated>2023-07-31T22:11:14Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update metrics.py&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/2fbb8d1363e809d581dc39c75620f030522ed1f2</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/2fbb8d1363e809d581dc39c75620f030522ed1f2"/>
+    <title>
+        Update index.md
+    </title>
+    <updated>2023-06-30T13:47:34Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update index.md&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/0490ce25510c30b6587d5d8aebd31f00ee36db04</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/0490ce25510c30b6587d5d8aebd31f00ee36db04"/>
+    <title>
+        Update visualize.py
+    </title>
+    <updated>2023-06-30T13:46:12Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update visualize.py&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/89d75d1c7c0654cf87969ba70a476af8f5249e6e</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/89d75d1c7c0654cf87969ba70a476af8f5249e6e"/>
+    <title>
+        Update visualize.py
+    </title>
+    <updated>2023-06-30T11:39:46Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update visualize.py&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/75d6110093a15d51fd01f4ad298e51fdc404f32b</id>
+    <link type="text/html" rel="alternate" href="https://github.com/grip-unina/TruFor/commit/75d6110093a15d51fd01f4ad298e51fdc404f32b"/>
+    <title>
+        Delete np_visual2.png
+    </title>
+    <updated>2023-06-30T10:28:54Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/71132479?s=30&amp;v=4"/>
+    <author>
+      <name>fabrizioguillaro</name>
+      <uri>https://github.com/fabrizioguillaro</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Delete np_visual2.png&lt;/pre&gt;
+    </content>
+  </entry>
+</feed>

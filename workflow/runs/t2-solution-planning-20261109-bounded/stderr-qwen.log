@@ -1,0 +1,4 @@
+2026-11-09T14:02:10.108011Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)
+2026-11-09T14:02:10.159709Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)
+2026-11-09T14:06:40.127024Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)
+2026-11-09T14:11:10.144320Z ERROR codex_models_manager::manager: failed to refresh available models: stream disconnected before completion: failed to decode models response: Data at line 1 column 172 (body: 172 bytes)

@@ -1,0 +1,249 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-11-09T03:20:00Z",
+  "generated_by": "TICKET-2 solution-discovery, independent run (t2-adaptable-20261108/independent-long-20261109)",
+  "competition_spec_path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t1-real-20261108/competition_spec.json",
+  "task_summary": {
+    "objective": "三分类图像真伪鉴定：1=原生无修实拍图，0_1=已修图（人工处理或AI局部处理），0_2=AI全图生成",
+    "ranking_metric": "f1_0 = (f1_0_1 + f1_0_2) / 2（仅 0_1 与 0_2 的 F1 参与排序；class 1 混淆会通过 precision 损害排序指标）",
+    "service_contract": "Docker 镜像 linux/amd64；监听 0.0.0.0:80；GET /ready；POST /api/v1/image-authenticity（JSON: image_base64 + image_format）；同步返回 {success, message, result}，result ∈ {\"1\",\"0_1\",\"0_2\"}",
+    "submission": "Darwin YAML inferenceImage（repo+tag）；可选 Ceph 模型挂载 inferenceVolumeMounts（name=model, source=ceph_customer）",
+    "data_scope": "文档类（发票/转账记录）、风景类、人物动物类；评测请求无文件名/ID/真实标签，顺序随机",
+    "training_materials": [
+      {
+        "name": "训练集 1 0_1.zip",
+        "size_bytes": 139334730,
+        "attachment_token": "Ofj7bQtFMoe66fxcCGMc9pBSnug",
+        "internal_label_coverage": "unknown（未下载未解压；文件名含义未确认）"
+      },
+      {
+        "name": "训练集 0_2.zip",
+        "size_bytes": 437962033,
+        "attachment_token": "Hab7b2O8lo6LCaxXjaNc1jV5nQh",
+        "internal_label_coverage": "unknown（未下载未解压）"
+      }
+    ],
+    "class_1_training_data": "unknown：S3（图像鉴定-训练集, rev 15）仅列出 0_1 与 0_2 两个附件；class 1 数据是否在平台 dataset（数量 1，内容未知）或其他位置未核验"
+  },
+  "known_constraints": [
+    {
+      "item": "部署资源（暂定解读）",
+      "value": "S2 原文『1/2 A100-40g显存，2c4g』；按 1/2 A100 ≈ 20GB 显存、2c4g ≈ 2 vCPU / 4GB 内存做设计检查。单位解读为暂定假设（用户指示），非已核实官方限制",
+      "stage": "部署/推理（模型加载与推理须在该范围内，S1）",
+      "source": "S2/S1 via competition_spec"
+    },
+    {
+      "item": "镜像架构",
+      "value": "linux/amd64",
+      "stage": "部署",
+      "source": "S1"
+    },
+    {
+      "item": "接口与探活",
+      "value": "0.0.0.0:80、GET /ready、POST /api/v1/image-authenticity",
+      "stage": "部署",
+      "source": "S1/S4/S5（已对照 t1 原始抓取核验）"
+    },
+    {
+      "item": "评测失败判定",
+      "value": "冲突未裁定：S1 任意样本重试后仍失败则整次评测无效 vs S2 失败率>5%。按更严格的 S1 口径设计（永不空结果、内部重试）",
+      "stage": "部署",
+      "source": "spec conflicts C1"
+    },
+    {
+      "item": "训练资源",
+      "value": "无文档化限制；本开发机为 128 核 / 2TB 内存 / 4.9TB 空闲盘，GPU 在沙箱内不可见（nvidia-smi 驱动错误）→ 训练算力 unknown",
+      "stage": "训练",
+      "source": "本机实测（本次运行）"
+    },
+    {
+      "item": "网络",
+      "value": "本次运行沙箱禁止一切 socket 创建（AF_INET/AF_INET6/AF_UNIX 均 EPERM）；免流代理 172.28.4.16:18999 与付费 mihomo 127.0.0.1:7589 均无法从沙箱内探测；T0 环境报告（2026-11-07，历史证据）曾确认 18999 可用",
+      "stage": "全部",
+      "source": "本次实测 + ENVIRONMENT_REPORT.md"
+    }
+  ],
+  "known_unknowns": [
+    "附件 zip 内部标签覆盖（是否仅含 0_1 / 0_2；目录结构、样本数、格式、EXIF 保留情况）",
+    "class 1 训练数据来源（平台 dataset 内容、其他附件、或需公开数据集）",
+    "starting-kit 仓库可用性与内容（gitlab.4pd.io 不可达）",
+    "预训练权重可用性与许可（无法访问 GitHub/HF/内部 nexus）",
+    "2c4g / 1/2 A100 的单位与精确语义",
+    "训练环境 GPU 可见性与配额",
+    "评测请求图片是否保留 EXIF/元数据（影响 class 1 判别策略）"
+  ],
+  "candidates": [
+    {
+      "id": "C1",
+      "name": "官方 starting-kit 路径",
+      "origin": "external",
+      "source_url": "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit",
+      "pinned_version": "unknown（main 分支；本次运行不可达，未取得 commit）",
+      "task_coverage": "未验证（S4 将其列为 starting-kit 参考，推定覆盖服务骨架；训练能力未验证）",
+      "reproducible_entry": "unknown — 无法访问仓库；不可核验",
+      "dependencies": "unknown",
+      "weight_acquisition": "unknown",
+      "code_license": "unknown（内部 GitLab，访问未验证）",
+      "weight_license": "unknown",
+      "data_requirement": "比赛两个训练 zip（下载未验证）+ class 1 来源（未解决）",
+      "resource_need": "unknown（未获取；设计时应天然贴近 2c4g/1/2 A100 部署约束，但无证据）",
+      "status": "conditional",
+      "selection_reason": "保留为网络恢复后的第一优先审计对象：官方参考、内部仓库、最可能内置适配资源约束的训练/推理入口",
+      "exclusion_reason": "当前无可用复现入口（不可达、内容未知），不满足选择条件",
+      "unknowns": [
+        "可用性",
+        "内容",
+        "固定 commit",
+        "许可",
+        "资源占用"
+      ],
+      "supporting_links": [
+        "https://gitlab.4pd.io/gaoziming/image_authenticity_verification_leaderboard/-/tree/main/starting-kit",
+        "t1 raw_doc3_tuili_jiekou.md（S4 rev 29 原文引用）"
+      ]
+    },
+    {
+      "id": "C2",
+      "name": "自研：双头轻量 ViT/ConvNeXt 微调（1 vs 非1 头 + 0_1 vs 0_2 头）",
+      "origin": "self-designed",
+      "source_url": null,
+      "pinned_version": null,
+      "design": {
+        "backbone": "ViT-B/16@224 或 ConvNeXt-tiny（约 20–90M 参数），预训练初始化",
+        "heads": [
+          "M2: 二分类 原生实拍(1) vs 已处理(0_1∪0_2)——决定是否为 1，保护 precision",
+          "M1: 二分类 0_1 vs 0_2——在 M2 判为已处理时给出排序指标所需的两个类别"
+        ],
+        "decision": "M2 非1得分 < 阈值 → 输出 1；否则输出 M1 的 0_1/0_2。阈值在 zip 留出集上校准",
+        "rationale": "排序指标只含 F1_0_1/F1_0_2，但 class 1 误判为 0_x 会拉低 precision，因此必须有可判 1 的能力；两个二分类头各自只依赖可获得的 0_1/0_2 数据 + 一个 1 类正样本来源"
+      },
+      "task_coverage": "设计层面覆盖全部三类标签与服务契约（待实现验证）",
+      "reproducible_entry": "待实现 — 入口将由 TICKET-3 创建（数据清点脚本、train.py、server.py、Dockerfile）；本次仅设计，不可声称可复现",
+      "dependencies": [
+        "python3（本机 3.x，numpy 2.2.6 已装）",
+        "torch/torchvision 或 timm（本机缺失，需经 nexus.4pd.io 内网 PyPI 镜像安装——可达性未验证）",
+        "pillow（缺失）",
+        "fastapi/uvicorn 或 flask（缺失）"
+      ],
+      "weight_acquisition": "预训练初始化权重：候选来源 timm（ImageNet 自训练权重）/DeiT（torch hub）——本次运行无法核验下载地址、固定 revision 与许可；随机初始化变体（C2b）不需要外部权重，但质量风险未知",
+      "code_license": "自研代码，无外部许可问题",
+      "weight_license": "unknown（未核验；不得由框架代码许可推断）",
+      "data_requirement": "0_1/0_2：两个附件 zip（已授权用于训练；内容与标签映射未验证）；1 类正样本：三选一未定——(a) zip 内若含 class 1（待解压验证）；(b) 平台 dataset（内容 unknown）；(c) 公开实拍数据集（许可 unknown，需网络核验）",
+      "resource_need": {
+        "training": "GPU 建议（单卡 A100 级别即可；无文档化训练限制；沙箱内 GPU 不可见，实际训练机算力 unknown）；数据量级 133MB+418MB 压缩（解压后 unknown）",
+        "deployment": "模型 <1GB 落盘（可走镜像内或 Ceph 挂载）；显存 <<20GB（暂定解读）；CPU 侧 RAM 目标 <4GB（暂定解读，PyTorch+服务基线约 1–2GB，未实测）；响应时间无显式上限（监测指标）"
+      },
+      "status": "conditional",
+      "selection_reason": "对给定数据的期望覆盖最好、部署资源最可能满足；但所有关键条件（zip 内容、class 1 数据、权重许可、依赖安装）均未验证",
+      "exclusion_reason": "无可核验复现入口（未实现）且资源获取条件未核实，按验收标准不得选中",
+      "unknowns": [
+        "zip 内部标签/格式/EXIF",
+        "class 1 数据源",
+        "预训练权重许可与获取",
+        "依赖安装路径（nexus.4pd.io）",
+        "4GB RAM 实测占用"
+      ],
+      "supporting_links": [
+        "competition_spec.json（任务/指标/契约）",
+        "t1 raw_doc1/2/3 + sheets（原文核验）"
+      ]
+    },
+    {
+      "id": "C3",
+      "name": "自研：现成检测器融合（AI 生成检测 + 篡改/编辑检测 + 实拍先验）",
+      "origin": "self-designed + external-checkpoints",
+      "source_url": "unknown（具体 checkpoint 需网络检索确定；本次运行无法访问 GitHub/HF 核验任何具体模型）",
+      "pinned_version": "unknown",
+      "task_coverage": "0_2（AI 全图）存在公开检测器类别（如频域/指纹类）；0_1（编辑/拼接/美颜/滤镜/加字/AI 局部）公开检测器对上述多类编辑的鲁棒覆盖存疑；1 类依赖其余两器置信融合",
+      "reproducible_entry": "unknown — 无已核验的具体模型/代码入口",
+      "dependencies": "unknown",
+      "weight_acquisition": "unknown（未核验）",
+      "code_license": "unknown",
+      "weight_license": "unknown（不得由框架代码许可推断）",
+      "data_requirement": "可无训练使用；若需阈值校准则复用两个 zip 留出集（内容未验证）",
+      "resource_need": "unknown（未核验具体模型；按轻量检测器设计应可适配 2c4g/1/2 A100，无证据）",
+      "status": "fallback",
+      "selection_reason": "保留为 C2 训练不可行时的备选：无训练数据依赖、无自研训练成本",
+      "exclusion_reason": "0_1 任务覆盖无证据；所有具体资源均不可核验；不作为首选",
+      "unknowns": [
+        "是否存在覆盖 0_1 全部编辑类型的可用公开检测器",
+        "各 checkpoint 许可与获取",
+        "资源占用"
+      ],
+      "supporting_links": [
+        "competition_spec.json class_definitions 0_1 的编辑类型枚举（S1/S2）"
+      ]
+    },
+    {
+      "id": "C4",
+      "name": "自研：无学习特征启发式基线（EXIF/JPEG 伪影/频域特征）",
+      "origin": "self-designed",
+      "source_url": null,
+      "pinned_version": null,
+      "design": "规则/浅层特征：EXIF 相机与编辑软件痕迹、JPEG DCT 一致性、FFT 频谱伪影；numpy 实现；作为可运行下限与消融基线",
+      "task_coverage": "部分：对含 EXIF 的原图与重度编辑/AI 图有区分力；对滤镜/美颜/局部编辑（无元数据痕迹时）预期弱；覆盖度无证据",
+      "reproducible_entry": "待实现 — 依赖最少（numpy 本机已有；pillow 需安装），是唯一依赖面最接近可离线实现的候选",
+      "dependencies": [
+        "numpy 2.2.6（本机已装，已验证）",
+        "pillow（缺失，需安装——可达性未验证）"
+      ],
+      "weight_acquisition": "不需要外部权重（设计内无权重依赖）",
+      "code_license": "自研代码",
+      "weight_license": "不适用（无权重）",
+      "data_requirement": "校准需两个 zip 样本（未下载）；class 1 正样本同样受 B3 约束",
+      "resource_need": {
+        "training": "无（无训练）",
+        "deployment": "CPU 侧可运行，预计远小于 2c4g（暂定解读，未实测）"
+      },
+      "status": "floor",
+      "selection_reason": "保留为最低风险下限：即使外部资源全部受阻，也有可运行、可测的交付物",
+      "exclusion_reason": "排序指标（0_1/0_2 F1）达标能力无证据，预期显著弱于学习式方案；不作为目标方案",
+      "unknowns": [
+        "评测图是否保留 EXIF（若管线剥离则特征失效——关键假设未验证）",
+        "对 0_1 编辑类型的区分力"
+      ],
+      "supporting_links": [
+        "competition_spec.json input 字段（仅 image_base64 + image_format，无 EXIF 保留声明 → 假设风险）"
+      ]
+    }
+  ],
+  "candidate_comparison": "C1 为官方入口但完全不可核验；C2 设计覆盖最全、对给定数据最匹配，阻塞集中在数据内容与权重许可；C3 的 0_1 覆盖无证据且资源全部 unknown；C4 依赖面最小但性能无保障。当前没有任何候选同时满足『可核验复现入口 + 资源获取条件已核实 + 已知约束满足证据』。",
+  "selected_candidate_id": null,
+  "status": "blocked",
+  "blocking_conditions": [
+    {
+      "id": "B1",
+      "condition": "运行沙箱禁止一切网络 socket（AF_INET/AF_INET6/AF_UNIX socket() 均 EPERM）；免流代理 172.28.4.16:18999 与付费 127.0.0.1:7589 从沙箱内不可达/不可探测（宿主侧监听状态未知）→ 无法执行任何元数据核验（starting-kit、飞书附件 API、公开仓库、nexus PyPI）",
+      "evidence": "evidence.md §3 网络核查记录（命令与原始输出）"
+    },
+    {
+      "id": "B2",
+      "condition": "已知工具路径 /mnt/disk3/liuyutong_home/workspace/darvin_auto/runtime/ 整体缺失（lark-cli-1.0.98、venv/darvin 均不存在）→ 即使网络恢复，附件下载/平台查询需先恢复工具与凭证",
+      "evidence": "evidence.md §4 工具核查"
+    },
+    {
+      "id": "B3",
+      "condition": "class 1 训练数据来源未解决：S3 仅列出 0_1/0_2 附件；平台 dataset（数量 1）内容不可知；zip 内部是否含 class 1 未验证",
+      "evidence": "t1 raw_doc2_xunlianji.md（rev 15 原文）+ competition_spec.json data 节"
+    },
+    {
+      "id": "B4",
+      "condition": "外部资源许可/获取未核验：预训练权重（timm/DeiT 类）下载地址、revision、许可；公开实拍数据集许可；starting-kit 内容与 commit",
+      "evidence": "evidence.md §3（不可达）；按 skill 规则标记 unknown 而非不可获得"
+    },
+    {
+      "id": "B5",
+      "condition": "训练 GPU 可见性 unknown：沙箱内 nvidia-smi 报驱动错误；训练算力无法确认",
+      "evidence": "evidence.md §5 本机环境事实"
+    }
+  ],
+  "attempts_summary": "已尝试：读取 spec 与 t1 原始来源（5 份文档/表格全部交叉核验）；探测两条代理与直连（DNS/TCP/代理模式）；socket 能力测试（三地址族）；tailscale 状态（未运行）；本地工具与 Python 包盘点；后台 60s 间隔探测循环（确认持续 EPERM 后停止）。未尝试/不可尝试：任何大文件下载（授权范围内也无网络）；付费代理（监听不可确认且策略要求先验证）；遍历家目录（遵守约束）。",
+  "next_steps": [
+    "宿主侧恢复网络可达（确认 172.28.4.16:18999 监听，或以允许网络的权限重跑本 Agent）",
+    "恢复 lark-cli（1.0.98+）与飞书凭证，下载两个训练 zip 并解压；产出标签清点清单（每类样本数、格式、EXIF 保留情况、目录结构）→ 解决 B3/B4 的数据侧",
+    "拉取 starting-kit（git archive/ls-remote 固定 commit），审计训练入口、模型、许可与资源 → 判定 C1 是否升级为可选",
+    "网络可用后核验预训练权重下载与许可（hf CLI 本机已存在：~/.local/share/darvin-auto/hf-cli-py311/bin/hf）",
+    "重跑本 ticket 的核验矩阵；C2 与 C1 中取首个满足全部验收条件者为 selected_candidate_id；C4 始终保留为可运行下限"
+  ],
+  "notes": "本产物自包含：后续 TICKET-3 执行者无需本对话上下文即可依据 competition_spec_path、supporting_links 与 blocking_conditions 继续。所有 unknown 字段均为『本次运行未核验』，不代表资源不存在。部署资源 2c4g/1/2 A100 为单位未明示的暂定解读。"
+}
