@@ -1,0 +1,34 @@
+# T5 minimal closeout evidence — 2026-11-10
+
+## GnuTLS system library
+
+The recorded image-layer SHA-256 of `libgnutls.so.30.34.3` is `779b25d20249988bea2c1aa6bbeb218f5ae7ea8a9d30ce4f54ea37372965cc4b`. The same file extracted from Debian's official security snapshot package `libgnutls30 3.7.9-2+deb12u7` for amd64 has exactly that SHA-256. The ten PEM hits in this library are therefore classified as upstream system-library content, not separately analyzed. The recorded other hit was a documentation example; no other actual business credential was established by the prior findings. This does not prove that credentials are absent from every possible nested archive.
+
+Source and verification chain:
+
+- Debian security snapshot `20260520T000000Z`: https://snapshot.debian.org/archive/debian-security/20260520T000000Z/ and official archive signing key https://ftp-master.debian.org/keys/archive-key-12-security.asc.
+- `gpgv` verified a good signature on `InRelease` from Debian Security Archive Automatic Signing Key (12/bookworm), signing subkey `B0CAB9266E8C3929798B3EEEBDE6D2B9216EC7A8`. A second signature lacked public key `ED541312A33F1128F10B1C6C54404762BBB6E853`; consequently the overall `gpgv` exit status was 2, despite the first good signature.
+- `Packages.xz` SHA-256 `701db09ec4f39a46ac506ae80a10fe0a913875f1f16f5a90015bf018882fb6bb` matched the signed `InRelease` index; the downloaded package SHA-256 `30abec8c824feb1d2d7e9000a34083cccd19d139625e1b21547e3ac53b922f8e` matched that package index.
+
+## Image identifiers and access
+
+- Current `docker image inspect harbor-contest.4pd.io/liuyutong/darvin-t5:20261110 --format '{{.Id}} {{.Os}}/{{.Architecture}}'` succeeded with authorized Docker access: local ID `sha256:57004ba692901e804d8861ec18be2b7d045f114a8123175d09b0a885c3fa050e`, `linux/amd64`.
+- The authenticated `docker buildx imagetools inspect harbor-contest.4pd.io/liuyutong/darvin-t5:20261110` succeeded (exit 0) via the confirmed unmetered proxy. Harbor returned OCI index digest `sha256:57004ba692901e804d8861ec18be2b7d045f114a8123175d09b0a885c3fa050e`, matching the prior successful push response in `docker-push.log`. It returned platform `linux/amd64` with manifest digest `sha256:32233f079b0a8fbbda4bd9b60345fb3494061b77b3fdd8d2fe871738cca34826`; the `unknown/unknown` entry is an attestation. Local ID and remote index are separately queried identifier types, although their values match here. Anonymous access had returned HTTP 401.
+- The first bounded Qwen image-stage handoff attempt (`timeout 180s`) exited 124 without producing `ImageManifest-qwen-handoff.md`; see `closeout-review.md`, `closeout-qwen-events.jsonl`, and `closeout-qwen-stderr.log`.
+- Following explicit approval, one additional bounded attempt used `timeout 240s codex exec -s workspace-write -m qwen3.8-27b-fp8` with the existing local Qwen provider and `closeout-qwen-handoff-prompt.md`. The agent read the T4 contract and existing image evidence and invoked Docker, but Docker reported permission denied connecting to its socket. The attempt was terminated after it proceeded to extra diagnostics, in accordance with the requested boundary. Its events and stderr are preserved in `closeout-qwen-retry-events.jsonl` and `closeout-qwen-retry-stderr.log`; no completion event or `ImageManifest-qwen-handoff.md` was produced. This handoff did not pass. The separately authorized host-side Docker inspection above does not demonstrate Docker access inside the running agent.
+- The prior pull used cached local layers. The user approved moving the independent clean-environment pull to T6 Darwin actual-pull acceptance; both that pull and Darwin platform access remain unverified. The Qwen handoff remains an independent T5 blocker, so T5 is not complete even with that acceptance adjustment. No new Docker environment, image rebuild, image push, repeated HTTP suite, or Darwin submission was performed in this closeout.
+
+## Docker access diagnosis following the retry
+
+- In the restricted execution environment, `id` listed only groups `1008` and `65534`; `ls -ln /var/run/docker.sock` displayed owner and group `65534:65534`. Outside that restriction, the same user had supplementary group `999 (docker)`, and the socket was owned by `0:999` with mode `660`. The existing host group membership therefore did not carry through to the restricted runtime; this accounts for the observed socket permission denial.
+- A request to run the single bounded Qwen handoff without its isolation was rejected by the permission reviewer because it would give the agent broad host and Docker control, and the user had not explicitly approved that risk. The command did not run. No additional Qwen validation was performed, no Docker permissions were changed, and the handoff remains blocked pending an explicitly authorized safe path.
+
+## User-authorized follow-up attempt
+
+- After the user explicitly approved the risk, one bounded attempt ran with `timeout 240s codex exec -s danger-full-access -m qwen3.8-27b-fp8 --json` and the existing handoff prompt. It exited 1 before the agent executed any tools: the provider returned HTTP 400, stating that `qwen3.8-27b-fp8` is not supported when using Codex with a ChatGPT account. Events and stderr are preserved in `closeout-qwen-authorized-events.jsonl` and `closeout-qwen-authorized-stderr.log`. This invocation did not reach Docker; access inside the agent remains unverified. No additional attempt was made. T5 remains blocked on the Qwen handoff.
+# Final bounded local-provider validation (2026-11-10)
+
+- Connectivity: Codex used the command-local `local` provider at `http://127.0.0.1:12804/v1`, responses API, and model `qwen3.8-27b-fp8`. The agent invoked `printf T5_CONNECTIVITY_OK`, whose tool exit status was 0, read the output, and completed its turn. The parent process exit status was not separately recorded. Evidence: `closeout-local-connectivity-events.jsonl` and `closeout-local-connectivity-stderr.log`.
+- Handoff: the same provider and model read the T4 ServiceContract and T5 ImageManifest and ran read-only `docker image inspect` successfully. The command exited 0 and the Codex turn completed. The agent checked the recorded remote digest against the existing evidence; it did not query the registry again. Evidence: `closeout-local-handoff-events.jsonl`, `closeout-local-handoff-stderr.log`, and `closeout-local-handoff-exit.txt`.
+- The earlier timed-out handoff remains a failed historical attempt; the later successful handoff supersedes it for acceptance. The agent's reference to a timeout describes that earlier attempt, not the successful current turn.
+- T5 status: **Done**, with the user's approved adjustment deferring the independent clean-environment pull to T6. That pull and Darwin submission remain unverified and were not performed here.
