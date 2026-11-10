@@ -173,6 +173,8 @@ CompetitionSpec 至少覆盖任务目标、数据要求、输入输出格式、�
 
 ### P2 — 自主方案设计能力
 
+状态：Done（新路线 MVP，用户已认可）。目标运行及独立验收证据见 `workflow/runs/t2-solution-planning-20261109-bounded/`；先前失败记录保留于 `workflow/runs/t2-solution-planning-20261109/evidence.md`。数据、类别映射、资源及效果尚未验证，模型列表解码错误仍存在；计划中的异常固定类别返回未获批准。
+
 读取 CompetitionSpec，结合已知数据、协议、资源限制和本地环境，自主设计简单可实施的 Baseline，输出结构化 SolutionPlan，包含算法、依赖、输入输出、资源假设、实现入口、验证方法与风险，并交给 P3。未知条件必须明确标注，不要求外部方案搜索或权重下载，也不在本阶段实现算法。
 
 验收要求真实服务器 Codex CLI + Qwen 的运行命令、日志、退出状态及独立产物检查，确认方案与已知规格一致、可交接且有合理可行性，并有 Skill 或等效能力的实际执行证据。
@@ -428,7 +430,7 @@ Codex 调用轨迹、Darwin 实际提交命令及返回内容、SubmissionReceip
 |---|---|---|---|---|
 | P0 | 工程审计与目标环境 | Codex+Qwen、CLI、认证、Skill 加载 | EnvironmentReport | 待审计 |
 | P1 | 比赛需求理解 | Darwin/飞书能力、需求理解 Skill | CompetitionSpec | 待审计 |
-| P2 | 自主方案设计 | Solution Planning Skill | SolutionPlan | 部分通 |
+| P2 | 自主方案设计 | Solution Planning Skill | SolutionPlan | Done |
 | P3 | Baseline 实现 | 按计划实现 | Runnable Solution | 待审计 |
 | P4 | 服务化适配 | Service Adaptation Skill | ServiceArtifact、ServiceContract | 待审计 |
 | P5 | Docker 交付 | Docker Skill / Tools | ImageManifest | 待审计 |

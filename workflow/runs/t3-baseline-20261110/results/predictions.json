@@ -1,0 +1,104 @@
+{
+  "weights": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/image_auth_repo/model_train/out/model_full.pt",
+  "classes": [
+    "1",
+    "0_1",
+    "0_2"
+  ],
+  "size": 160,
+  "inference_ms": 139.3,
+  "n": 6,
+  "correct_vs_path_label": 4,
+  "items": [
+    {
+      "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/1/人物/00a81fa0095f459f983c90bb0774b10d.jpg",
+      "label_from_path": "1",
+      "prediction": "0_1",
+      "logits": [
+        -0.7323246598243713,
+        0.7464240193367004,
+        0.2130262851715088
+      ],
+      "probs": [
+        0.12560969591140747,
+        0.5511065721511841,
+        0.32328376173973083
+      ]
+    },
+    {
+      "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/1/风景/0025d7f16dca46749dd4e5eff21439b7.jpg",
+      "label_from_path": "1",
+      "prediction": "1",
+      "logits": [
+        1.6593725681304932,
+        -1.19955575466156,
+        -0.5193469524383545
+      ],
+      "probs": [
+        0.8543237447738647,
+        0.0489785261452198,
+        0.09669780731201172
+      ]
+    },
+    {
+      "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/0_1/人物/00e6b1e3a4af4c29bcb884002d0d0b34.png",
+      "label_from_path": "0_1",
+      "prediction": "0_1",
+      "logits": [
+        0.2895210385322571,
+        1.2945363521575928,
+        -0.8568274974822998
+      ],
+      "probs": [
+        0.24692916870117188,
+        0.674597978591919,
+        0.07847288250923157
+      ]
+    },
+    {
+      "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/0_1/文字/002edfff50e84f6fa9b0f634bedcacef.jpg",
+      "label_from_path": "0_1",
+      "prediction": "1",
+      "logits": [
+        0.754749059677124,
+        0.2818205952644348,
+        -1.3861172199249268
+      ],
+      "probs": [
+        0.5744724273681641,
+        0.3579966723918915,
+        0.06753093749284744
+      ]
+    },
+    {
+      "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_0_2/训练集 0_2/0_2/人物/002b3da4bcf14e67b9067dc22d24e10e.jpg",
+      "label_from_path": "0_2",
+      "prediction": "0_2",
+      "logits": [
+        -0.19692778587341309,
+        -0.9541927576065063,
+        0.9861872792243958
+      ],
+      "probs": [
+        0.2112613022327423,
+        0.09907039254903793,
+        0.6896682977676392
+      ]
+    },
+    {
+      "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_0_2/训练集 0_2/0_2/风景/00b5cdd2cd694ac6bddd240ebf7b534b.jpg",
+      "label_from_path": "0_2",
+      "prediction": "0_2",
+      "logits": [
+        -0.3022726774215698,
+        -0.5876089334487915,
+        0.748577356338501
+      ],
+      "probs": [
+        0.21683306992053986,
+        0.1630067229270935,
+        0.6201601624488831
+      ]
+    }
+  ]
+}

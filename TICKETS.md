@@ -95,7 +95,7 @@
 
 ## T2 — CompetitionSpec 产生可执行的 SolutionPlan
 
-状态：部分通；目标环境验证受阻（新路线；历史 T2 实验不计入本验收）。2026-11-09 的实验在 Codex 初始化时遇到只读文件系统错误，未进入模型执行；详见 `workflow/runs/t2-solution-planning-20261109/evidence.md`。
+状态：Done（新路线 MVP；用户已审阅并认可）。目标 Codex CLI + Qwen 实际运行、退出状态与独立验收见 `workflow/runs/t2-solution-planning-20261109-bounded/`，其中 `independent-review.md` 记录 Skill 读取及产物检查。此前 2026-11-09 的初始化失败记录仍保留于 `workflow/runs/t2-solution-planning-20261109/evidence.md`；数据、类别映射、资源和效果等尚未验证，模型列表解码错误仍存在。计划中的异常固定类别返回未获批准，不作为实现要求。
 
 基于 T1 的 CompetitionSpec 自主选择简单可实施的 Baseline，优先考虑现有依赖和本地资源；输出结构化 SolutionPlan，记录算法、依赖、输入输出、资源假设、实现入口、验证和风险，交由 T3 使用。不要求外部搜索、CandidateSolutions、算法实现或训练。
 

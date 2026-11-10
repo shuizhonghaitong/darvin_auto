@@ -1,0 +1,140 @@
+{
+  "results": [
+    {
+      "check": "V1_torch_numpy_parity",
+      "max_logit_diff": 3.5762786865234375e-07,
+      "argmax_mismatch": 0,
+      "pass": true,
+      "rows": [
+        {
+          "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/1/人物/00a81fa0095f459f983c90bb0774b10d.jpg",
+          "torch_logit_diff_max": 1.7881393432617188e-07,
+          "torch_argmax": 1,
+          "numpy_argmax": 1
+        },
+        {
+          "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/1/风景/0025d7f16dca46749dd4e5eff21439b7.jpg",
+          "torch_logit_diff_max": 2.384185791015625e-07,
+          "torch_argmax": 0,
+          "numpy_argmax": 0
+        },
+        {
+          "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/0_1/人物/00e6b1e3a4af4c29bcb884002d0d0b34.png",
+          "torch_logit_diff_max": 2.384185791015625e-07,
+          "torch_argmax": 1,
+          "numpy_argmax": 1
+        },
+        {
+          "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_1_0_1/0_1/文字/002edfff50e84f6fa9b0f634bedcacef.jpg",
+          "torch_logit_diff_max": 3.5762786865234375e-07,
+          "torch_argmax": 0,
+          "numpy_argmax": 0
+        },
+        {
+          "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_0_2/训练集 0_2/0_2/人物/002b3da4bcf14e67b9067dc22d24e10e.jpg",
+          "torch_logit_diff_max": 1.043081283569336e-07,
+          "torch_argmax": 2,
+          "numpy_argmax": 2
+        },
+        {
+          "input": "/mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/train_0_2/训练集 0_2/0_2/风景/00b5cdd2cd694ac6bddd240ebf7b534b.jpg",
+          "torch_logit_diff_max": 1.1920928955078125e-07,
+          "torch_argmax": 2,
+          "numpy_argmax": 2
+        }
+      ]
+    },
+    {
+      "check": "V2_fc_row_permutation",
+      "permutation": [
+        1,
+        0,
+        2
+      ],
+      "all_as_expected": true,
+      "pass": true,
+      "rows": [
+        {
+          "input": "00a81fa0095f459f983c90bb0774b10d.jpg",
+          "orig_index": 1,
+          "permuted_index": 0,
+          "as_expected": true
+        },
+        {
+          "input": "0025d7f16dca46749dd4e5eff21439b7.jpg",
+          "orig_index": 0,
+          "permuted_index": 1,
+          "as_expected": true
+        },
+        {
+          "input": "00e6b1e3a4af4c29bcb884002d0d0b34.png",
+          "orig_index": 1,
+          "permuted_index": 0,
+          "as_expected": true
+        },
+        {
+          "input": "002edfff50e84f6fa9b0f634bedcacef.jpg",
+          "orig_index": 0,
+          "permuted_index": 1,
+          "as_expected": true
+        },
+        {
+          "input": "002b3da4bcf14e67b9067dc22d24e10e.jpg",
+          "orig_index": 2,
+          "permuted_index": 2,
+          "as_expected": true
+        },
+        {
+          "input": "00b5cdd2cd694ac6bddd240ebf7b534b.jpg",
+          "orig_index": 2,
+          "permuted_index": 2,
+          "as_expected": true
+        }
+      ]
+    },
+    {
+      "check": "V3_checkpoint_sensitivity",
+      "n_differing": 1,
+      "pass": true,
+      "rows": [
+        {
+          "input": "00a81fa0095f459f983c90bb0774b10d.jpg",
+          "model_full": 1,
+          "model_valbest": 1,
+          "same": true
+        },
+        {
+          "input": "0025d7f16dca46749dd4e5eff21439b7.jpg",
+          "model_full": 0,
+          "model_valbest": 0,
+          "same": true
+        },
+        {
+          "input": "00e6b1e3a4af4c29bcb884002d0d0b34.png",
+          "model_full": 1,
+          "model_valbest": 1,
+          "same": true
+        },
+        {
+          "input": "002edfff50e84f6fa9b0f634bedcacef.jpg",
+          "model_full": 0,
+          "model_valbest": 1,
+          "same": false
+        },
+        {
+          "input": "002b3da4bcf14e67b9067dc22d24e10e.jpg",
+          "model_full": 2,
+          "model_valbest": 2,
+          "same": true
+        },
+        {
+          "input": "00b5cdd2cd694ac6bddd240ebf7b534b.jpg",
+          "model_full": 2,
+          "model_valbest": 2,
+          "same": true
+        }
+      ]
+    }
+  ],
+  "all_pass": true
+}
