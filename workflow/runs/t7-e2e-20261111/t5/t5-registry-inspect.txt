@@ -1,0 +1,15 @@
+Name:      harbor-contest.4pd.io/liuyutong/darvin-t5:20261110
+MediaType: application/vnd.oci.image.index.v1+json
+Digest:    sha256:57004ba692901e804d8861ec18be2b7d045f114a8123175d09b0a885c3fa050e
+           
+Manifests: 
+  Name:        harbor-contest.4pd.io/liuyutong/darvin-t5:20261110@sha256:32233f079b0a8fbbda4bd9b60345fb3494061b77b3fdd8d2fe871738cca34826
+  MediaType:   application/vnd.oci.image.manifest.v1+json
+  Platform:    linux/amd64
+               
+  Name:        harbor-contest.4pd.io/liuyutong/darvin-t5:20261110@sha256:3dae874c50d16b2ef3008c71cf6fceb4589790b0199ddb0933bd5e8f96a933b5
+  MediaType:   application/vnd.oci.image.manifest.v1+json
+  Platform:    unknown/unknown
+  Annotations: 
+    vnd.docker.reference.digest: sha256:32233f079b0a8fbbda4bd9b60345fb3494061b77b3fdd8d2fe871738cca34826
+    vnd.docker.reference.type:   attestation-manifest

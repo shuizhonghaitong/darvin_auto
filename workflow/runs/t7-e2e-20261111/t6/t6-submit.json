@@ -1,0 +1,95 @@
+{
+  "command": "solution submit",
+  "started_at": "2026-11-11T02:57:50.991037Z",
+  "schema_version": "1",
+  "environment": {
+    "profile": "prod",
+    "production": true
+  },
+  "data": {},
+  "error_code": null,
+  "finished_at": "2026-11-11T02:57:57.359094Z",
+  "duration_ms": 6368,
+  "status": "success",
+  "steps": [
+    {
+      "name": "precheck",
+      "status": "success",
+      "detail": null
+    },
+    {
+      "name": "write receipt",
+      "status": "success",
+      "detail": null
+    },
+    {
+      "name": "create model and task",
+      "status": "success",
+      "detail": "job_created"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Submission",
+      "fields": [
+        {
+          "name": "stage",
+          "value": "job_created"
+        },
+        {
+          "name": "model_saved",
+          "value": "true"
+        },
+        {
+          "name": "task_created",
+          "value": "true"
+        },
+        {
+          "name": "job_created",
+          "value": "true"
+        },
+        {
+          "name": "model_app_id",
+          "value": "14434"
+        },
+        {
+          "name": "submission_id",
+          "value": "396"
+        },
+        {
+          "name": "task_id",
+          "value": "0359f8e60c923a42d74161795f505b80"
+        },
+        {
+          "name": "trace_id",
+          "value": "v1:b9b75c55ccd77f9ed5c390747f8eff53cfe197be7d9f447bc8bbc4dd1e0b8c6e"
+        },
+        {
+          "name": "historical",
+          "value": "false"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "artifacts": [
+    {
+      "name": "receipt_path",
+      "value": null,
+      "path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/t7-e2e-20261111/t6/.darvin/submissions/v1_b9b75c55ccd77f9ed5c390747f8eff53cfe197be7d9f447bc8bbc4dd1e0b8c6e.json"
+    },
+    {
+      "name": "profile",
+      "value": "prod",
+      "path": null
+    },
+    {
+      "name": "next",
+      "value": "darvin solution status 0359f8e60c923a42d74161795f505b80",
+      "path": null
+    }
+  ],
+  "warnings": [],
+  "errors": [],
+  "raw_output": null
+}
