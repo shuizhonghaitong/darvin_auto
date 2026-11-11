@@ -19,7 +19,7 @@
   声明格式与内容不符时按解码失败/成功如实报告。
 
 用法:
-    python main.py [--host 0.0.0.0] [--port 8000] [--weights PATH]
+    python main.py [--host 0.0.0.0] [--port 80] [--weights PATH]
 环境变量:
     MOCK_SERVER_HOST / MOCK_SERVER_PORT / IMAGE_AUTH_MODEL_PATH
 """
@@ -175,8 +175,8 @@ def main():
     ap = argparse.ArgumentParser(description="T4 图像真伪鉴定最小 HTTP 服务")
     ap.add_argument("--host", default=os.getenv("MOCK_SERVER_HOST", "0.0.0.0"),
                     help="监听地址（默认 0.0.0.0）")
-    ap.add_argument("--port", type=int, default=int(os.getenv("MOCK_SERVER_PORT", "8000")),
-                    help="监听端口（默认 8000；平台部署可用 MOCK_SERVER_PORT=80）")
+    ap.add_argument("--port", type=int, default=int(os.getenv("MOCK_SERVER_PORT", "80")),
+                    help="监听端口（默认 80；可用 MOCK_SERVER_PORT 覆盖）")
     ap.add_argument("--weights", default=None,
                     help="权重 npz 路径（默认本目录 model_weights.npz 或 IMAGE_AUTH_MODEL_PATH）")
     args = ap.parse_args()
