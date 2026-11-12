@@ -126,6 +126,10 @@ class Handler(BaseHTTPRequestHandler):
                                  "message": "缺少必要参数: image_base64"}, 400)
                 return
 
+            if not isinstance(image_format, str):
+                self._send_json({"success": False, "message": "缺少必要参数或类型错误: image_format", "result": None}, 400)
+                return
+
             padding = (-len(image_base64)) % 4
             try:
                 image_bytes = base64.b64decode(image_base64 + "=" * padding, validate=True)

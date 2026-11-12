@@ -297,6 +297,8 @@ Codex 轨迹、复现命令、真实执行日志、算法产物、ReproductionRe
 
 服务启动命令、请求与响应、接口检查输出、Codex 执行记录。
 
+**状态：Done。** 实际证据见 `workflow/runs/t4-service-20261110/ServiceContract.md`、`final-qwen-verification.md`、`events-qwen-final.jsonl` 及 `tests/t4-format-validation.json`（补测 15/15）。首次 Qwen 超时、受限环境 Socket 失败及补测系统 Python 缺 Pillow 的日志均予保留；C1/C2 冲突未在本阶段裁定。
+
 ---
 
 ### P5 — Docker 构建、验证与交付能力
@@ -434,7 +436,7 @@ Codex 调用轨迹、Darwin 实际提交命令及返回内容、SubmissionReceip
 | P1 | 比赛需求理解 | Darwin/飞书能力、需求理解 Skill | CompetitionSpec | 待审计 |
 | P2 | 自主方案设计 | Solution Planning Skill | SolutionPlan | Done |
 | P3 | Baseline 实现 | 按计划实现 | Runnable Solution | Done（MVP） |
-| P4 | 服务化适配 | Service Adaptation Skill | ServiceArtifact、ServiceContract | 待审计 |
+| P4 | 服务化适配 | Service Adaptation Skill | ServiceArtifact、ServiceContract | Done |
 | P5 | Docker 交付 | Docker Skill / Tools | ImageManifest | Done（已批准的 MVP 标准；见 `workflow/runs/t5-delivery-20261110/ImageManifest.md`、`workflow/runs/t5-delivery-20261110/closeout-minimal-20261110.md` 和 `workflow/runs/t5-delivery-20261110/closeout-credential-adjudication.md`；历史失败及安全核验局限保留，独立干净环境和平台拉取验证转入 P6） |
 | P6 | 榜单提交 | Darwin Submission 能力 | SubmissionReceipt | Done（提交 364、评测任务已创建；平台实际拉取/启动及独立干净环境拉取尚待验证；见 `workflow/runs/t6-submission-20261110/SubmissionReceipt.md`） |
 | P7 | 完整串联 | 总控 Skill 与集成能力 | End-to-End Report | 待审计 |

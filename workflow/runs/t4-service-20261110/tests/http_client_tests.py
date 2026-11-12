@@ -82,6 +82,10 @@ def main():
                       "expected": "200 success=true result==T3 本地预测(%s)" % exp_label, "pass": ok})
 
     error_cases = [
+        ("缺字段: 无 image_format", json.dumps({"image_base64": "YQ=="}).encode(), 400,
+         "缺少必要参数或类型错误: image_format"),
+        ("类型错误: image_format 非字符串", json.dumps({"image_base64": "YQ==", "image_format": 123}).encode(), 400,
+         "缺少必要参数或类型错误: image_format"),
         ("缺字段: 无 image_base64", json.dumps({"image_format": "jpg"}).encode(), 400,
          "缺少必要参数: image_base64"),
         ("缺字段: 空对象 {}", b"{}", 400, "缺少必要参数: image_base64"),
