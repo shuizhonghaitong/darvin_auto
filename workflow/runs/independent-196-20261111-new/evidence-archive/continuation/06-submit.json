@@ -1,0 +1,95 @@
+{
+  "command": "solution submit",
+  "started_at": "2026-11-12T00:55:19.266287Z",
+  "schema_version": "1",
+  "environment": {
+    "profile": "prod",
+    "production": true
+  },
+  "data": {},
+  "error_code": null,
+  "finished_at": "2026-11-12T00:55:26.559377Z",
+  "duration_ms": 7293,
+  "status": "success",
+  "steps": [
+    {
+      "name": "precheck",
+      "status": "success",
+      "detail": null
+    },
+    {
+      "name": "write receipt",
+      "status": "success",
+      "detail": null
+    },
+    {
+      "name": "create model and task",
+      "status": "success",
+      "detail": "job_created"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Submission",
+      "fields": [
+        {
+          "name": "stage",
+          "value": "job_created"
+        },
+        {
+          "name": "model_saved",
+          "value": "true"
+        },
+        {
+          "name": "task_created",
+          "value": "true"
+        },
+        {
+          "name": "job_created",
+          "value": "true"
+        },
+        {
+          "name": "model_app_id",
+          "value": "14473"
+        },
+        {
+          "name": "submission_id",
+          "value": "422"
+        },
+        {
+          "name": "task_id",
+          "value": "a02708ad1ecd608f0949ef1803a209ee"
+        },
+        {
+          "name": "trace_id",
+          "value": "v1:3931633747c8c86358c1a600536a23fd6a3599a186b3e77c6d2c981c8913fc65"
+        },
+        {
+          "name": "historical",
+          "value": "false"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "artifacts": [
+    {
+      "name": "receipt_path",
+      "value": null,
+      "path": "/mnt/disk3/liuyutong_home/workspace/darvin_auto/workflow/runs/independent-196-20261111-new/t6-submission/.darvin/submissions/v1_3931633747c8c86358c1a600536a23fd6a3599a186b3e77c6d2c981c8913fc65.json"
+    },
+    {
+      "name": "profile",
+      "value": "prod",
+      "path": null
+    },
+    {
+      "name": "next",
+      "value": "darvin solution status a02708ad1ecd608f0949ef1803a209ee",
+      "path": null
+    }
+  ],
+  "warnings": [],
+  "errors": [],
+  "raw_output": null
+}

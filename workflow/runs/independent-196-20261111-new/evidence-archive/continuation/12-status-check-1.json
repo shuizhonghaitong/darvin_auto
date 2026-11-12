@@ -1,0 +1,106 @@
+{
+  "command": "solution status",
+  "started_at": "2026-11-12T01:43:41.883516Z",
+  "schema_version": "1",
+  "environment": {
+    "profile": "prod",
+    "production": true
+  },
+  "data": {},
+  "error_code": null,
+  "finished_at": "2026-11-12T01:43:46.747950Z",
+  "duration_ms": 4864,
+  "status": "success",
+  "steps": [
+    {
+      "name": "query backend task status",
+      "status": "success",
+      "detail": "Fetched task 'a02708ad1ecd608f0949ef1803a209ee' and 1 job(s)."
+    },
+    {
+      "name": "map task status",
+      "status": "success",
+      "detail": "Mapped 'succeeded' to 'success'."
+    },
+    {
+      "name": "render task summary",
+      "status": "success",
+      "detail": "Rendered task and job status."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Task",
+      "fields": [
+        {
+          "name": "task_id",
+          "value": "a02708ad1ecd608f0949ef1803a209ee"
+        },
+        {
+          "name": "task_name",
+          "value": "liuyutong-image-auth-independent-196-20261111-new"
+        },
+        {
+          "name": "subnet_id",
+          "value": "0x35fc3c317f81d4a35fd764128fdf8023c96fc2eb"
+        },
+        {
+          "name": "status",
+          "value": "success"
+        },
+        {
+          "name": "raw_status",
+          "value": "succeeded"
+        },
+        {
+          "name": "can_cancel",
+          "value": "false"
+        },
+        {
+          "name": "model_app_id",
+          "value": "14473"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "title": "Jobs",
+      "columns": [
+        "Job ID",
+        "Stage",
+        "Status",
+        "Score (raw)",
+        "Logs",
+        "Error",
+        "Dataset Group"
+      ],
+      "rows": [
+        [
+          "f6bdcb4df1d7253cece08f5e84c15037",
+          "evaluation",
+          "SUCCEEDED",
+          "42.21 (raw 42.21)",
+          "available",
+          "-",
+          "dc77e87ab93f44ec82e9512492f3a383"
+        ]
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "profile",
+      "value": "prod",
+      "path": null
+    },
+    {
+      "name": "base_url",
+      "value": "https://darvin-api.originlabs.cc",
+      "path": null
+    }
+  ],
+  "warnings": [],
+  "errors": [],
+  "raw_output": null
+}

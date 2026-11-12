@@ -1,0 +1,171 @@
+{
+  "command": "task list",
+  "started_at": "2026-11-12T01:46:18.287697Z",
+  "schema_version": "1",
+  "environment": {
+    "profile": "prod",
+    "production": true
+  },
+  "data": {},
+  "error_code": null,
+  "finished_at": "2026-11-12T01:46:21.264184Z",
+  "duration_ms": 2976,
+  "status": "success",
+  "steps": [
+    {
+      "name": "list owned training tasks",
+      "status": "success",
+      "detail": "Listed 9 task(s), total 9."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "name": "page",
+          "value": "1"
+        },
+        {
+          "name": "size",
+          "value": "10"
+        },
+        {
+          "name": "total",
+          "value": "9"
+        },
+        {
+          "name": "pages",
+          "value": "1"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "title": "Training tasks",
+      "columns": [
+        "Task ID",
+        "Name",
+        "Subnet",
+        "Status",
+        "Progress",
+        "Jobs",
+        "Score",
+        "Raw score",
+        "Model ID"
+      ],
+      "rows": [
+        [
+          "a02708ad1ecd608f0949ef1803a209ee",
+          "liuyutong-image-auth-independent-196-20261111-new",
+          "图像真伪鉴定榜",
+          "completed",
+          "0",
+          "1",
+          "42.21",
+          "42.21",
+          "14473"
+        ],
+        [
+          "e317f4cefd932ed30b3f7e5751e87beb",
+          "liuyutong-image-auth-t5-20261111-portfix",
+          "图像真伪鉴定榜",
+          "completed",
+          "0",
+          "1",
+          "42.08",
+          "42.08",
+          "14453"
+        ],
+        [
+          "0359f8e60c923a42d74161795f505b80",
+          "liuyutong-image-auth-t5-20261111-e2e",
+          "图像真伪鉴定榜",
+          "cancelled",
+          "0",
+          "1",
+          "-",
+          "-",
+          "14434"
+        ],
+        [
+          "88c59e71a9f0f235352116c6409e0ee5",
+          "liuyutong-image-auth-t5-20261110",
+          "图像真伪鉴定榜",
+          "cancelled",
+          "0",
+          "1",
+          "-",
+          "-",
+          "14397"
+        ],
+        [
+          "a39d1f7f4dc4b1db35fa1ec5ed8b12d8",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "completed",
+          "0",
+          "1",
+          "42.08",
+          "42.08",
+          "14052"
+        ],
+        [
+          "6760842aefe02a80557fdfd5af299ecf",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "completed",
+          "0",
+          "1",
+          "42.08",
+          "42.08",
+          "14049"
+        ],
+        [
+          "6379b50d14d298f584809ec1cb43b581",
+          "liuyutong-image-auth-cnn-v1",
+          "图像真伪鉴定榜",
+          "completed",
+          "0",
+          "1",
+          "42.08",
+          "42.08",
+          "14034"
+        ],
+        [
+          "29e32f75ed74a3c75a06e952d0041efc",
+          "resume-qwen-harbor-baseline-v2",
+          "简历助手基线榜-中文v2",
+          "failed",
+          "0",
+          "1",
+          "-",
+          "-",
+          "13938"
+        ],
+        [
+          "5cb421fb214df8aaa8947d8a0f8d2be9",
+          "resume-qwen-harbor-baseline-v1",
+          "简历助手基线榜-中文v2",
+          "failed",
+          "0",
+          "1",
+          "-",
+          "-",
+          "13935"
+        ]
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "profile",
+      "value": "prod",
+      "path": null
+    }
+  ],
+  "warnings": [],
+  "errors": [],
+  "raw_output": null
+}

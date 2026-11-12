@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "competition_spec": "t1-intake/competition_spec.json",
+  "generated_at": "2026-11-11T22:05:00+08:00",
+  "task": "图像三分类：1 原生无修实拍图 / 0_1 已修图 / 0_2 AI 全图生成；排序指标 f1_0=(f1_0_1+f1_0_2)/2；平台评测要求每个测试样本都必须返回合法标签，否则整次评测无效。",
+  "confirmed_requirements": [
+    "镜像 linux/amd64，服务监听 0.0.0.0:80（S1/S3/S6）",
+    "GET /ready 探活（平台 readinessProbe exec curl，最长约 60 分钟就绪窗口）（S5/S6）",
+    "POST /api/v1/image-authenticity，请求 {image_base64, image_format}，响应 {success, message, result∈{1,0_1,0_2}}（S5/S7）",
+    "平台资源：2 CPU、4Gi 内存、≈1/2 A100-40GB vGPU（本方案不依赖 GPU）（S3/S6）",
+    "judge 有效请求超时 ≥60s/次，网络类错误重试 3 次；业务 success=false 不重试（S6/S7）",
+    "评测请求不含 ID/文件名/路径/标签，顺序随机（S5/S7）",
+    "提交：inferenceImage.{repository,tag}；可选 Ceph 挂载（本方案不挂载，模型打进镜像）（S1）"
+  ],
+  "algorithm": {
+    "approach": "以本地缓存的 ImageNet 预训练 ResNet-18 为骨干，替换分类头为 3 类，在 1200 张公开训练集上做有监督微调；导出 torch checkpoint 打进镜像；服务用 CPU 推理（torch 2.6.0+cpu）。",
+    "why": [
+      "本机无 GPU，只能 CPU 训练；ResNet-18（11.7M 参数）是 CPU 训练/推理速度与 4Gi 内存上限下的合理平衡点。",
+      "预训练权重 resnet18-f37072fd.pth 已在本地 torch-cache 缓存，零下载。",
+      "任务只要求打通端到端交付并产出真实评测（用户明确不优化分数），微调 ResNet-18 属于简单可验证的 baseline。",
+      "CPU 推理单张 224px 预计 0.1–1s，远小于 60s 有效超时；不使用 vGPU 也满足“资源内完成加载与推理”。"
+    ],
+    "robustness_rule": "任何解码/推理异常时，服务仍返回 success=true 与先验概率最高的合法标签（避免整次评测被判无效）；正常路径返回模型 argmax。该规则只影响极端异常样本，不改变正常预测。"
+  },
+  "inputs_outputs": {
+    "train_data": "本地缓存 /mnt/disk3/liuyutong_home/workspace/darwin_auto/datasets/image_auth/（train_1_0_1.zip 解压：类1/类0_1 各400；train_0_2.zip 解压：类0_2 400；过滤 .DS_Store 与 __MACOSX；支持 jpg/png/tiff）",
+    "model_artifact": "t3-solution/model/best.pt（resnet18 3 类 checkpoint）+ class_map.json + 预处理参数（ImageNet 均值方差）",
+    "service_request": "{image_base64: str, image_format: str}",
+    "service_response": "{success: true, message: str, result: \"1\"|\"0_1\"|\"0_2\"}"
+  },
+  "dependencies": {
+    "training_env": "/mnt/disk3/liuyutong_home/miniconda3/envs/evo/bin/python（3.10.21, torch 2.8.0+cu128 CPU 可用, torchvision 0.23.0, PIL 12.2, numpy 1.26.4）— 已实测",
+    "pretrained_weights": "resnet18-f37072fd.pth（torchvision IMAGENET1K_V1 同文件名同哈希约定）位于 /mnt/disk3/liuyutong_home/workspace/darwin_auto/runtime/torch-cache/hub/checkpoints/ — 已实测存在（约44MB）；加载时 TORCH_HOME 指向可写副本以绕过沙盒只读 home",
+    "image_runtime": "harbor.4pd.io/lab-platform/inf/python:3.9（本地已缓存 2.62GB；实测 Debian buster / Python 3.9.4 / Flask 1.1.2 / PIL 8.2.0 / 无 torch 无 CUDA）",
+    "image_torch_wheel": "torch-2.6.0+cpu-cp39-cp39-linux_x86_64.whl（约180MB）— 经免费代理从 download.pytorch.org/whl/cpu 下载一次并 vendor 到 t3-solution/vendor/，构建时 COPY，避免构建期外网依赖；cp39 可用最高版本 2.6.0+cpu 已实测列于该索引",
+    "nexus_4pd": "http://nexus.4pd.io/repository/pypi-all/simple 直连不可达、经代理可达（200）— 已实测；本方案不依赖 nexus（Flask/PIL 已在基础镜像内）",
+    "unconfirmed": [
+      "训练时长（128 核 CPU，预计 1–2 小时；T3 实测后回填）",
+      "val 指标水平（T3 实测后回填）"
+    ]
+  },
+  "resource_assumptions": {
+    "platform_sut": "2 CPU / 4Gi / vGPU 40960MB@50% — 本方案只用 2 CPU 4Gi 内运行（ResNet18 fp32 权重 ~47MB + 推理图），假设成立",
+    "load_window": "模型加载 < 60s，远小于 readiness 窗口 60min",
+    "per_request": "目标 P99 < 5s（实测后回填）"
+  },
+  "implementation": {
+    "layout": "t3-solution/{train.py, vendor/torch-*.whl, model/}; t4-service/{main.py, start.sh, Dockerfile, build.sh, requirements-free（仅 COPY torch 轮子）}",
+    "steps": [
+      "1. 数据准备：扫描三类的图片文件，过滤噪声，构建 900/300 分层 train/val 划分（固定种子 196）",
+      "2. 训练：ResNet18 微调（backbone lr 1e-4、head lr 1e-3，AdamW，batch 32，12 epoch，随机尺寸裁剪+水平翻转+轻度颜色抖动；按 val f1_0 选 best checkpoint），torch 线程/worker 保守配置防过订",
+      "3. 本地验证：val 集三类 P/R/F1 与 f1_0；单图 CPU 推理延迟基准（含 base64 解码与 PIL 打开）",
+      "4. 服务化：Flask 应用（与官方 starting-kit 同构：/ready 在模型加载完成后才返回 200；/api/v1/image-authenticity 解码→预处理→argmax→响应；异常兜底返回先验合法标签）",
+      "5. 镜像：FROM harbor.4pd.io/lab-platform/inf/python:3.9；COPY torch 轮子并 pip install --no-index；COPY 服务代码与模型；EXPOSE 80；CMD [\"/app/start.sh\"]；start.sh 无参数执行 python3 main.py（模拟平台调用）",
+      "6. 镜像内自检：docker run 起容器，curl /ready 与真实图片推理各 1 次，确认 checkpoint 可被 torch 2.6.0+cpu 加载（验证 2.8→2.6 兼容性）",
+      "7. 构建 linux/amd64（host 即 x86_64，原生构建），打唯一新 tag，push harbor-contest.4pd.io（liuyutong 命名空间以实际 push 验证），核对远端 digest"
+    ]
+  },
+  "validation": {
+    "t3": "val 指标（accuracy/f1_0/f1_1/f1_0_1/f1_0_2）与推理延迟写入 t3-solution/VALIDATION.md；训练曲线摘要入日志",
+    "t4": "docker run 后：/ready=200；合法图片返回合法标签；构造 10 张跨三类样本逐一人工抽查合理性；异常输入（截断 base64、空图、非图片字节）返回 success=true+合法标签（兜底路径）",
+    "t5": "远端 digest 与本地一致；docker pull 新 tag 成功（平台可拉取性以 push+pull 实证）",
+    "t6": "darwin solution precheck（若 CLI 支持）+ 授权后 submit；提交后只读 status 跟踪"
+  },
+  "risks": [
+    "torch 2.8 保存的 checkpoint 与镜像内 2.6.0+cpu 加载兼容性 → 镜像内自检步骤实证；若失败则改在 evo 环境降版本重训或改 2.8 cp310 方案（需要换基础镜像，代价高，最后手段）",
+    "CPU 训练超时（6h 运行预算）→ 12 个 epoch 上限；若 2h 未完则按 best-so-far 截断并在报告中说明",
+    "测试集分布与训练集差异 → 不优化分数的 baseline 定位，接受风险；兜底标签保证评测有效性",
+    "harbor-contest.4pd.io push 权限/命名空间 → T5 实证；失败则记录阻塞（已有 docker auth 条目，历史成功推送记录仅作文档参考）",
+    "镜像体积与构建时长：torch 轮子 ~180MB + 模型 ~50MB → 预计 < 4GB，构建 < 10min",
+    "judge 以 IP 直连 SUT（ping 解析）→ 与平台无关，无需额外处理"
+  ],
+  "unknowns": [
+    "测试集规模与分布（平台侧）",
+    "评测时 image_format 具体取值（SUT 按 PIL 可解码处理，不依赖该字段值）",
+    "liuyutong 命名空间可推送仓库路径（T5 实证）",
+    "积分余额（用户提供 180/单次10，未复核）"
+  ],
+  "status": "ready_for_t3"
+}

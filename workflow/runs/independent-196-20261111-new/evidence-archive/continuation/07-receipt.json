@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "stage": "job_created",
+  "profile": "prod",
+  "base_url": "https://darvin-api.originlabs.cc",
+  "wallet": "0x8230f54422252c68d1E3F084D7aBF01d72E32e4e",
+  "subnet_address": "0x35fC3c317F81D4a35fD764128FdF8023C96Fc2Eb",
+  "attempt": "default",
+  "trace_id": "v1:3931633747c8c86358c1a600536a23fd6a3599a186b3e77c6d2c981c8913fc65",
+  "input_fingerprint": "af72ba8b911c934c0a4acfc4e4c2e706289e6c850ca2036fba968432cb93eecf",
+  "training_image": "harbor-contest.4pd.io/liuyutong/sut/image_authenticity_verification_leaderboard@sha256:2d2793dbf17f7542d17327fd18621d46f4b9bf6ad06b20fe0e521fbad5487ff8",
+  "attachment_file_link": null,
+  "model_app_id": 14473,
+  "submission_id": 422,
+  "task_id": "a02708ad1ecd608f0949ef1803a209ee",
+  "historical": false,
+  "updated_at": "2026-11-12T00:55:26.555888Z"
+}

@@ -1,0 +1,62 @@
+{
+  "launch.sh": {
+    "source_sha256": "8afda1f5a65d77d51638d00dad8e1a6727258bd6e570d75175ee947c16278dd1",
+    "bytes": 979
+  },
+  "continuation-launch.sh": {
+    "source_sha256": "0fdd4ae805c3a4cd3d5bd03a5c24cb40be4cd00af70cde4fc43337fd1409b049",
+    "bytes": 1044
+  },
+  "input.md": {
+    "source_sha256": "d67eedbbcfedaa1ba22cbc141d14110750d6127887b577eaa1ea39f164a75e29",
+    "bytes": 1842
+  },
+  "continuation-input.md": {
+    "source_sha256": "33e9e29f50c049dec4d10fbccfb235add7ec003e4d9b15684be60f0e77884550",
+    "bytes": 1795
+  },
+  "exit-code.txt": {
+    "source_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "bytes": 2
+  },
+  "continuation-exit-code.txt": {
+    "source_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "bytes": 2
+  },
+  "t2-planning/solution_plan.json": {
+    "source_sha256": "0da3f6e9cffbc25cafa458fecf8309696d94e92c556d418086acdedacbde0e98",
+    "bytes": 7777
+  },
+  "continuation/06-submit.json": {
+    "source_sha256": "5e479b9e181747912f4fe287b3de213b397b973dd7b5a4e99e1554101e2825bf",
+    "bytes": 2087
+  },
+  "continuation/07-receipt.json": {
+    "source_sha256": "90b190c3de262c9866840313a0874ea254020b8f2ce8af20c26b5602b13f01ce",
+    "bytes": 822
+  },
+  "continuation/12-status-check-1.json": {
+    "source_sha256": "3b786598b204999e239e2f4d4ec5f0946f675ce45415e634cce63ab1945fc18d",
+    "bytes": 2216
+  },
+  "continuation/13-solution-list-final.json": {
+    "source_sha256": "d850fde560648dd7b5844bd33516f64203e34b63a16d98d76234002ce5be7d0b",
+    "bytes": 5638
+  },
+  "continuation/14-task-list-completed.json": {
+    "source_sha256": "75ff0eb682f5b1d5fd98a420f091a4b1a6760fa47f553b0285cd2759e2478bd7",
+    "bytes": 3549
+  },
+  "events.jsonl": {
+    "source_sha256": "0a684cf158ce7f11ba3bf036299e1f9fd65bedc9d2de0cef559535ca6e458a4e",
+    "source_bytes": 779280,
+    "events": 665,
+    "archived_sha256": "ad40518822d11fc01b5c30a41dccac30532627f8b4095d65492c7b4cd1baebad"
+  },
+  "continuation-events.jsonl": {
+    "source_sha256": "79315d8854f94fe7584f066fac50837fe3533b833d1d322d752d4f93364538ba",
+    "source_bytes": 255085,
+    "events": 250,
+    "archived_sha256": "ba5ad57e0cb4621c1bbda665e3a8245cfab39089e9d1eb4b65b1e22bf55ef01c"
+  }
+}
